@@ -58,6 +58,7 @@ private:
     VkRenderPass renderPass{VK_NULL_HANDLE};
     void createRenderPass();
 
+    VkDescriptorSetLayout descriptorSetLayout{VK_NULL_HANDLE};
     VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
     VkPipeline graphicsPipeline{VK_NULL_HANDLE};
     void createGraphicsPipeline();
@@ -76,6 +77,8 @@ private:
     uint32_t currentFrame{0};
     void drawFrame();
 
+    void updateUniformBuffer(uint32_t frameIndex);
+
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     std::vector<VkFence> inFlightFences{};
@@ -93,8 +96,21 @@ private:
     VkDeviceMemory indexBufferMemory{VK_NULL_HANDLE};
     void createIndexBuffer();
 
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBufferMemories;
+    std::vector<void*> uniformBuffersMapped;
+    void createUniformBuffers();
+
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& memory);
     void copyBuffer(VkBuffer sourceBuffer, VkBuffer destinationBuffer, VkDeviceSize size);
 
     uint32_t findMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties) const;
+
+    void createDescriptorSetLayout();
+
+    VkDescriptorPool descriptorPool{VK_NULL_HANDLE};
+    void createDescriptorPool();
+
+    std::vector<VkDescriptorSet> descriptorSets{};
+    void createDescriptorSets();
 };

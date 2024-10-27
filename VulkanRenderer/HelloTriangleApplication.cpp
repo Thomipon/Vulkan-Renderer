@@ -5,6 +5,7 @@
 #include <set>
 #include <vector>
 
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "check.h"

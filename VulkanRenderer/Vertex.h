@@ -9,7 +9,7 @@
 
 struct Vertex
 {
-    glm::vec2 position;
+    glm::vec3 position;
     glm::vec3 color;
 
     static VkVertexInputBindingDescription getBindingDescription()
@@ -29,7 +29,7 @@ struct Vertex
         attributeDescriptions[0] = {
             .location = 0,
             .binding = 0,
-            .format = VK_FORMAT_R32G32_SFLOAT,
+            .format = VK_FORMAT_R32G32B32_SFLOAT,
             .offset = offsetof(Vertex, position)
         };
         attributeDescriptions[1] = {
@@ -44,13 +44,16 @@ struct Vertex
 };
 
 inline const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    {{-0.5f, -0.5f, .5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f, -.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f, .5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f, -.5f}, {1.0f, 1.0f, 1.0f}}
 };
 
 inline const std::vector<uint32_t> indices = {
     0, 1, 2,
-    2, 3, 0
+    2, 3, 0,
+    1, 3, 2,
+    3, 1, 0
+    
 };

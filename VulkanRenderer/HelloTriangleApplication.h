@@ -89,6 +89,10 @@ private:
     VkDeviceMemory vertexBufferMemory{VK_NULL_HANDLE};
     void createVertexBuffer();
 
+    VkBuffer indexBuffer{VK_NULL_HANDLE};
+    VkDeviceMemory indexBufferMemory{VK_NULL_HANDLE};
+    void createIndexBuffer();
+
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& memory);
     void copyBuffer(VkBuffer sourceBuffer, VkBuffer destinationBuffer, VkDeviceSize size);
 

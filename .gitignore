@@ -1,0 +1,15 @@
+﻿*.tlog
+*.suo
+*.obj
+*.idb
+*.pdb
+*.exe
+*.recipe
+*.sln
+*.sln.Dotsettings.user
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.xml
+.vs/*
+/VulkanRenderer/x64/*

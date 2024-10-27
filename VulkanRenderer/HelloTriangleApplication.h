@@ -84,4 +84,10 @@ private:
     bool frameBufferResized{false};
 
     static void frameBufferResizedCallback(GLFWwindow* window, int inWidth, int inHeight);
+
+    VkBuffer vertexBuffer{VK_NULL_HANDLE};
+    VkDeviceMemory vertexBufferMemory{VK_NULL_HANDLE};
+    void createVertexBuffer();
+
+    uint32_t findMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties) const;
 };

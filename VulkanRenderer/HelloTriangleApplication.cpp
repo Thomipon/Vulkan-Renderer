@@ -10,6 +10,7 @@
 #include "Shader.h"
 #include "SwapChain.h"
 #include "ValidationLayers.h"
+#include "Vertex.h"
 
 void HelloTriangleApplication::run()
 {
@@ -43,6 +44,7 @@ void HelloTriangleApplication::initVulkan()
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+    createVertexBuffer();
     createCommandBuffers();
     createSyncObjects();
 }
@@ -62,19 +64,22 @@ void HelloTriangleApplication::cleanup()
 {
     for (size_t i = 0; i < maxFramesInFlight; ++i)
     {
-            vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-            vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-            vkDestroyFence(device, inFlightFences[i], nullptr);
+        vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(device, inFlightFences[i], nullptr);
     }
 
     vkDestroyCommandPool(device, commandPool, nullptr);
 
     cleanupSwapchain();
 
+    vkDestroyBuffer(device, vertexBuffer, nullptr);
+    vkFreeMemory(device, vertexBufferMemory, nullptr);
+
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyRenderPass(device, renderPass, nullptr);
-    
+
     vkDestroyDevice(device, nullptr);
 
     if constexpr (enableValidationLayers)
@@ -321,11 +326,12 @@ void HelloTriangleApplication::recreateSwapchain()
 {
     int winWidth, winHeight;
     glfwGetFramebufferSize(window, &winWidth, &winHeight);
-    while (winWidth == 0 || winHeight == 0) {
+    while (winWidth == 0 || winHeight == 0)
+    {
         glfwGetFramebufferSize(window, &winWidth, &winHeight);
         glfwWaitEvents();
     }
-    
+
     vkDeviceWaitIdle(device);
 
     cleanupSwapchain();
@@ -341,7 +347,7 @@ void HelloTriangleApplication::cleanupSwapchain()
     {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
-    
+
     for (auto& imageView : swapChainImageViews)
     {
         vkDestroyImageView(device, imageView, nullptr);
@@ -483,14 +489,16 @@ void HelloTriangleApplication::createGraphicsPipeline()
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageCreateInfo, fragShaderStageCreateInfo};
 
+    auto bindingDescription{Vertex::getBindingDescription()};
+    auto attributeDescriptions{Vertex::getAttributeDescriptions()};
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .vertexBindingDescriptionCount = 0,
-        .pVertexBindingDescriptions = nullptr,
-        .vertexAttributeDescriptionCount = 0,
-        .pVertexAttributeDescriptions = nullptr
+        .vertexBindingDescriptionCount = 1,
+        .pVertexBindingDescriptions = &bindingDescription,
+        .vertexAttributeDescriptionCount = attributeDescriptions.size(),
+        .pVertexAttributeDescriptions = attributeDescriptions.data()
     };
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo{
@@ -671,7 +679,7 @@ void HelloTriangleApplication::createCommandPool()
 void HelloTriangleApplication::createCommandBuffers()
 {
     commandBuffers.resize(maxFramesInFlight);
-    
+
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .pNext = nullptr,
@@ -728,7 +736,11 @@ void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer
 
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    VkBuffer vertexBuffers[] = {vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);   
+
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -742,18 +754,20 @@ void HelloTriangleApplication::drawFrame()
         recreateSwapchain();
         frameBufferResized = false;
     }
-    
+
     VkCommandBuffer& commandBuffer{commandBuffers[currentFrame]};
     const VkSemaphore& imageAvailableSemaphore{imageAvailableSemaphores[currentFrame]};
     const VkSemaphore& renderFinishedSemaphore{renderFinishedSemaphores[currentFrame]};
     const VkFence& inFlightFence{inFlightFences[currentFrame]};
-    
+
     currentFrame = (currentFrame + 1) % maxFramesInFlight;
-    
+
     vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    VkResult result{vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex)};
+    VkResult result{
+        vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex)
+    };
     if (checkForBadSwapchain(result) == VK_ERROR_OUT_OF_DATE_KHR)
     {
         return;
@@ -800,7 +814,7 @@ void HelloTriangleApplication::createSyncObjects()
     imageAvailableSemaphores.resize(maxFramesInFlight);
     renderFinishedSemaphores.resize(maxFramesInFlight);
     inFlightFences.resize(maxFramesInFlight);
-    
+
     VkSemaphoreCreateInfo semaphoreCreateInfo{
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         .pNext = nullptr,
@@ -827,4 +841,56 @@ void HelloTriangleApplication::frameBufferResizedCallback(GLFWwindow* window, in
 {
     auto* app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
     app->frameBufferResized = true;
+}
+
+void HelloTriangleApplication::createVertexBuffer()
+{
+    VkBufferCreateInfo bufferCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .size = sizeof(Vertex) * vertices.size(),
+        .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices = nullptr
+    };
+
+    check(vkCreateBuffer(device, &bufferCreateInfo, nullptr, &vertexBuffer));
+
+    VkMemoryRequirements memoryRequirements;
+    vkGetBufferMemoryRequirements(device, vertexBuffer, &memoryRequirements);
+
+    VkMemoryAllocateInfo memoryAllocateInfo{
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .allocationSize = memoryRequirements.size,
+        .memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits,
+                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+    };
+
+    check(vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &vertexBufferMemory), "Failed to allocate memory for vertex buffer!");
+
+    vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
+
+    void* data;
+    vkMapMemory(device, vertexBufferMemory, 0, bufferCreateInfo.size, 0, &data);
+    std::memcpy(data, vertices.data(), bufferCreateInfo.size);
+    vkUnmapMemory(device, vertexBufferMemory);
+}
+
+uint32_t HelloTriangleApplication::findMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties) const
+{
+    VkPhysicalDeviceMemoryProperties physicalMemoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &physicalMemoryProperties);
+
+    for (uint32_t i = 0; i < physicalMemoryProperties.memoryTypeCount; ++i)
+    {
+        if ((typeBits & (1 << i)) && (physicalMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("Failed to find suitable memory type!");
 }

@@ -65,15 +65,16 @@ private:
     VkCommandPool commandPool{VK_NULL_HANDLE};
     void createCommandPool();
 
-    VkCommandBuffer commandBuffer{VK_NULL_HANDLE};
-    void createCommandBuffer();
+    std::vector<VkCommandBuffer> commandBuffers{};
+    void createCommandBuffers();
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
+    uint32_t currentFrame{0};
     void drawFrame();
 
-    VkSemaphore imageAvailableSemaphore{VK_NULL_HANDLE};
-    VkSemaphore renderFinishedSemaphore{VK_NULL_HANDLE};
-    VkFence inFlightFence{VK_NULL_HANDLE};
+    std::vector<VkSemaphore> imageAvailableSemaphores{};
+    std::vector<VkSemaphore> renderFinishedSemaphores{};
+    std::vector<VkFence> inFlightFences{};
     void createSyncObjects();
 };

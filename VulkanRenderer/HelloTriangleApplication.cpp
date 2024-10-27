@@ -41,7 +41,7 @@ void HelloTriangleApplication::initVulkan()
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
-    createCommandBuffer();
+    createCommandBuffers();
     createSyncObjects();
 }
 
@@ -58,9 +58,12 @@ void HelloTriangleApplication::mainLoop()
 
 void HelloTriangleApplication::cleanup()
 {
-    vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
-    vkDestroyFence(device, inFlightFence, nullptr);
+    for (size_t i = 0; i < maxFramesInFlight; ++i)
+    {
+            vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(device, inFlightFences[i], nullptr);
+    }
 
     vkDestroyCommandPool(device, commandPool, nullptr);
 
@@ -624,17 +627,19 @@ void HelloTriangleApplication::createCommandPool()
     check(vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &commandPool), "Failed to create Command Pool!");
 }
 
-void HelloTriangleApplication::createCommandBuffer()
+void HelloTriangleApplication::createCommandBuffers()
 {
+    commandBuffers.resize(maxFramesInFlight);
+    
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .pNext = nullptr,
         .commandPool = commandPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = 1
+        .commandBufferCount = maxFramesInFlight,
     };
 
-    check(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer),
+    check(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, commandBuffers.data()),
           "Failed to allocate Command Buffer!");
 }
 
@@ -691,6 +696,13 @@ void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer
 
 void HelloTriangleApplication::drawFrame()
 {
+    VkCommandBuffer& commandBuffer{commandBuffers[currentFrame]};
+    const VkSemaphore& imageAvailableSemaphore{imageAvailableSemaphores[currentFrame]};
+    const VkSemaphore& renderFinishedSemaphore{renderFinishedSemaphores[currentFrame]};
+    const VkFence& inFlightFence{inFlightFences[currentFrame]};
+    
+    currentFrame = (currentFrame + 1) % maxFramesInFlight;
+    
     vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
     vkResetFences(device, 1, &inFlightFence);
 
@@ -734,6 +746,10 @@ void HelloTriangleApplication::drawFrame()
 
 void HelloTriangleApplication::createSyncObjects()
 {
+    imageAvailableSemaphores.resize(maxFramesInFlight);
+    renderFinishedSemaphores.resize(maxFramesInFlight);
+    inFlightFences.resize(maxFramesInFlight);
+    
     VkSemaphoreCreateInfo semaphoreCreateInfo{
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         .pNext = nullptr,
@@ -746,9 +762,12 @@ void HelloTriangleApplication::createSyncObjects()
         .flags = VK_FENCE_CREATE_SIGNALED_BIT
     };
 
-    check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphore),
-          "Failed to create semaphore!");
-    check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphore),
-          "Failed to create semaphore!");
-    check(vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFence), "Failed to create fence!");
+    for (size_t i = 0; i < maxFramesInFlight; ++i)
+    {
+        check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]),
+              "Failed to create semaphore!");
+        check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]),
+              "Failed to create semaphore!");
+        check(vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]), "Failed to create fence!");
+    }
 }

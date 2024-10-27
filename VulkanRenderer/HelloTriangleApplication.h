@@ -44,6 +44,9 @@ private:
 
     VkSwapchainKHR swapChain{VK_NULL_HANDLE};
     void createSwapchain();
+    void recreateSwapchain();
+    void cleanupSwapchain();
+    VkResult checkForBadSwapchain(VkResult inResult);
 
     std::vector<VkImage> swapChainImages{};
     VkFormat swapChainImageFormat{};
@@ -77,4 +80,8 @@ private:
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     std::vector<VkFence> inFlightFences{};
     void createSyncObjects();
+
+    bool frameBufferResized{false};
+
+    static void frameBufferResizedCallback(GLFWwindow* window, int inWidth, int inHeight);
 };

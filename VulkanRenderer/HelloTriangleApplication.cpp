@@ -20,6 +20,11 @@
 #include "Vertex.h"
 #include "Image.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <unordered_map>
+
+#include "tiny_obj_loader.h"
+
 void HelloTriangleApplication::run()
 {
     initWindow();
@@ -58,6 +63,8 @@ void HelloTriangleApplication::initVulkan()
 
     createDepthResources();
     createFramebuffers();
+
+    loadModel();
 
     createTextureImage();
     createTextureImageView();
@@ -390,7 +397,7 @@ void HelloTriangleApplication::cleanupSwapchain()
     vkDestroyImageView(device, depthImageView, nullptr);
     vkDestroyImage(device, depthImage, nullptr);
     vkFreeMemory(device, depthImageMemory, nullptr);
-    
+
     for (auto& framebuffer : swapChainFramebuffers)
     {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -628,7 +635,7 @@ void HelloTriangleApplication::createGraphicsPipeline()
         .pAttachments = &colorBlendAttachment,
         .blendConstants = {0.f, 0.f, 0.f, 0.f}
     };
-    
+
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pNext = nullptr,
@@ -642,7 +649,7 @@ void HelloTriangleApplication::createGraphicsPipeline()
     check(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout),
           "Failed to creat pipeline layout!");
 
-    VkPipelineDepthStencilStateCreateInfo depthStencilInfo {
+    VkPipelineDepthStencilStateCreateInfo depthStencilInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
@@ -656,7 +663,7 @@ void HelloTriangleApplication::createGraphicsPipeline()
         .minDepthBounds = 0.0f,
         .maxDepthBounds = 1.0f
     };
-    
+
     VkGraphicsPipelineCreateInfo pipelineCreateInfo{
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         .pNext = nullptr,
@@ -752,7 +759,7 @@ void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer
 
     std::array<VkClearValue, 2> clearValues{VkClearValue{{{0.0f, 0.0f, 0.0f, 1.0f}}}, VkClearValue{}};
     clearValues[1].depthStencil = {1.f, 0};
-    
+
     VkRenderPassBeginInfo renderPassInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext = nullptr,
@@ -793,7 +800,7 @@ void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer
 
     vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(vertindices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(meshIndices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -966,7 +973,7 @@ void HelloTriangleApplication::frameBufferResizedCallback(GLFWwindow* window, in
 
 void HelloTriangleApplication::createVertexBuffer()
 {
-    const VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
+    const VkDeviceSize bufferSize = sizeof(Vertex) * meshVertices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -976,7 +983,7 @@ void HelloTriangleApplication::createVertexBuffer()
 
     void* data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    std::memcpy(data, vertices.data(), bufferSize);
+    std::memcpy(data, meshVertices.data(), bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -990,7 +997,7 @@ void HelloTriangleApplication::createVertexBuffer()
 
 void HelloTriangleApplication::createIndexBuffer()
 {
-    const VkDeviceSize bufferSize = sizeof(uint32_t) * vertindices.size();
+    const VkDeviceSize bufferSize = sizeof(uint32_t) * meshIndices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -1000,7 +1007,7 @@ void HelloTriangleApplication::createIndexBuffer()
 
     void* data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    std::memcpy(data, vertindices.data(), bufferSize);
+    std::memcpy(data, meshIndices.data(), bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -1481,4 +1488,52 @@ VkFormat HelloTriangleApplication::findSupportedFormat(const std::vector<VkForma
     }
 
     throw std::runtime_error("Failed to find supported format!");
+}
+
+void HelloTriangleApplication::loadModel()
+{
+    meshVertices.clear();
+    meshIndices.clear();
+    
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string error;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &error, modelPath.c_str()))
+    {
+        throw std::runtime_error(error);
+    }
+
+    std::unordered_map<Vertex, uint32_t> uniqueVertices;
+
+    for (const auto& shape : shapes)
+    {
+        meshVertices.reserve(meshVertices.size() + shape.mesh.indices.size());
+        meshIndices.reserve(meshIndices.size() + shape.mesh.indices.size());
+        
+        for (const auto& index : shape.mesh.indices)
+        {
+            Vertex vertex;
+            vertex.position = {
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            };
+            vertex.texCoord = {
+                attrib.texcoords[2 * index.texcoord_index + 0],
+                1.f - attrib.texcoords[2 * index.texcoord_index + 1]
+            };
+            vertex.color = {1.f, 1.f, 1.f};
+
+            if (!uniqueVertices.contains(vertex))
+            {
+                uniqueVertices[vertex] = meshVertices.size();
+                meshVertices.push_back(vertex);
+            }
+
+            meshIndices.push_back(uniqueVertices[vertex]);
+        }
+    }
+    meshVertices.shrink_to_fit();
 }

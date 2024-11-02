@@ -4,6 +4,8 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 
+#include "Vertex.h"
+
 class HelloTriangleApplication
 {
 public:
@@ -144,4 +146,8 @@ private:
     static bool hasStencilComponent(VkFormat format);
     
     VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+
+    std::vector<Vertex> meshVertices{};
+    std::vector<uint32_t> meshIndices{};
+    void loadModel();
 };

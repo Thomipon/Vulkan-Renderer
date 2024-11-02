@@ -5,6 +5,8 @@
 
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 #include <vulkan/vulkan.h>
 
 struct Vertex
@@ -49,9 +51,25 @@ struct Vertex
 
         return attributeDescriptions;
     }
+
+    bool operator==(const Vertex& other) const
+    {
+        return position == other.position && color == other.color && texCoord == other.texCoord;
+    }
 };
 
-inline const std::vector<Vertex> vertices = {
+namespace std {
+    template<> struct hash<Vertex> {
+        size_t operator()(Vertex const& vertex) const noexcept
+        {
+            return ((hash<glm::vec3>()(vertex.position) ^
+                   (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+                   (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}
+
+/*inline const std::vector<Vertex> vertices = {
     {{-0.5f, -0.5f, .5f}, {1.0f, 0.0f, 0.0f}, {0.f, 1.f}},
     {{0.5f, -0.5f, -.5f}, {0.0f, 1.0f, 0.0f}, {1.f, 1.f}},
     {{0.5f, 0.5f, .5f}, {0.0f, 0.0f, 1.0f}, {0.f, 0.f}},
@@ -71,4 +89,4 @@ inline const std::vector<uint32_t> vertindices = {
 
     4, 5, 6,
     6, 5, 7
-};
+};*/

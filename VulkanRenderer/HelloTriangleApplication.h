@@ -1,5 +1,6 @@
 ﻿#pragma once
 #define GLFW_INCLUDE_VULKAN
+#include <string>
 #include <vector>
 #include <GLFW/glfw3.h>
 
@@ -11,7 +12,9 @@ public:
     inline static uint32_t width{1920};
     inline static uint32_t height{1080};
     inline static uint32_t maxFramesInFlight{2};
-    
+
+    inline static std::string modelPath{"Meshes/viking_room.obj"};
+    inline static std::string texturePath{"Textures/viking_room.png"};
 private:
     void initWindow();
     void initVulkan();

@@ -1250,7 +1250,7 @@ void HelloTriangleApplication::createImage(uint32_t width, uint32_t height, VkFo
 void HelloTriangleApplication::createTextureImage()
 {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels{stbi_load("Textures/Texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha)};
+    stbi_uc* pixels{stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha)};
 
     if (!pixels)
     {

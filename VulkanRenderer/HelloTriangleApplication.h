@@ -74,6 +74,9 @@ private:
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSindleTimeCommands(VkCommandBuffer commandBuffer);
+
     uint32_t currentFrame{0};
     void drawFrame();
 
@@ -113,4 +116,29 @@ private:
 
     std::vector<VkDescriptorSet> descriptorSets{};
     void createDescriptorSets();
+
+    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    
+    VkImage textureImage{VK_NULL_HANDLE};
+    VkDeviceMemory textureImageMemory{VK_NULL_HANDLE};
+    void createTextureImage();
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+    VkImageView textureImageView{VK_NULL_HANDLE};
+    void createTextureImageView();
+
+    VkSampler textureSampler{VK_NULL_HANDLE};
+    void createTextureSampler();
+    
+    VkImageView createImageView(VkImage image, VkFormat format);
+
+    VkImage depthImage{VK_NULL_HANDLE};
+    VkDeviceMemory depthImageMemory{VK_NULL_HANDLE};
+    VkImageView depthImageView{VK_NULL_HANDLE};
+    void createDepthResources();
+    VkFormat findDepthFormat();
+    static bool hasStencilComponent(VkFormat format);
+    
+    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 };

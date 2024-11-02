@@ -131,7 +131,7 @@ private:
     VkSampler textureSampler{VK_NULL_HANDLE};
     void createTextureSampler();
     
-    VkImageView createImageView(VkImage image, VkFormat format);
+    VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
     VkImage depthImage{VK_NULL_HANDLE};
     VkDeviceMemory depthImageMemory{VK_NULL_HANDLE};

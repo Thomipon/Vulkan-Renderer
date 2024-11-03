@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <vector>
-#include <vulkan/vulkan.h>
+#include "VulkanBackend.hpp"
 
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME

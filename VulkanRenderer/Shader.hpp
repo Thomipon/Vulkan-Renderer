@@ -1,9 +1,9 @@
 ﻿#pragma once
 
 #include <vector>
-#include <vulkan/vulkan_core.h>
+#include "VulkanBackend.hpp"
 
-#include "check.h"
+#include "check.hpp"
 
 inline VkShaderModule createShaderModule(const std::vector<char>& code, const VkDevice device)
 {

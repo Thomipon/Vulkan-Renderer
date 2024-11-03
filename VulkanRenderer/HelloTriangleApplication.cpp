@@ -1,4 +1,4 @@
-﻿#include "HelloTriangleApplication.h"
+﻿#include "HelloTriangleApplication.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -9,16 +9,16 @@
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "check.h"
-#include "CommandQueues.h"
-#include "DeviceExtensions.h"
-#include "IOHelper.h"
-#include "Shader.h"
-#include "SwapChain.h"
-#include "Uniforms.h"
-#include "ValidationLayers.h"
-#include "Vertex.h"
-#include "Image.h"
+#include "check.hpp"
+#include "CommandQueues.hpp"
+#include "DeviceExtensions.hpp"
+#include "IOHelper.hpp"
+#include "Shader.hpp"
+#include "SwapChain.hpp"
+#include "Uniforms.hpp"
+#include "ValidationLayers.hpp"
+#include "Vertex.hpp"
+#include "Image.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <unordered_map>

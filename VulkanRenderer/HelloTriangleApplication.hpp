@@ -1,10 +1,12 @@
 ﻿#pragma once
-#define GLFW_INCLUDE_VULKAN
+
 #include <string>
 #include <vector>
+
+#include "VulkanBackend.hpp"
 #include <GLFW/glfw3.h>
 
-#include "Vertex.h"
+#include "Vertex.hpp"
 
 class HelloTriangleApplication
 {

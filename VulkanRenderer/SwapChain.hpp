@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <limits>
 #include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
+#include "VulkanBackend.hpp"
 
 inline VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {

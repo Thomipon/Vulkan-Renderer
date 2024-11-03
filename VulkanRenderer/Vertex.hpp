@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
-#include <vulkan/vulkan.h>
+#include "VulkanBackend.hpp"
 
 struct Vertex
 {

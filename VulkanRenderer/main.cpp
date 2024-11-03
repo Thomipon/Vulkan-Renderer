@@ -3,7 +3,7 @@
 #include <exception>
 #include <iostream>
 
-#include "HelloTriangleApplication.h"
+#include "HelloTriangleApplication.hpp"
 
 int main() {
     HelloTriangleApplication app;

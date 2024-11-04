@@ -14,11 +14,7 @@ constexpr bool enableValidationLayers = true;
 
 inline bool checkValidationLayerSupport()
 {
-    uint32_t layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+    std::vector<vk::LayerProperties> availableLayers(vk::enumerateInstanceLayerProperties());
 
     for (const char* layerName : validationLayers)
     {
@@ -45,8 +41,7 @@ inline bool checkValidationLayerSupport()
 inline std::vector<const char*> getRequiredExtensions()
 {
     uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
@@ -58,42 +53,30 @@ inline std::vector<const char*> getRequiredExtensions()
     return extensions;
 }
 
-inline VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                             const VkAllocationCallbacks* pAllocator,
-                                             VkDebugUtilsMessengerEXT* pDebugMessenger)
+// TODO: technically not necessary with Vulkan hpp
+inline vk::raii::DebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT(const vk::raii::Instance& instance, const vk::DebugUtilsMessengerCreateInfoEXT& createInfo,
+                                                                     const vk::Optional<const vk::AllocationCallbacks>& allocator = nullptr)
 {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr)
-    {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    }
-    else
-    {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
+    return vk::raii::DebugUtilsMessengerEXT{instance, createInfo, allocator};
 }
 
-inline void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                          const VkAllocationCallbacks* pAllocator)
+// TODO: Remove
+/*
+inline void DestroyDebugUtilsMessengerEXT(vk::Instance instance, vk::DebugUtilsMessengerEXT debugMessenger,
+                                          const vk::AllocationCallbacks pAllocator)
 {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
     if (func != nullptr)
     {
-        func(instance, debugMessenger, pAllocator);
+        func(instance, debugMessenger, );
     }
-}
+}*/
 
-inline VkDebugUtilsMessengerCreateInfoEXT makeDebugMessengerCreateInfo(const PFN_vkDebugUtilsMessengerCallbackEXT debugCallback)
+inline vk::DebugUtilsMessengerCreateInfoEXT makeDebugMessengerCreateInfo(const PFN_vkDebugUtilsMessengerCallbackEXT debugCallback)
 {
-    return {
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-        .pNext = nullptr,
-        .flags = 0,
-        .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-        .pfnUserCallback = debugCallback,
-        .pUserData = nullptr
+    return vk::DebugUtilsMessengerCreateInfoEXT{
+        {}, vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
+        debugCallback, nullptr
     };
 }

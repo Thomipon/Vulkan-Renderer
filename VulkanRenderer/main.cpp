@@ -6,9 +6,9 @@
 #include "HelloTriangleApplication.hpp"
 
 int main() {
-    HelloTriangleApplication app;
-
-    try {
+    try
+    {
+        HelloTriangleApplication app;
         app.run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

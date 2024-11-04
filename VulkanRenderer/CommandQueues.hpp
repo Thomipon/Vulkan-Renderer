@@ -17,26 +17,20 @@ struct QueueFamilyIndices
     }
 };
 
-inline QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
+inline QueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface)
 {
     QueueFamilyIndices indices;
 
-    uint32_t queueFamilyCount;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+    std::vector<vk::QueueFamilyProperties> queueFamilies(device.getQueueFamilyProperties());
 
     uint32_t i = 0;
     for (const auto& queueFamily : queueFamilies)
     {
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
         {
             indices.graphicsFamily = i;
         }
-        VkBool32 presentSupport{false};
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-        if (presentSupport)
+        if (device.getSurfaceSupportKHR(i, surface))
         {
             indices.presentFamily = i;
         }

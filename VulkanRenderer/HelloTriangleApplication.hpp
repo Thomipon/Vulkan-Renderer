@@ -53,7 +53,6 @@ private:
     vk::raii::SwapchainKHR swapChain{VK_NULL_HANDLE};
     void createSwapchain();
     void recreateSwapchain();
-    void cleanupSwapchain();
     vk::Result checkForBadSwapchain(vk::Result inResult);
 
     std::vector<vk::Image> swapChainImages{}; // TODO: Does this really not need to be in ::raii ?

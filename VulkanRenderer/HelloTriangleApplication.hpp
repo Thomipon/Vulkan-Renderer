@@ -124,12 +124,15 @@ private:
     std::vector<vk::raii::DescriptorSet> descriptorSets{};
     void createDescriptorSets();
 
-    std::pair<vk::raii::Image, vk::raii::DeviceMemory> createImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties);
+    std::pair<vk::raii::Image, vk::raii::DeviceMemory> createImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, uint32_t mipLevels);
     
     vk::raii::Image textureImage{VK_NULL_HANDLE};
     vk::raii::DeviceMemory textureImageMemory{VK_NULL_HANDLE};
+    uint32_t textureMipLevels{0};
     void createTextureImage();
-    void transitionImageLayout(const vk::Image& image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+
+    void generateMipMaps(const vk::Image& image, int32_t width, int32_t height, uint32_t mipLevels);
+    void transitionImageLayout(const vk::Image& image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
     void copyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);
 
     vk::raii::ImageView textureImageView{VK_NULL_HANDLE};
@@ -138,7 +141,7 @@ private:
     vk::raii::Sampler textureSampler{VK_NULL_HANDLE};
     void createTextureSampler();
     
-    vk::raii::ImageView createImageView(const vk::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags);
+    vk::raii::ImageView createImageView(const vk::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
 
     vk::raii::Image depthImage{VK_NULL_HANDLE};
     vk::raii::DeviceMemory depthImageMemory{VK_NULL_HANDLE};

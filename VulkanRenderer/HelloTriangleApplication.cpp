@@ -775,7 +775,10 @@ void HelloTriangleApplication::createTextureImage()
 
     transitionImageLayout(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, textureMipLevels);
     copyBufferToImage(stagingBuffer, textureImage, texWidth, texHeight);
+
+    // We do not need to transition the image layout. This is handled by generateMipMaps()
     //transitionImageLayout(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, textureMipLevels);
+    generateMipMaps(textureImage, texWidth, texHeight, textureMipLevels);
 }
 
 void HelloTriangleApplication::generateMipMaps(const vk::Image& image, int32_t width, int32_t height, uint32_t mipLevels)
@@ -798,6 +801,7 @@ void HelloTriangleApplication::generateMipMaps(const vk::Image& image, int32_t w
         barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
         barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
 
+        // Prepare next mip for transfer
         commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, {}, nullptr, nullptr, barrier);
 
         vk::ImageBlit blit{
@@ -806,8 +810,31 @@ void HelloTriangleApplication::generateMipMaps(const vk::Image& image, int32_t w
             std::array{vk::Offset3D{0, 0, 0,}, vk::Offset3D{mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1}}
         };
 
+        // Blit image
         commandBuffer.blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
+
+        barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
+        barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+        // Make old mip suitable for shaders
+        commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, nullptr, nullptr, barrier);
+
+        if (mipWidth > 1)
+            mipWidth /= 2;
+        if (mipHeight > 1)
+            mipHeight /= 2;
     }
+
+    barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+    // Make last mip suitable for shaders
+    commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, nullptr, nullptr, barrier);
 
     endSindleTimeCommands(std::move(commandBuffer));
 }
@@ -903,7 +930,7 @@ void HelloTriangleApplication::createTextureSampler()
 }
 
 vk::raii::ImageView HelloTriangleApplication::createImageView(const vk::Image& image, const vk::Format format, const vk::ImageAspectFlags aspectFlags,
-                                                              uint32_t mipLevels = 1)
+                                                              uint32_t mipLevels)
 {
     vk::ImageViewCreateInfo imageViewCreateInfo{
         {}, image, vk::ImageViewType::e2D, format, vk::ComponentMapping{}, vk::ImageSubresourceRange{aspectFlags, 0, mipLevels, 0, 1}

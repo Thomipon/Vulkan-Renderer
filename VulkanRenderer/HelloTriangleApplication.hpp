@@ -141,7 +141,7 @@ private:
     vk::raii::Sampler textureSampler{VK_NULL_HANDLE};
     void createTextureSampler();
     
-    vk::raii::ImageView createImageView(const vk::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
+    vk::raii::ImageView createImageView(const vk::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels = 1);
 
     vk::raii::Image depthImage{VK_NULL_HANDLE};
     vk::raii::DeviceMemory depthImageMemory{VK_NULL_HANDLE};

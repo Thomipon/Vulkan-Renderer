@@ -778,11 +778,15 @@ void HelloTriangleApplication::createTextureImage()
 
     // We do not need to transition the image layout. This is handled by generateMipMaps()
     //transitionImageLayout(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, textureMipLevels);
-    generateMipMaps(textureImage, texWidth, texHeight, textureMipLevels);
+    generateMipMaps(textureImage, vk::Format::eR8G8B8A8Srgb, texWidth, texHeight, textureMipLevels);
 }
 
-void HelloTriangleApplication::generateMipMaps(const vk::Image& image, int32_t width, int32_t height, uint32_t mipLevels)
+void HelloTriangleApplication::generateMipMaps(const vk::Image& image, const vk::Format& imageFormat, int32_t width, int32_t height, uint32_t mipLevels)
 {
+    if (!(physicalDevice.getFormatProperties(imageFormat).optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
+    {
+        throw std::runtime_error("Failed to generate mipmaps for image!\n Image format does not support linear blitting!");
+    }
     vk::raii::CommandBuffer commandBuffer{beginSingleTimeCommands()};
 
     vk::ImageMemoryBarrier barrier{

@@ -131,7 +131,7 @@ private:
     uint32_t textureMipLevels{0};
     void createTextureImage();
 
-    void generateMipMaps(const vk::Image& image, int32_t width, int32_t height, uint32_t mipLevels);
+    void generateMipMaps(const vk::Image& image, const vk::Format& imageFormat, int32_t width, int32_t height, uint32_t mipLevels);
     void transitionImageLayout(const vk::Image& image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
     void copyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);
 

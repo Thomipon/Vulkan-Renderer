@@ -20,6 +20,9 @@
 #include "Vertex.hpp"
 #include "Image.hpp"
 
+#include "slang/slang-com-helper.h"
+#include "slang/slang.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <unordered_map>
 
@@ -113,7 +116,7 @@ void HelloTriangleApplication::createInstance()
     const std::vector<const char*>& usedValidationLayers{enableValidationLayers ? validationLayers : std::vector<const char*>{}};
     vk::InstanceCreateInfo createInfo{{}, &appInfo, usedValidationLayers, requiredExtensions,};
 
-    vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo{makeDebugMessengerCreateInfo(reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(debugCallback))};
+    vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo{makeDebugMessengerCreateInfo(debugCallback)};
     // TODO: Not just mega sus but also duplicate
     if constexpr (enableValidationLayers)
     {
@@ -153,7 +156,7 @@ void HelloTriangleApplication::setupDebugMessenger()
 {
     if constexpr (!enableValidationLayers) return;
 
-    vk::DebugUtilsMessengerCreateInfoEXT createInfo{makeDebugMessengerCreateInfo(reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(debugCallback))};
+    vk::DebugUtilsMessengerCreateInfoEXT createInfo{makeDebugMessengerCreateInfo(debugCallback)};
     // TODO: This is MEGA SUS
 
     debugMessenger = CreateDebugUtilsMessengerEXT(instance, createInfo);
@@ -349,8 +352,8 @@ void HelloTriangleApplication::createRenderPass()
 
 void HelloTriangleApplication::createGraphicsPipeline()
 {
-    auto vertShaderCode{readFile("Shaders/vert.spv")};
-    auto fragShaderCode{readFile("Shaders/frag.spv")};
+    auto vertShaderCode{readFile("Shaders/default.spv")};
+    auto fragShaderCode{readFile("Shaders/default.spv")};
 
     vk::raii::ShaderModule vertShaderModule{createShaderModule(vertShaderCode, device)};
     vk::raii::ShaderModule fragShaderModule{createShaderModule(fragShaderCode, device)};
@@ -536,6 +539,7 @@ void HelloTriangleApplication::updateUniformBuffer(uint32_t frameIndex)
                                       static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.
                                           height), 0.1f, 100.f);
     ubo.projection[1][1] *= -1;
+    
     std::memcpy(uniformBuffersMapped[frameIndex], &ubo, sizeof(ubo));
 }
 

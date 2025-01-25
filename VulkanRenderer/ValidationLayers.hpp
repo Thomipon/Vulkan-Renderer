@@ -72,7 +72,7 @@ inline void DestroyDebugUtilsMessengerEXT(vk::Instance instance, vk::DebugUtilsM
     }
 }*/
 
-inline vk::DebugUtilsMessengerCreateInfoEXT makeDebugMessengerCreateInfo(const PFN_vkDebugUtilsMessengerCallbackEXT debugCallback)
+inline vk::DebugUtilsMessengerCreateInfoEXT makeDebugMessengerCreateInfo(const vk::PFN_DebugUtilsMessengerCallbackEXT debugCallback)
 {
     return vk::DebugUtilsMessengerCreateInfoEXT{
         {}, vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,

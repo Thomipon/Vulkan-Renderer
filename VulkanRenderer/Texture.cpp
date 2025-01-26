@@ -1,5 +1,6 @@
 ﻿#include "Texture.hpp"
 
+#include <ranges>
 #include <stb_image.h>
 
 #include "Renderer.hpp"
@@ -59,7 +60,7 @@ Texture Texture::createImage(const Renderer& app, uint32_t width, uint32_t heigh
 
     image.bindMemory(imageMemory, 0);
 
-    vk::raii::ImageView imageView{createImageView(app, image, format, aspectFlags, mipLevels)};
+    vk::raii::ImageView imageView{createImageView(app.device, image, format, aspectFlags, mipLevels)};
 
     return Texture{(std::move(image)), (std::move(imageMemory)), std::move(imageView)};
 }
@@ -126,12 +127,27 @@ void Texture::generateMipMaps(const vk::Format& imageFormat, int32_t width, int3
     app.endSingleTimeCommands(std::move(commandBuffer));
 }
 
-vk::raii::ImageView Texture::createImageView(const Renderer& app, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
+vk::raii::ImageView Texture::createImageView(const vk::raii::Device& device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
 {
     vk::ImageViewCreateInfo imageViewCreateInfo{
             {}, image, vk::ImageViewType::e2D, format, vk::ComponentMapping{}, vk::ImageSubresourceRange{aspectFlags, 0, mipLevels, 0, 1}
     };
-    return vk::raii::ImageView{app.device, imageViewCreateInfo};
+    return vk::raii::ImageView{device, imageViewCreateInfo};
+}
+
+std::vector<vk::raii::ImageView> Texture::createImageViews(const vk::raii::Device& device, const std::vector<vk::Image>& images, vk::Format format,
+    vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
+{
+    auto imageViews{
+        images
+        | std::ranges::views::transform(
+            [&](const auto& image)
+            {
+                return Texture::createImageView(device, image, format, aspectFlags, mipLevels);
+            })
+    };
+
+    return {imageViews.begin(), imageViews.end()};
 }
 
 void Texture::transitionImageLayout(const Renderer& app, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels) const

@@ -40,6 +40,7 @@ inline bool checkValidationLayerSupport()
 
 inline std::vector<const char*> getRequiredExtensions()
 {
+    glfwInit(); // TODO: glfw might not be initialized here. This will be changed someday
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
@@ -52,25 +53,6 @@ inline std::vector<const char*> getRequiredExtensions()
 
     return extensions;
 }
-
-// TODO: technically not necessary with Vulkan hpp
-inline vk::raii::DebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT(const vk::raii::Instance& instance, const vk::DebugUtilsMessengerCreateInfoEXT& createInfo,
-                                                                     const vk::Optional<const vk::AllocationCallbacks>& allocator = nullptr)
-{
-    return vk::raii::DebugUtilsMessengerEXT{instance, createInfo, allocator};
-}
-
-// TODO: Remove
-/*
-inline void DestroyDebugUtilsMessengerEXT(vk::Instance instance, vk::DebugUtilsMessengerEXT debugMessenger,
-                                          const vk::AllocationCallbacks pAllocator)
-{
-    auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
-    if (func != nullptr)
-    {
-        func(instance, debugMessenger, );
-    }
-}*/
 
 inline vk::DebugUtilsMessengerCreateInfoEXT makeDebugMessengerCreateInfo(const vk::PFN_DebugUtilsMessengerCallbackEXT debugCallback)
 {

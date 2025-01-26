@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <vector>
+#include <set>
+#include <string>
 #include "VulkanBackend.hpp"
 
 const std::vector<const char*> deviceExtensions = {

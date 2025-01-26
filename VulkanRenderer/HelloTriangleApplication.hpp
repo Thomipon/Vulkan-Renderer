@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "VulkanBackend.hpp"
-#include <GLFW/glfw3.h>
 
 #include "Renderer.hpp"
 #include "Texture.hpp"
@@ -22,43 +21,12 @@ public:
     inline static std::string modelPath{"Meshes/viking_room.obj"};
     inline static std::string texturePath{"Textures/viking_room.png"};
 private:
-    void initWindow();
     void initVulkan();
     void mainLoop();
-    void cleanup();
 
-    GLFWwindow* window{nullptr};
-    
-    void createInstance();
-    
-    static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                          vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-
-    vk::raii::DebugUtilsMessengerEXT debugMessenger{VK_NULL_HANDLE};
-    void setupDebugMessenger();
-
-    void pickPhysicalDevice();
-    bool isDeviceSuitable(const vk::PhysicalDevice& physDevice) const;
-
-    void createLogicalDevice();
-
-    vk::raii::SurfaceKHR surface{VK_NULL_HANDLE};
-    void createSurface();
-
-    vk::raii::Queue presentQueue{VK_NULL_HANDLE};
-
-    vk::raii::SwapchainKHR swapChain{VK_NULL_HANDLE};
-    void createSwapchain();
     void recreateSwapchain();
     vk::Result checkForBadSwapchain(vk::Result inResult);
-
-    std::vector<vk::Image> swapChainImages{}; // TODO: Does this really not need to be in ::raii ?
-    vk::Format swapChainImageFormat{};
-    vk::Extent2D swapChainExtent{};
-
-    std::vector<vk::raii::ImageView> swapChainImageViews{};
-    void createImageViews();
-
+    
     vk::raii::RenderPass renderPass{VK_NULL_HANDLE};
     void createRenderPass();
 
@@ -88,9 +56,7 @@ private:
     void createSyncObjects();
 
     bool frameBufferResized{false};
-
-    static void frameBufferResizedCallback(GLFWwindow* window, int inWidth, int inHeight);
-
+    
     vk::raii::Buffer vertexBuffer{VK_NULL_HANDLE};
     vk::raii::DeviceMemory vertexBufferMemory{VK_NULL_HANDLE};
     void createVertexBuffer();

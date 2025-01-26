@@ -1,9 +1,8 @@
 ﻿#include "HelloTriangleApplication.hpp"
 
 #include <chrono>
-#include <iostream>
-#include <set>
 #include <vector>
+#include <unordered_map>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
@@ -11,50 +10,24 @@
 
 #include "check.hpp"
 #include "CommandQueues.hpp"
-#include "DeviceExtensions.hpp"
 #include "IOHelper.hpp"
 #include "Shader.hpp"
-#include "SwapChain.hpp"
+#include "Swapchain.hpp"
 #include "Uniforms.hpp"
-#include "ValidationLayers.hpp"
 #include "Vertex.hpp"
 #include "Image.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <unordered_map>
-
 #include "tiny_obj_loader.h"
 
 void HelloTriangleApplication::run()
 {
-    initWindow();
     initVulkan();
     mainLoop();
-    cleanup();
-}
-
-void HelloTriangleApplication::initWindow()
-{
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-    window = glfwCreateWindow(width, height, "Vulkan", nullptr, nullptr);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, frameBufferResizedCallback);
 }
 
 void HelloTriangleApplication::initVulkan()
 {
-    createInstance();
-    setupDebugMessenger();
-    createSurface();
-
-    pickPhysicalDevice();
-    createLogicalDevice();
-    createSwapchain();
-
-    createImageViews();
     createRenderPass();
     createDescriptorSetLayout();
     createGraphicsPipeline();
@@ -82,209 +55,18 @@ void HelloTriangleApplication::initVulkan()
 
 void HelloTriangleApplication::mainLoop()
 {
-    while (!glfwWindowShouldClose(window))
+    while (!window.shouldClose())
     {
-        glfwPollEvents();
+        Window::pollEvents();
         drawFrame();
     }
 
     device.waitIdle();
 }
 
-void HelloTriangleApplication::cleanup()
-{
-    // TODO: Wrap this somewhere
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
-void HelloTriangleApplication::createInstance()
-{
-    if (enableValidationLayers && !checkValidationLayerSupport())
-    {
-        throw std::runtime_error("validation layers requested, but not available!");
-    }
-
-    vk::ApplicationInfo appInfo{"Hello Triangle", VK_MAKE_VERSION(1, 0, 0), "No Engine", VK_MAKE_VERSION(1, 0, 0), vk::ApiVersion13};
-
-    const auto requiredExtensions{getRequiredExtensions()};
-
-    const std::vector<const char*>& usedValidationLayers{enableValidationLayers ? validationLayers : std::vector<const char*>{}};
-    vk::InstanceCreateInfo createInfo{{}, &appInfo, usedValidationLayers, requiredExtensions,};
-
-    vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo{makeDebugMessengerCreateInfo(debugCallback)};
-    // TODO: Not just mega sus but also duplicate
-    if constexpr (enableValidationLayers)
-    {
-        createInfo.pNext = &debugCreateInfo;
-    }
-
-    instance = vk::raii::Instance{context, createInfo};
-
-    {
-        std::vector<vk::ExtensionProperties> extensions(vk::enumerateInstanceExtensionProperties());
-
-        std::cout << "available extensions:\n";
-
-        for (const auto& extension : extensions)
-        {
-            std::cout << '\t' << extension.extensionName << '\n';
-        }
-        std::cout << std::flush;
-    }
-}
-
-vk::Bool32 HelloTriangleApplication::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                   vk::DebugUtilsMessageTypeFlagsEXT messageType,
-                                                   const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                   void* pUserData)
-{
-    if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
-    {
-        // Message is important enough to show
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-    }
-
-    return false;
-}
-
-void HelloTriangleApplication::setupDebugMessenger()
-{
-    if constexpr (!enableValidationLayers) return;
-
-    vk::DebugUtilsMessengerCreateInfoEXT createInfo{makeDebugMessengerCreateInfo(debugCallback)};
-    // TODO: This is MEGA SUS
-
-    debugMessenger = CreateDebugUtilsMessengerEXT(instance, createInfo);
-}
-
-void HelloTriangleApplication::pickPhysicalDevice()
-{
-    vk::raii::PhysicalDevices devices{instance};
-
-    if (devices.empty())
-    {
-        throw std::runtime_error("Failed to find GPUs with Vulkan support");
-    }
-
-    for (const auto& physDevice : devices)
-    {
-        if (isDeviceSuitable(physDevice))
-        {
-            physicalDevice = physDevice;
-            return; // Pick first suitable device
-        }
-    }
-
-    //if (!physicalDevice) // TODO: This is all kinda ugly
-    {
-        throw std::runtime_error("Failed to find a suitable GPU!");
-    }
-}
-
-bool HelloTriangleApplication::isDeviceSuitable(const vk::PhysicalDevice& physDevice) const
-{
-    vk::PhysicalDeviceProperties deviceProperties{physDevice.getProperties()};
-    vk::PhysicalDeviceFeatures deviceFeatures{physDevice.getFeatures()};
-
-    QueueFamilyIndices queueFamilyIndices{findQueueFamilies(physDevice, surface)};
-
-    bool extensionsSupported{CheckDeviceExtensionSupport(physDevice)};
-
-    bool swapChainAdequate{false};
-    if (extensionsSupported)
-    {
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physDevice, surface);
-        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-    }
-
-    return queueFamilyIndices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
-}
-
-void HelloTriangleApplication::createLogicalDevice()
-{
-    QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
-
-    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
-    float queuePriority = 1.0f;
-
-    for (uint32_t queueFamily : uniqueQueueFamilies)
-    {
-        queueCreateInfos.emplace_back(vk::DeviceQueueCreateFlags{}, queueFamily, 1, &queuePriority);
-    }
-
-    vk::PhysicalDeviceFeatures deviceFeatures{};
-    deviceFeatures.samplerAnisotropy = true;
-
-    const std::vector<const char*>& usedValidationLayers{enableValidationLayers ? validationLayers : std::vector<const char*>{}};
-    vk::DeviceCreateInfo createInfo{{}, queueCreateInfos, usedValidationLayers, deviceExtensions, &deviceFeatures};
-
-    device = vk::raii::Device{physicalDevice, createInfo};
-    graphicsQueue = device.getQueue(indices.graphicsFamily.value(), 0);
-    presentQueue = device.getQueue(indices.presentFamily.value(), 0);
-}
-
-void HelloTriangleApplication::createSurface()
-{
-    VkSurfaceKHR rawSurface{VK_NULL_HANDLE};
-    check(static_cast<vk::Result>(glfwCreateWindowSurface(*instance, window, nullptr, &rawSurface)), "Failed to create window surface");
-
-    surface = vk::raii::SurfaceKHR{instance, rawSurface};
-}
-
-void HelloTriangleApplication::createSwapchain()
-{
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
-
-    vk::SurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-    vk::PresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-    vk::Extent2D extent = chooseSwapExtent(swapChainSupport.capabilities, window);
-
-    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-
-    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
-    {
-        imageCount = swapChainSupport.capabilities.maxImageCount;
-    }
-
-    vk::SwapchainCreateInfoKHR swapChainCreateInfo{
-        {}, surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace, extent, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, 0,
-        nullptr, swapChainSupport.capabilities.currentTransform, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode, true, swapChain
-    };
-
-    QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
-
-    const uint32_t queueFamilyList[]{indices.graphicsFamily.value(), indices.presentFamily.value()}; // TODO: This should be in inner scope but can't?
-    if (indices.graphicsFamily != indices.presentFamily)
-    {
-        swapChainCreateInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-        swapChainCreateInfo.queueFamilyIndexCount = 2;
-        swapChainCreateInfo.pQueueFamilyIndices = queueFamilyList;
-    }
-
-    swapChain = vk::raii::SwapchainKHR{device, swapChainCreateInfo};
-    swapChainImages = swapChain.getImages(); // TODO: raii maybe
-
-    swapChainImageFormat = surfaceFormat.format;
-    swapChainExtent = extent;
-}
-
 void HelloTriangleApplication::recreateSwapchain()
 {
-    int winWidth, winHeight;
-    glfwGetFramebufferSize(window, &winWidth, &winHeight);
-    while (winWidth == 0 || winHeight == 0) // TODO: This is ugly
-    {
-        // We are minimized, just wait
-        glfwGetFramebufferSize(window, &winWidth, &winHeight);
-        glfwWaitEvents();
-    }
-
-    device.waitIdle();
-
-    createSwapchain();
-    createImageViews();
+    // TODO: These need to be moved to the renderer
     createDepthResources();
     createFramebuffers();
 }
@@ -304,22 +86,10 @@ vk::Result HelloTriangleApplication::checkForBadSwapchain(vk::Result inResult)
     return check(inResult);
 }
 
-void HelloTriangleApplication::createImageViews()
-{
-    swapChainImageViews.clear();
-    swapChainImageViews.reserve(swapChainImages.size());
-
-    for (auto& swapChainImage : swapChainImages)
-    {
-        // TODO: Swapchain images and views should probably be encapsulated as well
-        swapChainImageViews.emplace_back(Texture::createImageView(*this, swapChainImage, swapChainImageFormat, vk::ImageAspectFlagBits::eColor));
-    }
-}
-
 void HelloTriangleApplication::createRenderPass()
 {
     vk::AttachmentDescription colorAttachment{
-        {}, swapChainImageFormat, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eDontCare,
+        {}, swapchain.imageFormat, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eDontCare,
         vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
     };
     vk::AttachmentReference colorAttachmentReference{0, vk::ImageLayout::eColorAttachmentOptimal};
@@ -405,11 +175,11 @@ void HelloTriangleApplication::createGraphicsPipeline()
 void HelloTriangleApplication::createFramebuffers()
 {
     swapChainFramebuffers.clear();
-    swapChainFramebuffers.reserve(swapChainImageViews.size());
-    for (size_t i = 0; i < swapChainImageViews.size(); ++i)
+    swapChainFramebuffers.reserve(swapchain.imageViews.size());
+    for (size_t i = 0; i < swapchain.imageViews.size(); ++i)
     {
-        std::array<vk::ImageView, 2> attachments = {swapChainImageViews[i], depthImage.imageView};
-        vk::FramebufferCreateInfo framebufferCreateInfo{{}, renderPass, attachments, swapChainExtent.width, swapChainExtent.height, 1};
+        std::array<vk::ImageView, 2> attachments = {swapchain.imageViews[i], depthImage.imageView};
+        vk::FramebufferCreateInfo framebufferCreateInfo{{}, renderPass, attachments, swapchain.extent.width, swapchain.extent.height, 1};
 
         swapChainFramebuffers.emplace_back(device, framebufferCreateInfo);
     }
@@ -440,15 +210,15 @@ void HelloTriangleApplication::recordCommandBuffer(const vk::CommandBuffer& comm
         vk::ClearValue{vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 1.0f}}}, vk::ClearValue{vk::ClearDepthStencilValue{1.0f, 0}}
     };
 
-    vk::RenderPassBeginInfo renderPassInfo{renderPass, swapChainFramebuffers[imageIndex], vk::Rect2D{{0, 0}, swapChainExtent}, clearValues};
+    vk::RenderPassBeginInfo renderPassInfo{renderPass, swapChainFramebuffers[imageIndex], vk::Rect2D{{0, 0}, swapchain.extent}, clearValues};
 
     commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline);
 
-    vk::Viewport viewport{0, 0, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.f, 1.f};
+    vk::Viewport viewport{0, 0, static_cast<float>(swapchain.extent.width), static_cast<float>(swapchain.extent.height), 0.f, 1.f};
     commandBuffer.setViewportWithCount(viewport);
 
-    vk::Rect2D scissor{{0, 0}, swapChainExtent};
+    vk::Rect2D scissor{{0, 0}, swapchain.extent};
     commandBuffer.setScissorWithCount(scissor);
 
     commandBuffer.bindVertexBuffers(0, *vertexBuffer, {0});
@@ -481,7 +251,7 @@ void HelloTriangleApplication::drawFrame()
 
     check(device.waitForFences(*inFlightFence, true, UINT64_MAX), "Fence wait failed");
 
-    auto [result, imageIndex]{swapChain.acquireNextImage(UINT64_MAX, imageAvailableSemaphore, nullptr)};
+    auto [result, imageIndex]{swapchain.swapchain.acquireNextImage(UINT64_MAX, imageAvailableSemaphore, nullptr)};
     if (checkForBadSwapchain(result) == vk::Result::eErrorOutOfDateKHR)
     {
         return;
@@ -496,7 +266,7 @@ void HelloTriangleApplication::drawFrame()
     device.resetFences(*inFlightFence);
     graphicsQueue.submit(submitInfo, inFlightFence);
 
-    vk::PresentInfoKHR presentInfo{*renderFinishedSemaphore, *swapChain, imageIndex, nullptr};
+    vk::PresentInfoKHR presentInfo{*renderFinishedSemaphore, *swapchain.swapchain, imageIndex, nullptr};
     checkForBadSwapchain(presentQueue.presentKHR(presentInfo));
 }
 
@@ -511,7 +281,7 @@ void HelloTriangleApplication::updateUniformBuffer(uint32_t frameIndex)
     ubo.model = glm::rotate(glm::mat4{1.0f}, time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
     ubo.view = glm::lookAt(glm::vec3{2.0f}, glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f});
     ubo.projection = glm::perspective(glm::radians(45.f),
-                                      static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.
+                                      static_cast<float>(swapchain.extent.width) / static_cast<float>(swapchain.extent.
                                           height), 0.1f, 100.f);
     ubo.projection[1][1] *= -1;
     
@@ -537,12 +307,6 @@ void HelloTriangleApplication::createSyncObjects()
         renderFinishedSemaphores.emplace_back(device, semaphoreCreateInfo);
         inFlightFences.emplace_back(device, fenceCreateInfo);
     }
-}
-
-void HelloTriangleApplication::frameBufferResizedCallback(GLFWwindow* window, int inWidth, int inHeight)
-{
-    auto* app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
-    app->frameBufferResized = true;
 }
 
 void HelloTriangleApplication::createVertexBuffer()
@@ -690,7 +454,7 @@ void HelloTriangleApplication::createDepthResources()
 {
     vk::Format depthFormat{findDepthFormat()};
 
-    depthImage = Texture::createImage(*this, swapChainExtent.width, swapChainExtent.height, depthFormat, vk::ImageTiling::eOptimal,
+    depthImage = Texture::createImage(*this, swapchain.extent.width, swapchain.extent.height, depthFormat, vk::ImageTiling::eOptimal,
                                       vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eDepth, 1);
 }
 

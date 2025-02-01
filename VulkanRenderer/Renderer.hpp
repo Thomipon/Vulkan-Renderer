@@ -52,5 +52,6 @@ private:
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                       vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
-    bool framebufferResized = false; // TODO: I don't really like that this is here
+public:
+    bool framebufferResized = false; // TODO: I don't really like that this is here. Also, it should not be public
 };

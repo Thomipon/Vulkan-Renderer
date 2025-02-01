@@ -42,8 +42,6 @@ private:
     std::vector<vk::raii::Semaphore> renderFinishedSemaphores{};
     std::vector<vk::raii::Fence> inFlightFences{};
     void createSyncObjects();
-
-    bool frameBufferResized{false};
     
     vk::raii::Buffer vertexBuffer{VK_NULL_HANDLE};
     vk::raii::DeviceMemory vertexBufferMemory{VK_NULL_HANDLE};

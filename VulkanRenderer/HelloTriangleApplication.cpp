@@ -60,7 +60,7 @@ vk::Result HelloTriangleApplication::checkForBadSwapchain(vk::Result inResult)
 	if (inResult == vk::Result::eErrorOutOfDateKHR)
 	{
 		recreateSwapchain();
-		frameBufferResized = false;
+		framebufferResized = false;
 		return inResult;
 	}
 	if (inResult == vk::Result::eSuboptimalKHR)
@@ -158,10 +158,10 @@ void HelloTriangleApplication::recordCommandBuffer(const vk::CommandBuffer& comm
 
 void HelloTriangleApplication::drawFrame()
 {
-	if (frameBufferResized)
+	if (framebufferResized)
 	{
 		recreateSwapchain();
-		frameBufferResized = false;
+		framebufferResized = false;
 	}
 
 	updateUniformBuffer(currentFrame);

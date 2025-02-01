@@ -7,14 +7,14 @@
 #include "Image.hpp"
 #include "Window.hpp"
 
-Swapchain::Swapchain(const vk::raii::Device &device, const vk::PhysicalDevice &physicalDevice,
-                     const vk::SurfaceKHR &surface, const Window &window,
-                     const QueueFamilyIndices &queueIndices, const vk::raii::SwapchainKHR &oldSwapchain) :
-	Swapchain(device, getDefaultCreateInfo(physicalDevice, surface, window, queueIndices, oldSwapchain))
+Swapchain::Swapchain(const vk::raii::Device& device, const vk::PhysicalDevice& physicalDevice,
+                     const vk::SurfaceKHR& surface, const Window& window,
+                     const QueueFamilyIndices& queueIndices, const vk::raii::SwapchainKHR& oldSwapchain) :
+	Swapchain(device, getDefaultCreateInfo(physicalDevice, surface, window, queueIndices, oldSwapchain).vkCreateInfo)
 {
 }
 
-Swapchain::Swapchain(const vk::raii::Device &device, const vk::SwapchainCreateInfoKHR &createInfo) :
+Swapchain::Swapchain(const vk::raii::Device& device, const vk::SwapchainCreateInfoKHR& createInfo) :
 	swapchain(device, createInfo),
 	images(swapchain.getImages()),
 	imageFormat(createInfo.imageFormat),
@@ -23,9 +23,9 @@ Swapchain::Swapchain(const vk::raii::Device &device, const vk::SwapchainCreateIn
 {
 }
 
-vk::SurfaceFormatKHR Swapchain::chooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats)
+vk::SurfaceFormatKHR Swapchain::chooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
 {
-	for (const auto &availableFormat : availableFormats)
+	for (const auto& availableFormat : availableFormats)
 	{
 		if (availableFormat.format == vk::Format::eR8G8B8Srgb && availableFormat.colorSpace ==
 			vk::ColorSpaceKHR::eSrgbNonlinear)
@@ -37,9 +37,9 @@ vk::SurfaceFormatKHR Swapchain::chooseSurfaceFormat(const std::vector<vk::Surfac
 	return availableFormats[0];
 }
 
-vk::PresentModeKHR Swapchain::choosePresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes)
+vk::PresentModeKHR Swapchain::choosePresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes)
 {
-	for (const auto &availablePresentMode : availablePresentModes)
+	for (const auto& availablePresentMode : availablePresentModes)
 	{
 		if (availablePresentMode == vk::PresentModeKHR::eMailbox)
 		{
@@ -50,7 +50,7 @@ vk::PresentModeKHR Swapchain::choosePresentMode(const std::vector<vk::PresentMod
 	return vk::PresentModeKHR::eFifo;
 }
 
-vk::Extent2D Swapchain::chooseExtent(const vk::SurfaceCapabilitiesKHR &capabilities, const Window &window)
+vk::Extent2D Swapchain::chooseExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const Window& window)
 {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 	{
@@ -69,10 +69,10 @@ vk::Extent2D Swapchain::chooseExtent(const vk::SurfaceCapabilitiesKHR &capabilit
 	}
 }
 
-vk::SwapchainCreateInfoKHR Swapchain::getDefaultCreateInfo(const vk::PhysicalDevice &physicalDevice,
-                                                           const vk::SurfaceKHR &surface, const Window &window,
-                                                           const QueueFamilyIndices &queueIndices,
-                                                           const vk::SwapchainKHR &oldSwapchain)
+Swapchain::CreateInfo Swapchain::getDefaultCreateInfo(const vk::PhysicalDevice& physicalDevice,
+                                           const vk::SurfaceKHR& surface, const Window& window,
+                                           const QueueFamilyIndices& queueIndices,
+                                           const vk::SwapchainKHR& oldSwapchain)
 {
 	SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
 
@@ -104,5 +104,5 @@ vk::SwapchainCreateInfoKHR Swapchain::getDefaultCreateInfo(const vk::PhysicalDev
 		true, oldSwapchain
 	};
 
-	return swapchainCreateInfo;
+	return {swapchainCreateInfo, queueFamilyList};
 }

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <ranges>
 #include <vector>
 
 #include "VulkanBackend.hpp"
@@ -23,8 +24,26 @@ inline QueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& device, co
 
     std::vector<vk::QueueFamilyProperties> queueFamilies(device.getQueueFamilyProperties());
 
-    uint32_t i = 0;
-    for (const auto& queueFamily : queueFamilies)
+    // First try to find a queue with graphics and present capabilities
+    auto idealFamilies{queueFamilies | std::ranges::views::enumerate | std::ranges::views::filter([&](const auto& indexedQueueFamily)
+    {
+        const auto& [index, queueFamily] = indexedQueueFamily;
+        const bool hasGraphics{queueFamily.queueFlags & vk::QueueFlagBits::eGraphics};
+        const bool hasPresent{device.getSurfaceSupportKHR(index, surface)};
+        return hasGraphics && hasPresent;
+    })};
+
+    if (!std::ranges::empty(idealFamilies))
+    {
+        uint32_t index{std::get<0>(*idealFamilies.begin())};
+        indices.graphicsFamily = index;
+        indices.presentFamily = index;
+
+        return indices;
+    }
+
+    // Fall back to separate queues
+    for (const auto& [i, queueFamily] : queueFamilies | std::ranges::views::enumerate)
     {
         if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
         {
@@ -34,8 +53,6 @@ inline QueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& device, co
         {
             indices.presentFamily = i;
         }
-
-        ++i;
     }
 
     return indices;

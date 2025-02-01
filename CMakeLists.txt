@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(VulkanRenderer)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 list(APPEND CMAKE_PREFIX_PATH "C:/Program Files (x86)/GLFW")
 #set(glfw3_DIR "External/glfw-3.4/build/src")

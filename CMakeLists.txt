@@ -11,6 +11,8 @@ find_package(Vulkan REQUIRED)
 #find_package(glm REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/External/glfw/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/stb)
+include_directories(${CMAKE_SOURCE_DIR}/External/tinyobjloader)
 
 add_subdirectory(External)
 add_subdirectory(VulkanRenderer)

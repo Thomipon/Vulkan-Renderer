@@ -9,13 +9,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "check.hpp"
-#include "CommandQueues.hpp"
 #include "IOHelper.hpp"
 #include "Shader.hpp"
 #include "Swapchain.hpp"
 #include "Uniforms.hpp"
 #include "Vertex.hpp"
-#include "Image.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -28,14 +26,10 @@ void HelloTriangleApplication::run()
 
 void HelloTriangleApplication::initVulkan()
 {
-    createRenderPass(TODO, TODO);
     createDescriptorSetLayout();
     createGraphicsPipeline();
 
-    createCommandPool();
-
     createDepthResources();
-    createFramebuffers();
 
     loadModel();
 
@@ -438,9 +432,10 @@ void HelloTriangleApplication::loadModel()
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
+    std::string warn;
     std::string error;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &error, modelPath.c_str()))
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, modelPath.c_str()))
     {
         throw std::runtime_error(error);
     }

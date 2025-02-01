@@ -5,6 +5,6 @@ Download it here. Note that the VULKAN_SDK path variable must be configured corr
 Also, this project expects glm headers to be found with Vulkan. Make sure the corresponding box is checked when installing Vulkan SDK.
 
 GLFW is referenced as a git submodule and should be linked automatically.
-
+STB image and tinyobjloader are included directly.
 # Build
 This project uses cmake. Simply run your favorite cmake command and compile.

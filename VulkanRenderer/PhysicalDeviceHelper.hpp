@@ -22,7 +22,7 @@ inline bool isDeviceSuitableForSurface(const vk::PhysicalDevice& physDevice, con
     return queueFamilyIndices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
 }
 
-inline std::optional<vk::Format> findSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) const
+inline std::optional<vk::Format> findSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
 {
     for (const auto& format : candidates)
     {
@@ -39,4 +39,17 @@ inline std::optional<vk::Format> findSupportedFormat(const vk::PhysicalDevice& p
     }
 
     return {};
+}
+
+inline uint32_t findMemoryType(const vk::PhysicalDevice& physicalDevice, uint32_t typeBits, vk::MemoryPropertyFlags properties) {
+	vk::PhysicalDeviceMemoryProperties physicalMemoryProperties{physicalDevice.getMemoryProperties()};
+
+	for (uint32_t i = 0; i < physicalMemoryProperties.memoryTypeCount; ++i) {
+		if ((typeBits & (1 << i)) && (physicalMemoryProperties.memoryTypes[i].propertyFlags & properties) ==
+			properties) {
+			return i;
+			}
+	}
+
+	throw std::runtime_error("Failed to find suitable memory type!");
 }

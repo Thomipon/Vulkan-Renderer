@@ -6,7 +6,7 @@
 #include "VulkanBackend.hpp"
 
 #include "Renderer.hpp"
-#include "Texture.hpp"
+#include "TextureImage.hpp"
 #include "Vertex.hpp"
 
 class HelloTriangleApplication : public Renderer
@@ -72,14 +72,11 @@ private:
     std::vector<vk::raii::DescriptorSet> descriptorSets{};
     void createDescriptorSets();
 
-    Texture texture;
+    std::optional<TextureImage> texture;
     void createTextureImage();
 
     vk::raii::Sampler textureSampler{VK_NULL_HANDLE};
     void createTextureSampler();
-    
-    Texture depthImage;
-    void createDepthResources();
 
     std::vector<Vertex> meshVertices{};
     std::vector<uint32_t> meshIndices{};

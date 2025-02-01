@@ -4,7 +4,7 @@ add_executable(${PROJECT_NAME} main.cpp
         DeviceExtensions.hpp
         HelloTriangleApplication.cpp
         HelloTriangleApplication.hpp
-        Image.hpp
+        stb.hpp
         IOHelper.hpp
         PhysicalDeviceHelper.hpp
         Renderer.cpp
@@ -13,8 +13,8 @@ add_executable(${PROJECT_NAME} main.cpp
         ShaderCompiler.hpp
         Swapchain.cpp
         Swapchain.hpp
-        Texture.cpp
-        Texture.hpp
+        Image.cpp
+        stb.hpp
         Uniforms.hpp
         ValidationLayers.hpp
         Vertex.hpp
@@ -23,4 +23,6 @@ add_executable(${PROJECT_NAME} main.cpp
         Window.hpp
         check.hpp
         DepthImage.cpp
-        DepthImage.h)
+        DepthImage.hpp
+        TextureImage.cpp
+        TextureImage.hpp)

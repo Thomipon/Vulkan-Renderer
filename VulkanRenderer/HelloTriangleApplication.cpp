@@ -29,8 +29,6 @@ void HelloTriangleApplication::initVulkan()
     createDescriptorSetLayout();
     createGraphicsPipeline();
 
-    createDepthResources();
-
     loadModel();
 
     createTextureImage();
@@ -375,7 +373,7 @@ void HelloTriangleApplication::createDescriptorSets()
 
 void HelloTriangleApplication::createTextureImage()
 {
-    texture = Texture::createTextureImage(texturePath, *this);
+    texture = TextureImage{texturePath, *this};
 }
 
 void HelloTriangleApplication::createTextureSampler()
@@ -389,14 +387,6 @@ void HelloTriangleApplication::createTextureSampler()
     };
 
     textureSampler = vk::raii::Sampler{device, samplerInfo};
-}
-
-void HelloTriangleApplication::createDepthResources()
-{
-    vk::Format depthFormat{findDepthFormat()};
-
-    depthImage = Texture::createImage(*this, swapchain.extent.width, swapchain.extent.height, depthFormat, vk::ImageTiling::eOptimal,
-                                      vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eDepth, 1);
 }
 
 void HelloTriangleApplication::loadModel()

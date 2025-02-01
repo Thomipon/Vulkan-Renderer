@@ -2,6 +2,7 @@
 #include <utility>
 
 #include "CommandQueues.hpp"
+#include "DepthImage.hpp"
 #include "Swapchain.hpp"
 #include "VulkanBackend.hpp"
 #include "Window.hpp"
@@ -24,14 +25,13 @@ public:
     vk::raii::Queue graphicsQueue;
     vk::raii::Queue presentQueue; // TODO: The queues should probably be somewhere else
     Swapchain swapchain;
+	DepthImage depthImage;
     vk::raii::RenderPass renderPass;
     vk::raii::CommandPool commandPool;
     std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
 
     void recreateSwapchain();
     static void onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight);
-    
-    uint32_t findMemoryType(uint32_t typeBits, vk::MemoryPropertyFlags properties) const;
 
     std::pair<vk::raii::Buffer, vk::raii::DeviceMemory> createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) const;
 
@@ -45,7 +45,7 @@ private:
     static vk::raii::PhysicalDevice pickPhysicalDevice(const vk::raii::Instance& instance, const vk::SurfaceKHR& surface);
     static vk::raii::Device createLogicalDevice(const vk::raii::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueIndices);
     static vk::raii::CommandPool createCommandPool(const vk::raii::Device& device, const QueueFamilyIndices& queueIndices);
-    static vk::raii::RenderPass createRenderPass(const vk::raii::Device& device, const Swapchain& swapchain);
+    static vk::raii::RenderPass createRenderPass(const vk::raii::Device& device, const vk::PhysicalDevice& physicalDevice, const Swapchain& swapchain);
     static std::vector<vk::raii::Framebuffer> createFramebuffers(const vk::raii::Device& device, const vk::raii::RenderPass& renderPass, const vk::raii::ImageView& depthImageView, const std::vector<vk::raii::ImageView>& imageViews, const vk::Extent2D& swapchainExtent);
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

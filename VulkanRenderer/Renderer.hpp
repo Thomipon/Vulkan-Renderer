@@ -26,6 +26,7 @@ public:
     Swapchain swapchain;
     vk::raii::RenderPass renderPass;
     vk::raii::CommandPool commandPool;
+    std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
 
     void recreateSwapchain();
     static void onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight);
@@ -45,6 +46,7 @@ private:
     static vk::raii::Device createLogicalDevice(const vk::raii::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueIndices);
     static vk::raii::CommandPool createCommandPool(const vk::raii::Device& device, const QueueFamilyIndices& queueIndices);
     static vk::raii::RenderPass createRenderPass(const vk::raii::Device& device, const Swapchain& swapchain);
+    static std::vector<vk::raii::Framebuffer> createFramebuffers(const vk::raii::Device& device, const vk::raii::RenderPass& renderPass, const vk::raii::ImageView& depthImageView, const std::vector<vk::raii::ImageView>& imageViews, const vk::Extent2D& swapchainExtent);
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                       vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);

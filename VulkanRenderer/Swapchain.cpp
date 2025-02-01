@@ -101,11 +101,5 @@ vk::SwapchainCreateInfoKHR Swapchain::getDefaultCreateInfo(const vk::PhysicalDev
 std::vector<vk::raii::Framebuffer> Swapchain::createFramebuffers(const std::vector<vk::raii::ImageView>& imageViews)
 {
 
-    auto framebuffers{imageViews | std::ranges::views::transform([](const auto& imageView) -> vk::raii::Framebuffer
-    {
-        std::array<vk::ImageView, 2> attachments = {imageView, depthImage.imageView};
-        vk::FramebufferCreateInfo framebufferCreateInfo{{}, renderPass, attachments, swapchain.extent.width, swapchain.extent.height, 1};
-        return vk::raii::Framebuffer{device, framebufferCreateInfo};
-    })};
-    return {framebuffers.begin(), framebuffers.end()};
+
 }

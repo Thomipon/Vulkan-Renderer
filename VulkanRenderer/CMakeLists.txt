@@ -21,4 +21,6 @@ add_executable(${PROJECT_NAME} main.cpp
         VulkanBackend.hpp
         Window.cpp
         Window.hpp
-        check.hpp)
+        check.hpp
+        DepthImage.cpp
+        DepthImage.h)

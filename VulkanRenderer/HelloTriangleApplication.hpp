@@ -80,9 +80,6 @@ private:
     
     Texture depthImage;
     void createDepthResources();
-    vk::Format findDepthFormat();
-
-    [[nodiscard]] vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) const;
 
     std::vector<Vertex> meshVertices{};
     std::vector<uint32_t> meshIndices{};

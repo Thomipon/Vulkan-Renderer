@@ -18,7 +18,6 @@ public:
     vk::Format imageFormat;
     vk::Extent2D extent;
     std::vector<vk::raii::ImageView> imageViews;
-    std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
 
 private:
     static vk::SurfaceFormatKHR chooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
@@ -26,5 +25,4 @@ private:
     static vk::Extent2D chooseExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const Window& window);
     static vk::SwapchainCreateInfoKHR getDefaultCreateInfo(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const Window& window,
                                                            const QueueFamilyIndices& queueIndices, const vk::SwapchainKHR& oldSwapchain = VK_NULL_HANDLE);
-    static std::vector<vk::raii::Framebuffer> createFramebuffers(const std::vector<vk::raii::ImageView>& imageViews);
 };

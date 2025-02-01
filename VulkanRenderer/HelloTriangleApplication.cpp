@@ -399,31 +399,6 @@ void HelloTriangleApplication::createDepthResources()
                                       vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eDepth, 1);
 }
 
-vk::Format HelloTriangleApplication::findDepthFormat()
-{
-    return findSupportedFormat({vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint, vk::Format::eD32Sfloat}, vk::ImageTiling::eOptimal,
-                               vk::FormatFeatureFlagBits::eDepthStencilAttachment);
-}
-
-vk::Format HelloTriangleApplication::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) const
-{
-    for (const auto& format : candidates)
-    {
-        vk::FormatProperties formatProperties{physicalDevice.getFormatProperties(format)};
-
-        if (tiling == vk::ImageTiling::eLinear && (formatProperties.linearTilingFeatures & features) == features)
-        {
-            return format;
-        }
-        if (tiling == vk::ImageTiling::eOptimal && (formatProperties.optimalTilingFeatures & features) == features)
-        {
-            return format;
-        }
-    }
-
-    throw std::runtime_error("Failed to find supported format!");
-}
-
 void HelloTriangleApplication::loadModel()
 {
     meshVertices.clear();

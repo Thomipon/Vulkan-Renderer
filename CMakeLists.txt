@@ -10,7 +10,7 @@ find_package(Vulkan REQUIRED)
 #find_package(glfw3 3.4 REQUIRED)
 #find_package(glm REQUIRED)
 
-include_directories(${CMAKE_SOURCE_DIR}/External/glfw-3.4/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/glfw/include)
 
 add_subdirectory(External)
 add_subdirectory(VulkanRenderer)

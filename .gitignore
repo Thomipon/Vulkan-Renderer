@@ -14,3 +14,6 @@
 .vs/*
 /VulkanRenderer/x64/*
 /.idea/*
+**/build/*
+**/cmake-build-debug/*
+**/cmake-build-release/*

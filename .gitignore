@@ -13,3 +13,4 @@
 *.xml
 .vs/*
 /VulkanRenderer/x64/*
+/.idea/*

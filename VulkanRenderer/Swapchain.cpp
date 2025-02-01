@@ -18,7 +18,8 @@ Swapchain::Swapchain(const vk::raii::Device& device, const vk::SwapchainCreateIn
       images(swapchain.getImages()),
       imageFormat(createInfo.imageFormat),
       extent(createInfo.imageExtent),
-      imageViews(Texture::createImageViews(device, images, imageFormat, vk::ImageAspectFlagBits::eColor))
+      imageViews(Texture::createImageViews(device, images, imageFormat, vk::ImageAspectFlagBits::eColor)),
+      swapChainFramebuffers(createFramebuffers(imageViews))
 {
 }
 
@@ -95,4 +96,16 @@ vk::SwapchainCreateInfoKHR Swapchain::getDefaultCreateInfo(const vk::PhysicalDev
     }
 
     return swapchainCreateInfo;
+}
+
+std::vector<vk::raii::Framebuffer> Swapchain::createFramebuffers(const std::vector<vk::raii::ImageView>& imageViews)
+{
+
+    auto framebuffers{imageViews | std::ranges::views::transform([](const auto& imageView) -> vk::raii::Framebuffer
+    {
+        std::array<vk::ImageView, 2> attachments = {imageView, depthImage.imageView};
+        vk::FramebufferCreateInfo framebufferCreateInfo{{}, renderPass, attachments, swapchain.extent.width, swapchain.extent.height, 1};
+        return vk::raii::Framebuffer{device, framebufferCreateInfo};
+    })};
+    return {framebuffers.begin(), framebuffers.end()};
 }

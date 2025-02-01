@@ -18,12 +18,14 @@ Renderer::Renderer()
       device(createLogicalDevice(physicalDevice, queueIndices)),
       graphicsQueue(device.getQueue(queueIndices.graphicsFamily.value(), 0)),
       presentQueue(device.getQueue(queueIndices.presentFamily.value(), 0)),
-      swapchain(device, physicalDevice, surface, window, queueIndices)
+      swapchain(device, physicalDevice, surface, window, queueIndices),
+      renderPass(createRenderPass(device, swapchain)),
+      commandPool(createCommandPool(device, queueIndices))
 {
 }
 
 void Renderer::recreateSwapchain()
-{    
+{
     auto framebufferSize{window.getFramebufferSize()};
     while (framebufferSize.x == 0 && framebufferSize.y == 0) // TODO: This is ugly
     {
@@ -33,7 +35,7 @@ void Renderer::recreateSwapchain()
     }
 
     device.waitIdle();
-    
+
     swapchain = Swapchain{device, physicalDevice, surface, window, queueIndices, swapchain.swapchain};
 }
 
@@ -184,6 +186,44 @@ vk::raii::Device Renderer::createLogicalDevice(const vk::raii::PhysicalDevice& p
     vk::DeviceCreateInfo createInfo{{}, queueCreateInfos, usedValidationLayers, deviceExtensions, &deviceFeatures};
 
     return vk::raii::Device{physicalDevice, createInfo};
+}
+
+vk::raii::CommandPool Renderer::createCommandPool(const vk::raii::Device& device, const QueueFamilyIndices& queueIndices)
+{
+    vk::CommandPoolCreateInfo commandPoolCreateInfo{vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queueIndices.graphicsFamily.value()};
+
+    return vk::raii::CommandPool{device, commandPoolCreateInfo};
+}
+
+vk::raii::RenderPass Renderer::createRenderPass(const vk::raii::Device& device, const Swapchain& swapchain)
+{
+    vk::AttachmentDescription colorAttachment{
+        {}, swapchain.imageFormat, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eDontCare,
+        vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
+    };
+    vk::AttachmentReference colorAttachmentReference{0, vk::ImageLayout::eColorAttachmentOptimal};
+
+    vk::AttachmentDescription depthAttachment{
+        {}, findDepthFormat(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, vk::AttachmentLoadOp::eDontCare,
+        vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal
+    };
+    vk::AttachmentReference depthAttachmentReference{1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
+
+    vk::SubpassDescription subpass{
+        {}, vk::PipelineBindPoint::eGraphics, 0, nullptr, 1, &colorAttachmentReference, nullptr,
+        &depthAttachmentReference, 0, nullptr
+    };
+
+    vk::SubpassDependency dependency{
+        vk::SubpassExternal, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests, vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+        vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+    };
+
+    std::array<vk::AttachmentDescription, 2> attachments{colorAttachment, depthAttachment};
+    vk::RenderPassCreateInfo renderPassCreateInfo{{}, attachments, subpass, dependency};
+
+    return vk::raii::RenderPass{device, renderPassCreateInfo};
 }
 
 vk::Bool32 Renderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType,

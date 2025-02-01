@@ -24,7 +24,8 @@ public:
     vk::raii::Queue graphicsQueue;
     vk::raii::Queue presentQueue; // TODO: The queues should probably be somewhere else
     Swapchain swapchain;
-    vk::raii::CommandPool commandPool{VK_NULL_HANDLE};
+    vk::raii::RenderPass renderPass;
+    vk::raii::CommandPool commandPool;
 
     void recreateSwapchain();
     static void onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight);
@@ -42,6 +43,8 @@ private:
     static vk::raii::DebugUtilsMessengerEXT createDebugMessenger(const vk::raii::Instance& instance);
     static vk::raii::PhysicalDevice pickPhysicalDevice(const vk::raii::Instance& instance, const vk::SurfaceKHR& surface);
     static vk::raii::Device createLogicalDevice(const vk::raii::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueIndices);
+    static vk::raii::CommandPool createCommandPool(const vk::raii::Device& device, const QueueFamilyIndices& queueIndices);
+    static vk::raii::RenderPass createRenderPass(const vk::raii::Device& device, const Swapchain& swapchain);
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                       vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);

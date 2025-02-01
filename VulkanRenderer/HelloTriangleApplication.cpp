@@ -28,7 +28,7 @@ void HelloTriangleApplication::run()
 
 void HelloTriangleApplication::initVulkan()
 {
-    createRenderPass();
+    createRenderPass(TODO, TODO);
     createDescriptorSetLayout();
     createGraphicsPipeline();
 
@@ -86,37 +86,6 @@ vk::Result HelloTriangleApplication::checkForBadSwapchain(vk::Result inResult)
     return check(inResult);
 }
 
-void HelloTriangleApplication::createRenderPass()
-{
-    vk::AttachmentDescription colorAttachment{
-        {}, swapchain.imageFormat, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eDontCare,
-        vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR
-    };
-    vk::AttachmentReference colorAttachmentReference{0, vk::ImageLayout::eColorAttachmentOptimal};
-
-    vk::AttachmentDescription depthAttachment{
-        {}, findDepthFormat(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare, vk::AttachmentLoadOp::eDontCare,
-        vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal
-    };
-    vk::AttachmentReference depthAttachmentReference{1, vk::ImageLayout::eDepthStencilAttachmentOptimal};
-
-    vk::SubpassDescription subpass{
-        {}, vk::PipelineBindPoint::eGraphics, 0, nullptr, 1, &colorAttachmentReference, nullptr,
-        &depthAttachmentReference, 0, nullptr
-    };
-
-    vk::SubpassDependency dependency{
-        vk::SubpassExternal, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
-        vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests, vk::AccessFlagBits::eDepthStencilAttachmentWrite,
-        vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
-    };
-
-    std::array<vk::AttachmentDescription, 2> attachments{colorAttachment, depthAttachment};
-    vk::RenderPassCreateInfo renderPassCreateInfo{{}, attachments, subpass, dependency};
-
-    renderPass = vk::raii::RenderPass{device, renderPassCreateInfo};
-}
-
 void HelloTriangleApplication::createGraphicsPipeline()
 {
     auto vertShaderCode{readFile("Shaders/default.spv")};
@@ -170,28 +139,6 @@ void HelloTriangleApplication::createGraphicsPipeline()
     };
 
     graphicsPipeline = vk::raii::Pipeline{device, nullptr, pipelineCreateInfo};
-}
-
-void HelloTriangleApplication::createFramebuffers()
-{
-    swapChainFramebuffers.clear();
-    swapChainFramebuffers.reserve(swapchain.imageViews.size());
-    for (size_t i = 0; i < swapchain.imageViews.size(); ++i)
-    {
-        std::array<vk::ImageView, 2> attachments = {swapchain.imageViews[i], depthImage.imageView};
-        vk::FramebufferCreateInfo framebufferCreateInfo{{}, renderPass, attachments, swapchain.extent.width, swapchain.extent.height, 1};
-
-        swapChainFramebuffers.emplace_back(device, framebufferCreateInfo);
-    }
-}
-
-void HelloTriangleApplication::createCommandPool()
-{
-    QueueFamilyIndices queueFamilyIndices{findQueueFamilies(physicalDevice, surface)};
-
-    vk::CommandPoolCreateInfo commandPoolCreateInfo{vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queueFamilyIndices.graphicsFamily.value()};
-
-    commandPool = vk::raii::CommandPool{device, commandPoolCreateInfo};
 }
 
 void HelloTriangleApplication::createCommandBuffers()

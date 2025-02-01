@@ -26,19 +26,11 @@ private:
 
     void recreateSwapchain();
     vk::Result checkForBadSwapchain(vk::Result inResult);
-    
-    vk::raii::RenderPass renderPass{VK_NULL_HANDLE};
-    void createRenderPass();
 
     vk::raii::DescriptorSetLayout descriptorSetLayout{VK_NULL_HANDLE};
     vk::raii::PipelineLayout pipelineLayout{VK_NULL_HANDLE};
     vk::raii::Pipeline graphicsPipeline{VK_NULL_HANDLE};
     void createGraphicsPipeline();
-    
-    std::vector<vk::raii::Framebuffer> swapChainFramebuffers{};
-    void createFramebuffers();
-
-    void createCommandPool();
 
     std::vector<vk::raii::CommandBuffer> commandBuffers{};
     void createCommandBuffers();

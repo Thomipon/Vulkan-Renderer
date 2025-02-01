@@ -28,14 +28,15 @@ public:
 	DepthImage depthImage;
     vk::raii::RenderPass renderPass;
     vk::raii::CommandPool commandPool;
+    std::vector<vk::raii::CommandBuffer> commandBuffers;
     std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
 
     void recreateSwapchain();
     static void onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight);
 
-    std::pair<vk::raii::Buffer, vk::raii::DeviceMemory> createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) const;
+    [[nodiscard]] std::pair<vk::raii::Buffer, vk::raii::DeviceMemory> createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) const;
 
-    vk::raii::CommandBuffer beginSingleTimeCommands() const;
+    [[nodiscard]] vk::raii::CommandBuffer beginSingleTimeCommands() const;
     void endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer) const;
 
 private:

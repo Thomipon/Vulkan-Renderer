@@ -24,16 +24,12 @@ private:
     void initVulkan();
     void mainLoop();
 
-    void recreateSwapchain();
     vk::Result checkForBadSwapchain(vk::Result inResult);
 
     vk::raii::DescriptorSetLayout descriptorSetLayout{VK_NULL_HANDLE};
     vk::raii::PipelineLayout pipelineLayout{VK_NULL_HANDLE};
     vk::raii::Pipeline graphicsPipeline{VK_NULL_HANDLE};
     void createGraphicsPipeline();
-
-    std::vector<vk::raii::CommandBuffer> commandBuffers{};
-    void createCommandBuffers();
 
     void recordCommandBuffer(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
 

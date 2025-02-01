@@ -9,6 +9,8 @@
 #include "PhysicalDeviceHelper.hpp"
 #include "ValidationLayers.hpp"
 
+constexpr uint8_t MAX_FRAMES_IN_FLIGHT = 2;
+
 Renderer::Renderer()
 	: context(),
 	  instance(createInstance(context)),
@@ -24,6 +26,7 @@ Renderer::Renderer()
 	  depthImage(device, physicalDevice, swapchain.extent),
 	  renderPass(createRenderPass(device, physicalDevice, swapchain)),
 	  commandPool(createCommandPool(device, queueIndices)),
+	  commandBuffers(device.allocateCommandBuffers({commandPool, vk::CommandBufferLevel::ePrimary, MAX_FRAMES_IN_FLIGHT})),
 	  swapChainFramebuffers(createFramebuffers(device, renderPass, depthImage.imageView, swapchain.imageViews, swapchain.extent))
 {
 }
@@ -41,6 +44,9 @@ void Renderer::recreateSwapchain()
 	device.waitIdle();
 
 	swapchain = Swapchain{device, physicalDevice, surface, window, queueIndices, swapchain.swapchain};
+	depthImage = DepthImage{device, physicalDevice, swapchain.extent};
+	swapChainFramebuffers = createFramebuffers(device, renderPass, depthImage.imageView, swapchain.imageViews, swapchain.extent);
+	// TODO: There is a slight performance overhead here by not reusing the vector
 }
 
 void Renderer::onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight)

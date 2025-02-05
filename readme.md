@@ -1,3 +1,8 @@
+# Description
+
+A toy renderer written with Vulkan.<br>
+The renderer is only tested to work with Windows!
+
 # Dependencies
 
 This project requires Vulkan SDK version 1.4 or higher.<br>
@@ -6,5 +11,8 @@ Also, this project expects glm headers to be found with Vulkan. Make sure the co
 
 GLFW is referenced as a git submodule and should be linked automatically.
 STB image and tinyobjloader are included directly.
+
 # Build
-This project uses cmake. Simply run your favorite cmake command and compile.
+
+This project uses cmake. Simply run your favorite cmake command and compile.<br>
+Note that the project requires C++ 23!

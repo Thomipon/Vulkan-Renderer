@@ -5,19 +5,27 @@
 #include "Buffer.hpp"
 #include "Vertex.hpp"
 
+using Index = uint32_t;
+
+struct RawMesh
+{
+public:
+	explicit RawMesh(const std::filesystem::path& sourcePath);
+
+	std::vector<Vertex> vertices{};
+	std::vector<Index> indices{};
+
+private:
+	static RawMesh loadFromFile(const std::filesystem::path& sourcePath);
+	RawMesh(std::vector<Vertex>&& vertices, std::vector<Index>&& indices);
+};
 
 class Mesh {
 
 public:
-	Mesh(const std::filesystem::path& sourcePath);
+	Mesh(const Renderer& app, const std::filesystem::path& sourcePath);
 
-	std::vector<Vertex> vertices{};
-	std::vector<uint32_t> indices{};
-
+	RawMesh rawMesh;
 	Buffer vertexBuffer;
-
 	Buffer indexBuffer;
-
-private:
-	void loadFromFile(const std::filesystem::path& sourcePath);
 };

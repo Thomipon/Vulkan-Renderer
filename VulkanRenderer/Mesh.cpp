@@ -1,18 +1,22 @@
-﻿
-#include "Mesh.hpp"
+﻿#include "Mesh.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-Mesh::Mesh(const std::filesystem::path& sourcePath)
+RawMesh::RawMesh(const std::filesystem::path& sourcePath)
+	: RawMesh(loadFromFile(sourcePath))
 {
-	loadFromFile(sourcePath);
 }
 
-void Mesh::loadFromFile(const std::filesystem::path& sourcePath)
+RawMesh::RawMesh(std::vector<Vertex>&& vertices, std::vector<Index>&& indices)
+	: vertices(std::move(vertices)), indices(std::move(indices))
 {
-	vertices.clear();
-	indices.clear();
+}
+
+RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
+{
+	std::vector<Vertex> vertices{};
+	std::vector<Index> indices{};
 
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -57,4 +61,14 @@ void Mesh::loadFromFile(const std::filesystem::path& sourcePath)
 		}
 	}
 	vertices.shrink_to_fit();
+
+	return {std::move(vertices), std::move(indices)};
+}
+
+
+Mesh::Mesh(const Renderer& app, const std::filesystem::path& sourcePath)
+	: rawMesh(sourcePath),
+	  vertexBuffer(app, rawMesh.vertices, vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal),
+	  indexBuffer(app, rawMesh.indices, vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal)
+{
 }

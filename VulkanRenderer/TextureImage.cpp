@@ -1,16 +1,17 @@
 ﻿#include "TextureImage.hpp"
 
+#include "Buffer.hpp"
 #include "Renderer.hpp"
 #include "stb.hpp"
 
-TextureImage::TextureImage(const std::string &path, const Renderer &app)
+TextureImage::TextureImage(const std::filesystem::path& path, const Renderer& app)
 	: TextureImage(createTextureImage(path, app))
 {
 }
 
-void TextureImage::generateMipMaps(const vk::Format &imageFormat, int32_t width, int32_t height, uint32_t mipLevels, const Renderer &app) const
+void TextureImage::generateMipMaps(const vk::Format& imageFormat, int32_t width, int32_t height, uint32_t mipLevels, const Renderer& app) const
 {
-		if (!(app.physicalDevice.getFormatProperties(imageFormat).optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
+	if (!(app.physicalDevice.getFormatProperties(imageFormat).optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
 	{
 		throw std::runtime_error("Failed to generate mipmaps for image!\n Image format does not support linear blitting!");
 	}
@@ -70,10 +71,10 @@ void TextureImage::generateMipMaps(const vk::Format &imageFormat, int32_t width,
 	app.endSingleTimeCommands(std::move(commandBuffer));
 }
 
-TextureImage TextureImage::createTextureImage(const std::string &path, const Renderer &app)
+TextureImage TextureImage::createTextureImage(const std::filesystem::path& path, const Renderer& app)
 {
 	int texWidth, texHeight, texChannels;
-	stbi_uc *pixels{stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha)};
+	stbi_uc* pixels{stbi_load(path.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha)};
 
 	if (!pixels)
 	{
@@ -83,26 +84,24 @@ TextureImage TextureImage::createTextureImage(const std::string &path, const Ren
 	vk::DeviceSize imageSize{static_cast<uint64_t>(texWidth) * texHeight * 4};
 	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
-	auto [stagingBuffer, stagingBufferMemory]{
-		app.createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
-	};
+	Buffer stagingBuffer{app, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
 
-	void *data{stagingBufferMemory.mapMemory(0, imageSize, {})};
+	void* data{stagingBuffer.memory.mapMemory(0, imageSize, {})};
 	std::memcpy(data, pixels, imageSize);
-	stagingBufferMemory.unmapMemory();
+	stagingBuffer.memory.unmapMemory();
 	stbi_image_free(pixels);
 
 	Image image{
 		app.device, app.physicalDevice, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), vk::Format::eR8G8B8A8Srgb,
-					vk::ImageTiling::eOptimal,
-					vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc,
-					// TODO: Can't we create the mips in the staging one and safe this eTransferSrc?
-					vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eColor, mipLevels
+		vk::ImageTiling::eOptimal,
+		vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc,
+		// TODO: Can't we create the mips in the staging one and safe this eTransferSrc?
+		vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eColor, mipLevels
 	};
 
 
 	image.transitionImageLayout(app, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
-	copyBufferToImage(app, stagingBuffer, image.image, texWidth, texHeight);
+	copyBufferToImage(app, stagingBuffer.vkBuffer, image.image, texWidth, texHeight);
 
 	TextureImage texture{std::move(image)};
 
@@ -112,7 +111,7 @@ TextureImage TextureImage::createTextureImage(const std::string &path, const Ren
 	return texture;
 }
 
-TextureImage::TextureImage(Image &&image)
+TextureImage::TextureImage(Image&& image)
 	: Image(std::move(image))
 {
 }

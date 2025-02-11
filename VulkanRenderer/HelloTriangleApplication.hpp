@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <string>
 #include <vector>
 
+#include "Mesh.hpp"
 #include "VulkanBackend.hpp"
 
 #include "Renderer.hpp"
@@ -20,8 +20,8 @@ public:
     inline static uint32_t height{1080};
     inline static uint32_t maxFramesInFlight{2};
 
-    inline static std::string modelPath{"../../VulkanRenderer/Meshes/Mesh.obj"}; // TODO: Awful file management in many ways. These should be in some asset system
-    inline static std::string texturePath{"../../VulkanRenderer/Textures/Texture.png"};
+    inline static std::filesystem::path modelPath{"../../VulkanRenderer/Meshes/Mesh.obj"}; // TODO: Awful file management in many ways. These should be in some asset system
+    inline static std::filesystem::path texturePath{"../../VulkanRenderer/Textures/Texture.png"};
 private:
     void initVulkan();
     void mainLoop();
@@ -44,18 +44,10 @@ private:
     std::vector<vk::raii::Semaphore> renderFinishedSemaphores{};
     std::vector<vk::raii::Fence> inFlightFences{};
     void createSyncObjects();
-    
-
-    void createVertexBuffer();
-
-
-    void createIndexBuffer();
 
     std::vector<Buffer> uniformBuffers;
     std::vector<void*> uniformBuffersMapped;
     void createUniformBuffers();
-
-    void copyBuffer(vk::Buffer sourceBuffer, vk::Buffer destinationBuffer, vk::DeviceSize size);
     
     void createDescriptorSetLayout();
 
@@ -64,6 +56,9 @@ private:
 
     std::vector<vk::raii::DescriptorSet> descriptorSets{};
     void createDescriptorSets();
+
+    std::optional<Mesh> mesh;
+    void loadModel();
 
     std::optional<TextureImage> texture;
     void createTextureImage();

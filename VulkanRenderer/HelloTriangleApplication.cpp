@@ -11,6 +11,7 @@
 #include "Buffer.hpp"
 #include "check.hpp"
 #include "IOHelper.hpp"
+#include "Mesh.hpp"
 #include "Shader.hpp"
 #include "Swapchain.hpp"
 #include "Uniforms.hpp"
@@ -31,9 +32,6 @@ void HelloTriangleApplication::initVulkan()
 
 	createTextureImage();
 	createTextureSampler();
-
-	createVertexBuffer();
-	createIndexBuffer();
 
 	createUniformBuffers();
 	createDescriptorPool();
@@ -143,11 +141,11 @@ void HelloTriangleApplication::recordCommandBuffer(const vk::CommandBuffer& comm
 	vk::Rect2D scissor{{0, 0}, swapchain.extent};
 	commandBuffer.setScissorWithCount(scissor);
 
-	commandBuffer.bindVertexBuffers(0, *vertexBuffer, {0});
+	commandBuffer.bindVertexBuffers(0, *mesh->vertexBuffer.vkBuffer, {0});
 	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[currentFrame], nullptr);
-	commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint32);
+	commandBuffer.bindIndexBuffer(mesh->indexBuffer.vkBuffer, 0, vk::IndexType::eUint32);
 
-	commandBuffer.drawIndexed(meshIndices.size(), 1, 0, 0, 0);
+	commandBuffer.drawIndexed(mesh->rawMesh.indices.size(), 1, 0, 0, 0);
 
 	commandBuffer.endRenderPass();
 
@@ -231,36 +229,6 @@ void HelloTriangleApplication::createSyncObjects()
 	}
 }
 
-void HelloTriangleApplication::createVertexBuffer()
-{
-	const vk::DeviceSize bufferSize = sizeof(Vertex) * meshVertices.size();
-
-	Buffer stagingBuffer{bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible	};
-
-	void* data{stagingBuffer.memory.mapMemory(0, bufferSize, {})};
-	std::memcpy(data, meshVertices.data(), bufferSize);
-	stagingBuffer.memory.unmapMemory();
-
-	vertexBuffer = Buffer{bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal};
-
-	copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-}
-
-void HelloTriangleApplication::createIndexBuffer()
-{
-	const VkDeviceSize bufferSize = sizeof(uint32_t) * meshIndices.size();
-
-	Buffer stagingBuffer{device, physicalDevice, bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible};
-
-	void* data{stagingBuffer.memory.mapMemory(0, bufferSize, {})};
-	std::memcpy(data, meshIndices.data(), bufferSize);
-	stagingBuffer.memory.unmapMemory();
-
-	indexBuffer = Buffer{device, physicalDevice, bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal};
-
-	copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-}
-
 void HelloTriangleApplication::createUniformBuffers()
 {
 	vk::DeviceSize bufferSize{sizeof(UniformBufferObject)};
@@ -310,7 +278,7 @@ void HelloTriangleApplication::createDescriptorSets()
 
 	for (size_t i = 0; i < maxFramesInFlight; ++i)
 	{
-		vk::DescriptorBufferInfo descriptorBufferInfo{uniformBuffers[i], 0, sizeof(UniformBufferObject)};
+		vk::DescriptorBufferInfo descriptorBufferInfo{uniformBuffers[i].vkBuffer, 0, sizeof(UniformBufferObject)};
 		vk::DescriptorImageInfo descriptorImageInfo{textureSampler, texture.value().imageView, vk::ImageLayout::eShaderReadOnlyOptimal};
 
 		std::array<vk::WriteDescriptorSet, 2> descriptorWrites{
@@ -320,6 +288,11 @@ void HelloTriangleApplication::createDescriptorSets()
 
 		device.updateDescriptorSets(descriptorWrites, nullptr);
 	}
+}
+
+void HelloTriangleApplication::loadModel()
+{
+	mesh = Mesh{*this, modelPath};
 }
 
 void HelloTriangleApplication::createTextureImage()

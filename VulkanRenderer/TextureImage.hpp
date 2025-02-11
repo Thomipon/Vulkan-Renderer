@@ -8,10 +8,11 @@ class TextureImage : public Image
 public:
 	TextureImage(const std::filesystem::path& path, const Renderer& app);
 
+	vk::raii::Sampler sampler;
+
 private:
-	void generateMipMaps(const vk::Format& imageFormat, int32_t width, int32_t height, uint32_t mipLevels, const Renderer& app) const;
+	void generateMipMaps(const vk::Format& imageFormat, uint32_t width, uint32_t height, uint32_t mipLevels, const Renderer& app) const;
 
-	static TextureImage createTextureImage(const std::filesystem::path& path, const Renderer& app);
-
-	explicit TextureImage(Image&& image);
+	static Image createImageFromPath(const std::filesystem::path& path, const Renderer& app);
+	static vk::raii::Sampler createTextureSampler(const vk::raii::Device& device, const vk::raii::PhysicalDevice& physicalDevice);
 };

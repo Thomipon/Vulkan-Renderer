@@ -31,7 +31,6 @@ void HelloTriangleApplication::initVulkan()
 	loadModel();
 
 	createTextureImage();
-	createTextureSampler();
 
 	createUniformBuffers();
 	createDescriptorPool();
@@ -279,7 +278,7 @@ void HelloTriangleApplication::createDescriptorSets()
 	for (size_t i = 0; i < maxFramesInFlight; ++i)
 	{
 		vk::DescriptorBufferInfo descriptorBufferInfo{uniformBuffers[i].vkBuffer, 0, sizeof(UniformBufferObject)};
-		vk::DescriptorImageInfo descriptorImageInfo{textureSampler, texture.value().imageView, vk::ImageLayout::eShaderReadOnlyOptimal};
+		vk::DescriptorImageInfo descriptorImageInfo{texture->sampler, texture.value().imageView, vk::ImageLayout::eShaderReadOnlyOptimal};
 
 		std::array<vk::WriteDescriptorSet, 2> descriptorWrites{
 			vk::WriteDescriptorSet{descriptorSets[i], 0, 0, vk::DescriptorType::eUniformBuffer, nullptr, descriptorBufferInfo, nullptr},
@@ -298,17 +297,4 @@ void HelloTriangleApplication::loadModel()
 void HelloTriangleApplication::createTextureImage()
 {
 	texture = TextureImage{texturePath, *this};
-}
-
-void HelloTriangleApplication::createTextureSampler()
-{
-	vk::PhysicalDeviceProperties deviceProperties{physicalDevice.getProperties()};
-
-	vk::SamplerCreateInfo samplerInfo{
-		{}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
-		vk::SamplerAddressMode::eRepeat, 0.f, true, deviceProperties.limits.maxSamplerAnisotropy, false, vk::CompareOp::eAlways, 0.f, vk::LodClampNone,
-		vk::BorderColor::eIntOpaqueBlack, false
-	};
-
-	textureSampler = vk::raii::Sampler{device, samplerInfo};
 }

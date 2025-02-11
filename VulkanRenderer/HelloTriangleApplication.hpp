@@ -62,7 +62,4 @@ private:
 
     std::optional<TextureImage> texture;
     void createTextureImage();
-
-    vk::raii::Sampler textureSampler{VK_NULL_HANDLE};
-    void createTextureSampler();
 };

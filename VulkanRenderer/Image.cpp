@@ -30,7 +30,7 @@ Image Image::createImage(const vk::raii::Device& device, const vk::PhysicalDevic
 
 	vk::raii::ImageView imageView{createImageView(device, image, format, aspectFlags, mipLevels)};
 
-	return Image{(std::move(image)), (std::move(imageMemory)), std::move(imageView)};
+	return Image{(std::move(image)), (std::move(imageMemory)), std::move(imageView), width, height, mipLevels};
 }
 
 vk::raii::ImageView Image::createImageView(const vk::raii::Device& device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
@@ -132,7 +132,8 @@ bool Image::hasStencilComponent(vk::Format format)
 	return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
 }
 
-Image::Image(vk::raii::Image&& image, vk::raii::DeviceMemory&& imageMemory, vk::raii::ImageView&& imageView) :
+Image::Image(vk::raii::Image&& image, vk::raii::DeviceMemory&& imageMemory, vk::raii::ImageView&& imageView, uint32_t width, uint32_t height, uint32_t mipLevels) :
+	width(width), height(height), mipLevels(mipLevels),
 	image(std::move(image)), imageDeviceMemory(std::move(imageMemory)), imageView(std::move(imageView))
 {
 }

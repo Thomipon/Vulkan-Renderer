@@ -5,11 +5,12 @@
 #include "stb.hpp"
 
 TextureImage::TextureImage(const std::filesystem::path& path, const Renderer& app)
-	: TextureImage(createTextureImage(path, app))
+	: Image(createImageFromPath(path, app)), sampler(createTextureSampler(app.device, app.physicalDevice))
 {
+	generateMipMaps(vk::Format::eR8G8B8A8Srgb, width, height, mipLevels, app);
 }
 
-void TextureImage::generateMipMaps(const vk::Format& imageFormat, int32_t width, int32_t height, uint32_t mipLevels, const Renderer& app) const
+void TextureImage::generateMipMaps(const vk::Format& imageFormat, uint32_t width, uint32_t height, uint32_t mipLevels, const Renderer& app) const
 {
 	if (!(app.physicalDevice.getFormatProperties(imageFormat).optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
 	{
@@ -22,8 +23,8 @@ void TextureImage::generateMipMaps(const vk::Format& imageFormat, int32_t width,
 		vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
 	};
 
-	int32_t mipWidth{width};
-	int32_t mipHeight{height};
+	int32_t mipWidth{static_cast<int32_t>(width)};
+	int32_t mipHeight{static_cast<int32_t>(height)};
 
 	for (uint32_t i = 1; i < mipLevels; ++i)
 	{
@@ -71,7 +72,7 @@ void TextureImage::generateMipMaps(const vk::Format& imageFormat, int32_t width,
 	app.endSingleTimeCommands(std::move(commandBuffer));
 }
 
-TextureImage TextureImage::createTextureImage(const std::filesystem::path& path, const Renderer& app)
+Image TextureImage::createImageFromPath(const std::filesystem::path& path, const Renderer& app)
 {
 	int texWidth, texHeight, texChannels;
 	stbi_uc* pixels{stbi_load(path.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha)};
@@ -103,15 +104,20 @@ TextureImage TextureImage::createTextureImage(const std::filesystem::path& path,
 	image.transitionImageLayout(app, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
 	copyBufferToImage(app, stagingBuffer.vkBuffer, image.image, texWidth, texHeight);
 
-	TextureImage texture{std::move(image)};
-
 	// We do not need to transition the image layout. This is handled by generateMipMaps()
 	//transitionImageLayout(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, textureMipLevels);
-	texture.generateMipMaps(vk::Format::eR8G8B8A8Srgb, texWidth, texHeight, mipLevels, app);
-	return texture;
+	return image;
 }
 
-TextureImage::TextureImage(Image&& image)
-	: Image(std::move(image))
+vk::raii::Sampler TextureImage::createTextureSampler(const vk::raii::Device& device, const vk::raii::PhysicalDevice& physicalDevice)
 {
+	vk::PhysicalDeviceProperties deviceProperties{physicalDevice.getProperties()};
+
+	vk::SamplerCreateInfo samplerInfo{
+			{}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
+			vk::SamplerAddressMode::eRepeat, 0.f, true, deviceProperties.limits.maxSamplerAnisotropy, false, vk::CompareOp::eAlways, 0.f, vk::LodClampNone,
+			vk::BorderColor::eIntOpaqueBlack, false
+		};
+
+	return vk::raii::Sampler{device, samplerInfo};
 }

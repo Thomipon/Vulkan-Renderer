@@ -10,7 +10,9 @@ public:
 	Image(const vk::raii::Device &device, const vk::PhysicalDevice& physicalDevice, uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage,
 	      vk::MemoryPropertyFlags properties, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels = 1);
 
-	uint32_t textureMipLevels{0};
+	uint32_t width;
+	uint32_t height;
+	uint32_t mipLevels;
 
 	vk::raii::Image image{VK_NULL_HANDLE};
 	vk::raii::DeviceMemory imageDeviceMemory{VK_NULL_HANDLE};
@@ -27,7 +29,7 @@ public:
 	static bool hasStencilComponent(vk::Format format);
 
 private:
-	Image(vk::raii::Image &&image, vk::raii::DeviceMemory &&imageMemory, vk::raii::ImageView &&imageView);
+	Image(vk::raii::Image &&image, vk::raii::DeviceMemory &&imageMemory, vk::raii::ImageView &&imageView, uint32_t width, uint32_t height, uint32_t mipLevels);
 
 	static Image createImage(const vk::raii::Device& device, const vk::PhysicalDevice& physicalDevice, uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling,
 	                         vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels = 1);

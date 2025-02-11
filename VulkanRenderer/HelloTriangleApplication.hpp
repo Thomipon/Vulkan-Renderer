@@ -43,12 +43,10 @@ private:
     std::vector<vk::raii::Fence> inFlightFences{};
     void createSyncObjects();
     
-    vk::raii::Buffer vertexBuffer{VK_NULL_HANDLE};
-    vk::raii::DeviceMemory vertexBufferMemory{VK_NULL_HANDLE};
+
     void createVertexBuffer();
 
-    vk::raii::Buffer indexBuffer{VK_NULL_HANDLE};
-    vk::raii::DeviceMemory indexBufferMemory{VK_NULL_HANDLE};
+
     void createIndexBuffer();
 
     std::vector<vk::raii::Buffer> uniformBuffers;
@@ -71,8 +69,4 @@ private:
 
     vk::raii::Sampler textureSampler{VK_NULL_HANDLE};
     void createTextureSampler();
-
-    std::vector<Vertex> meshVertices{};
-    std::vector<uint32_t> meshIndices{};
-    void loadModel();
 };

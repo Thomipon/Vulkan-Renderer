@@ -29,13 +29,13 @@ inline QueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& device, co
     {
         const auto& [index, queueFamily] = indexedQueueFamily;
         const bool hasGraphics{queueFamily.queueFlags & vk::QueueFlagBits::eGraphics};
-        const bool hasPresent{device.getSurfaceSupportKHR(index, surface)};
+        const bool hasPresent{device.getSurfaceSupportKHR(index, surface) != 0};
         return hasGraphics && hasPresent;
     })};
 
     if (!std::ranges::empty(idealFamilies))
     {
-        uint32_t index{std::get<0>(*idealFamilies.begin())};
+        uint32_t index{static_cast<uint32_t>(std::get<0>(*idealFamilies.begin()))};
         indices.graphicsFamily = index;
         indices.presentFamily = index;
 

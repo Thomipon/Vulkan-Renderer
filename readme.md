@@ -16,3 +16,7 @@ STB image and tinyobjloader are included directly.
 
 This project uses cmake. Simply run your favorite cmake command and compile.<br>
 Note that the project requires C++ 23!
+
+# Note
+
+The master branch should always work as intended. The dev branch on the other hand might not even compile!

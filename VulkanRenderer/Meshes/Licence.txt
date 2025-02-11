@@ -1,1 +1,2 @@
-Mesh and Texture by Guy in a Poncho on Fab (https://www.fab.com/listings/a1c0e0f2-48da-47b8-aa16-ec6e9f447d0e)
+Mesh.obj and Texture.png by Guy in a Poncho on Fab (https://www.fab.com/listings/a1c0e0f2-48da-47b8-aa16-ec6e9f447d0e)
+Previous model (and texture) were by nigelgoh on Sketchfab (https://web.archive.org/web/20200428202538/https://sketchfab.com/3d-models/viking-room-a49f1b8e4f5c4ecf9e1fe7d81915ad38)

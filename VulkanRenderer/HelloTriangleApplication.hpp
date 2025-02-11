@@ -9,6 +9,8 @@
 #include "TextureImage.hpp"
 #include "Vertex.hpp"
 
+class Buffer;
+
 class HelloTriangleApplication : public Renderer
 {
 public:
@@ -49,8 +51,7 @@ private:
 
     void createIndexBuffer();
 
-    std::vector<vk::raii::Buffer> uniformBuffers;
-    std::vector<vk::raii::DeviceMemory> uniformBufferMemories;
+    std::vector<Buffer> uniformBuffers;
     std::vector<void*> uniformBuffersMapped;
     void createUniformBuffers();
 

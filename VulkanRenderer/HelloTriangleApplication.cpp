@@ -8,6 +8,7 @@
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Buffer.hpp"
 #include "check.hpp"
 #include "IOHelper.hpp"
 #include "Shader.hpp"
@@ -234,21 +235,13 @@ void HelloTriangleApplication::createVertexBuffer()
 {
 	const vk::DeviceSize bufferSize = sizeof(Vertex) * meshVertices.size();
 
-	auto [stagingBuffer, stagingBufferMemory]{
-		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible)
-	};
+	Buffer stagingBuffer{bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible	};
 
-	void* data{stagingBufferMemory.mapMemory(0, bufferSize, {})};
+	void* data{stagingBuffer.memory.mapMemory(0, bufferSize, {})};
 	std::memcpy(data, meshVertices.data(), bufferSize);
-	stagingBufferMemory.unmapMemory();
+	stagingBuffer.memory.unmapMemory();
 
-	{
-		auto [vertexBufferNew, vertexBufferMemoryNew]{
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal)
-		};
-		vertexBuffer = std::move(vertexBufferNew); // TODO: This is ugly
-		vertexBufferMemory = std::move(vertexBufferMemoryNew);
-	}
+	vertexBuffer = Buffer{bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal};
 
 	copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 }
@@ -257,21 +250,13 @@ void HelloTriangleApplication::createIndexBuffer()
 {
 	const VkDeviceSize bufferSize = sizeof(uint32_t) * meshIndices.size();
 
-	auto [stagingBuffer, stagingBufferMemory]{
-		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible)
-	};
+	Buffer stagingBuffer{device, physicalDevice, bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible};
 
-	void* data{stagingBufferMemory.mapMemory(0, bufferSize, {})};
+	void* data{stagingBuffer.memory.mapMemory(0, bufferSize, {})};
 	std::memcpy(data, meshIndices.data(), bufferSize);
-	stagingBufferMemory.unmapMemory();
+	stagingBuffer.memory.unmapMemory();
 
-	{
-		auto [indexBufferNew, indexBufferMemoryNew]{
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal)
-		};
-		indexBuffer = std::move(indexBufferNew); // TODO
-		indexBufferMemory = std::move(indexBufferMemoryNew);
-	}
+	indexBuffer = Buffer{device, physicalDevice, bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal};
 
 	copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 }
@@ -281,33 +266,17 @@ void HelloTriangleApplication::createUniformBuffers()
 	vk::DeviceSize bufferSize{sizeof(UniformBufferObject)};
 
 	uniformBuffers.clear();
-	uniformBufferMemories.clear();
 	uniformBuffersMapped.clear();
 
 	uniformBuffers.reserve(maxFramesInFlight);
-	uniformBufferMemories.reserve(maxFramesInFlight);
 	uniformBuffersMapped.reserve(maxFramesInFlight);
 
 	for (size_t i = 0; i < maxFramesInFlight; ++i) // TODO: Ranges
 	{
-		auto [bufferNew, MemoryNew]{
-			createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
-		};
-		uniformBuffersMapped.emplace_back(MemoryNew.mapMemory(0, bufferSize, {}));
+		Buffer bufferNew{device, physicalDevice, bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
+		uniformBuffersMapped.emplace_back(bufferNew.memory.mapMemory(0, bufferSize, {}));
 		uniformBuffers.emplace_back(std::move(bufferNew)); // TODO
-		uniformBufferMemories.emplace_back(std::move(MemoryNew));
 	}
-}
-
-void HelloTriangleApplication::copyBuffer(vk::Buffer sourceBuffer, vk::Buffer destinationBuffer, vk::DeviceSize size)
-{
-	vk::raii::CommandBuffer commandBuffer{beginSingleTimeCommands()};
-
-	vk::BufferCopy copyRegion{0, 0, size};
-
-	commandBuffer.copyBuffer(sourceBuffer, destinationBuffer, copyRegion);
-
-	endSingleTimeCommands(std::move(commandBuffer));
 }
 
 void HelloTriangleApplication::createDescriptorSetLayout()

@@ -27,4 +27,6 @@ add_executable(${PROJECT_NAME} main.cpp
         TextureImage.cpp
         TextureImage.hpp
         Mesh.cpp
-        Mesh.hpp)
+        Mesh.hpp
+        Buffer.cpp
+        Buffer.hpp)

@@ -55,24 +55,6 @@ void Renderer::onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeigh
 	app->framebufferResized = true;
 }
 
-std::pair<vk::raii::Buffer, vk::raii::DeviceMemory> Renderer::createBuffer(
-	vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) const
-{
-	vk::BufferCreateInfo bufferCreateInfo{{}, size, usage, vk::SharingMode::eExclusive, nullptr};
-
-	vk::raii::Buffer buffer{device, bufferCreateInfo};
-	vk::MemoryRequirements memoryRequirements{buffer.getMemoryRequirements()};
-
-	vk::MemoryAllocateInfo memoryAllocateInfo{
-		memoryRequirements.size, findMemoryType(physicalDevice, memoryRequirements.memoryTypeBits, properties)
-	};
-	vk::raii::DeviceMemory memory{device.allocateMemory(memoryAllocateInfo)};
-
-	buffer.bindMemory(memory, 0);
-
-	return std::make_pair(std::move(buffer), std::move(memory));
-}
-
 vk::raii::CommandBuffer Renderer::beginSingleTimeCommands() const
 {
 	vk::CommandBufferAllocateInfo commandBufferAllocateInfo{commandPool, vk::CommandBufferLevel::ePrimary, 1};

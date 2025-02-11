@@ -34,8 +34,6 @@ public:
     void recreateSwapchain();
     static void onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight);
 
-    [[nodiscard]] std::pair<vk::raii::Buffer, vk::raii::DeviceMemory> createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) const;
-
     [[nodiscard]] vk::raii::CommandBuffer beginSingleTimeCommands() const;
     void endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer) const;
 

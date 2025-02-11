@@ -2,6 +2,7 @@
 #include <vector>
 #include <filesystem>
 
+#include "Buffer.hpp"
 #include "Vertex.hpp"
 
 
@@ -13,11 +14,9 @@ public:
 	std::vector<Vertex> vertices{};
 	std::vector<uint32_t> indices{};
 
-	vk::raii::Buffer vertexBuffer;
-	vk::raii::DeviceMemory vertexBufferMemory;
+	Buffer vertexBuffer;
 
-	vk::raii::Buffer indexBuffer;
-	vk::raii::DeviceMemory indexBufferMemory;
+	Buffer indexBuffer;
 
 private:
 	void loadFromFile(const std::filesystem::path& sourcePath);

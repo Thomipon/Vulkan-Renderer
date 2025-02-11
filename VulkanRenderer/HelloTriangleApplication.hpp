@@ -15,10 +15,7 @@ class HelloTriangleApplication : public Renderer
 {
 public:
     void run();
-
-    inline static uint32_t width{1920};
-    inline static uint32_t height{1080};
-    inline static uint32_t maxFramesInFlight{2};
+    inline static uint32_t maxFramesInFlight{2}; // TODO: This is duplicate currently
 
     inline static std::filesystem::path modelPath{"../../VulkanRenderer/Meshes/Mesh.obj"}; // TODO: Awful file management in many ways. These should be in some asset system
     inline static std::filesystem::path texturePath{"../../VulkanRenderer/Textures/Texture.png"};

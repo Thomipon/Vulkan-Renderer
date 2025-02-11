@@ -202,7 +202,7 @@ void HelloTriangleApplication::updateUniformBuffer(uint32_t frameIndex)
 	float time{std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count()};
 
 	UniformBufferObject ubo{};
-	ubo.model = glm::rotate(glm::mat4{1.0f}, time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
+	ubo.model = glm::rotate(glm::scale(glm::mat4{1.0f}, glm::vec3{5.f}), time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
 	ubo.view = glm::lookAt(glm::vec3{2.0f}, glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f});
 	ubo.projection = glm::perspective(glm::radians(45.f),
 	                                  static_cast<float>(swapchain.extent.width) / static_cast<float>(swapchain.extent.

@@ -13,6 +13,7 @@
 #include "IOHelper.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
+#include "ShaderCompiler.hpp"
 #include "Swapchain.hpp"
 #include "Uniforms.hpp"
 #include "Vertex.hpp"
@@ -67,11 +68,12 @@ vk::Result HelloTriangleApplication::checkForBadSwapchain(vk::Result inResult)
 
 void HelloTriangleApplication::createGraphicsPipeline()
 {
-	auto vertShaderCode{readFile("Shaders/default.spv")};
-	auto fragShaderCode{readFile("Shaders/default.spv")};
+	SlangCompiler compiler;
+	auto vertBlob{compiler.compile("default", "vertexMain")};
+	auto fragBlob{compiler.compile("default", "fragmentMain")};
 
-	vk::raii::ShaderModule vertShaderModule{createShaderModule(vertShaderCode, device)};
-	vk::raii::ShaderModule fragShaderModule{createShaderModule(fragShaderCode, device)};
+	vk::raii::ShaderModule vertShaderModule{createShaderModule(vertBlob, device)};
+	vk::raii::ShaderModule fragShaderModule{createShaderModule(fragBlob, device)};
 
 	vk::PipelineShaderStageCreateInfo vertShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eVertex, vertShaderModule, "main", nullptr};
 	vk::PipelineShaderStageCreateInfo fragShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eFragment, fragShaderModule, "main", nullptr};
@@ -197,11 +199,11 @@ void HelloTriangleApplication::updateUniformBuffer(uint32_t frameIndex)
 	float time{std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count()};
 
 	UniformBufferObject ubo{};
-	ubo.model = glm::rotate(glm::scale(glm::mat4{1.0f}, glm::vec3{5.f}), time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
-	ubo.view = glm::lookAt(glm::vec3{2.0f}, glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f});
-	ubo.projection = glm::perspective(glm::radians(45.f),
+	ubo.model = glm::transpose(glm::rotate(glm::scale(glm::mat4{1.0f}, glm::vec3{5.f}), time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f}));
+	ubo.view = glm::transpose(glm::lookAt(glm::vec3{2.0f}, glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f}));
+	ubo.projection = glm::transpose(glm::perspective(glm::radians(45.f),
 	                                  static_cast<float>(swapchain.extent.width) / static_cast<float>(swapchain.extent.
-	                                                                                                            height), 0.1f, 100.f);
+	                                                                                                            height), 0.1f, 100.f));
 	ubo.projection[1][1] *= -1;
 
 	std::memcpy(uniformBuffersMapped[frameIndex], &ubo, sizeof(ubo));

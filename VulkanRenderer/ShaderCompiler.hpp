@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <filesystem>
 #include <stdexcept>
 #include <vector>
 
@@ -8,87 +9,48 @@
 
 using Slang::ComPtr;
 
-struct ExampleResources
+class SlangCompiler
 {
-    Slang::String baseDir;
+public:
 
-    ExampleResources(const Slang::String& dir)
-        : baseDir(dir)
-    {
-    }
+	SlangCompiler();
 
-    Slang::String resolveResource(const char* fileName) const
-    {
-        static const Slang::List<Slang::String> directories{
-            "examples",
-            "../examples",
-            "../../examples",
-        };
+	[[nodiscard]] ComPtr<slang::IModule> loadModule(const std::string_view& moduleName) const;
+	[[nodiscard]] static ComPtr<slang::IEntryPoint> findEntryPoint(const ComPtr<slang::IModule>& module, const std::string_view& entryPointName);
+	[[nodiscard]] ComPtr<slang::IComponentType> composeProgram(const std::vector<slang::IComponentType*>& components) const;
+	[[nodiscard]] static ComPtr<slang::IComponentType> linkProgram(const ComPtr<slang::IComponentType>& composedProgram);
+	[[nodiscard]] static ComPtr<slang::IBlob> getSprirV(const ComPtr<slang::IComponentType>& linkedProgram);
+	[[nodiscard]] ComPtr<slang::IBlob> compile(const std::string_view& moduleName, const std::string_view& entryPointName) const;
 
-        for (const Slang::String& dir : directories)
-        {
-            Slang::StringBuilder pathSb;
-            pathSb << dir << "/" << baseDir << "/" << fileName;
-            if (Slang::File::exists(pathSb.getBuffer()))
-                return pathSb.toString();
-        }
+private:
+	ComPtr<slang::IGlobalSession> globalSession;
+	slang::TargetDesc targetDesc;
+	std::vector<slang::CompilerOptionEntry> options;
+	slang::SessionDesc sessionDesc;
+	ComPtr<slang::ISession> session;
 
-        return fileName;
-    }
+	static ComPtr<slang::IGlobalSession> createGlobalSession();
+	static ComPtr<slang::ISession> createSession(const ComPtr<slang::IGlobalSession>& globalSession, const slang::SessionDesc& sessionDesc);
+
+	static void diagnoseIfNeeded(const ComPtr<slang::IBlob>& diagnosticsBlob);
+
+	template<typename T>
+	static ComPtr<T> check(const ComPtr<T>& Value)
+	{
+		if (!Value)
+		{
+			throw std::runtime_error("Check failed");
+		}
+		return Value;
+	}
+
+	static SlangResult check(const SlangResult result)
+	{
+		if (result != SLANG_OK)
+		{
+			throw std::runtime_error("Check failed");
+		}
+
+		return result;
+	}
 };
-
-static const ExampleResources resourceBase("Shaders");
-
-inline SlangResult check(SlangResult result)
-{
-    if (result != SLANG_OK)
-    {
-        throw std::runtime_error("Check failed");
-    }
-
-    return result;
-}
-
-inline void compileShader()
-{
-    ComPtr<slang::IGlobalSession> slangGlobalSession;
-    check(createGlobalSession(slangGlobalSession.writeRef())); // TODO: We should not create a new session every time
-
-    slang::TargetDesc targetDesc{
-        .format = SLANG_SPIRV,
-        .profile = slangGlobalSession->findProfile("spirv_1_5")
-    };
-    
-    std::vector<slang::CompilerOptionEntry> options{
-        {
-            .name= slang::CompilerOptionName::EmitSpirvDirectly, .value= {
-                .kind = slang::CompilerOptionValueKind::Int, .intValue0 = 1, .intValue1 = 0, .stringValue0 = nullptr, .stringValue1 = nullptr
-            }
-        }
-    };
-    
-    slang::SessionDesc sessionDesc{
-        .targets = &targetDesc,
-        .targetCount = 1,
-        .compilerOptionEntries = options.data(),
-        .compilerOptionEntryCount = static_cast<uint32_t>(options.size())
-    };
-
-    ComPtr<slang::ISession> session;
-    check(slangGlobalSession->createSession(sessionDesc, session.writeRef()));
-
-    slang::IModule* module;
-    {
-        ComPtr<slang::IBlob> diagnosticBlob;
-        Slang::String path{resourceBase.resolveResource("default.slang")}; // TODO: This should be VERY different
-        module = session->loadModule(path.getBuffer(), diagnosticBlob.writeRef());
-        diagnoseIfNeeded(diagnosticBlob);
-        if (!module)
-        {
-            throw std::runtime_error("Failed to load shader module");
-        }
-
-        ComPtr<slang::IEntryPoint> entryPoint;
-        module->getDefinedEntryPoint(..., entryPoint.writeRef());
-    }
-}

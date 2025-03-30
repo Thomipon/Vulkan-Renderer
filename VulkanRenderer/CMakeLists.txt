@@ -29,4 +29,7 @@ add_executable(${PROJECT_NAME} main.cpp
         Mesh.cpp
         Mesh.hpp
         Buffer.cpp
-        Buffer.hpp)
+        Buffer.hpp
+        Material.cpp
+        Material.hpp
+        ShaderCompiler.cpp)

@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Mesh.hpp"
+#include "Asset/Mesh.hpp"
 #include "VulkanBackend.hpp"
 
 #include "Renderer.hpp"

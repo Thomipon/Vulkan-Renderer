@@ -11,7 +11,7 @@
 #include "Buffer.hpp"
 #include "check.hpp"
 #include "IOHelper.hpp"
-#include "Mesh.hpp"
+#include "Asset/Mesh.hpp"
 #include "Shader.hpp"
 #include "ShaderCompiler.hpp"
 #include "Swapchain.hpp"

@@ -26,10 +26,26 @@ add_executable(${PROJECT_NAME} main.cpp
         DepthImage.hpp
         TextureImage.cpp
         TextureImage.hpp
-        Mesh.cpp
-        Mesh.hpp
+        Source/Asset/Mesh.cpp
+        Source/Asset/Mesh.hpp
         Buffer.cpp
         Buffer.hpp
-        Material.cpp
-        Material.hpp
-        ShaderCompiler.cpp)
+        ShaderCompiler.cpp
+        Source/Scene/Scene.cpp
+        Source/Scene/Scene.hpp
+        Source/Scene/Model.cpp
+        Source/Scene/Model.hpp
+        Source/Asset/Material.cpp
+        Source/Asset/Material.hpp
+        Source/Scene/Light/Light.cpp
+        Source/Scene/Light/Light.hpp
+        Source/Scene/Light/PointLight.cpp
+        Source/Scene/Light/PointLight.hpp
+        Source/Scene/Core/Transform.cpp
+        Source/Scene/Core/Transform.hpp
+        Source/Scene/Camera.cpp
+        Source/Scene/Camera.hpp
+)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Source)

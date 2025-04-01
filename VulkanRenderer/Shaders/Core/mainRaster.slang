@@ -1,4 +1,5 @@
-﻿
+﻿module mainRaster;
+
 import lights;
 import material;
 import geometry;
@@ -19,8 +20,8 @@ struct ModelData
 
 ParameterBlock<ModelData> gModelData;
 
-ILightEnvironment gLightEnvironment;
-IMaterial gMaterial;
+uniform ILightEnvironment gLightEnvironment;
+uniform IMaterial gMaterial;
 
 struct VertexInput
 {

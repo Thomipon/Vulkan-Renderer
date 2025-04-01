@@ -83,8 +83,9 @@ ComPtr<slang::IBlob> SlangCompiler::getSprirV(const ComPtr<slang::IComponentType
 	ComPtr<slang::IBlob> spirvCode;
 	{
 		ComPtr<slang::IBlob> diagnosticsBlob;
-		check(linkedProgram->getEntryPointCode(0, 0, spirvCode.writeRef(), diagnosticsBlob.writeRef()));
+		const auto result = linkedProgram->getEntryPointCode(0, 0, spirvCode.writeRef(), diagnosticsBlob.writeRef());
 		diagnoseIfNeeded(diagnosticsBlob);
+		check(result);
 	}
 	return spirvCode;
 }
@@ -94,6 +95,18 @@ ComPtr<slang::IBlob> SlangCompiler::compile(const std::string_view& moduleName, 
 	const ComPtr<slang::IModule> module{loadModule(moduleName)};
 	const ComPtr<slang::IEntryPoint> entryPoint{findEntryPoint(module, entryPointName)};
 	return getSprirV(linkProgram(composeProgram({module, entryPoint})));
+}
+
+ComPtr<slang::IComponentType> SlangCompiler::specializeEntryPoint(const ComPtr<slang::IEntryPoint>& entryPoint, const std::vector<slang::SpecializationArg>& specializationArgs)
+{
+	ComPtr<slang::IComponentType> specializedEntryPoint;
+	{
+		ComPtr<slang::IBlob> diagnosticsBlob;
+		const auto result = entryPoint->specialize(specializationArgs.data(), specializationArgs.size(), specializedEntryPoint.writeRef(), diagnosticsBlob.writeRef());
+		diagnoseIfNeeded(diagnosticsBlob);
+		check(result);
+	}
+	return specializedEntryPoint;
 }
 
 ComPtr<slang::IGlobalSession> SlangCompiler::createGlobalSession()

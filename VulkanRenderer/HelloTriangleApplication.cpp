@@ -17,6 +17,7 @@
 #include "Swapchain.hpp"
 #include "Uniforms.hpp"
 #include "Vertex.hpp"
+#include "Asset/Material.hpp"
 
 void HelloTriangleApplication::run()
 {
@@ -71,6 +72,9 @@ void HelloTriangleApplication::createGraphicsPipeline()
 	SlangCompiler compiler;
 	auto vertBlob{compiler.compile("default", "vertexMain")};
 	auto fragBlob{compiler.compile("default", "fragmentMain")};
+
+	Material material;
+	material.compile(compiler);
 
 	vk::raii::ShaderModule vertShaderModule{createShaderModule(vertBlob, device)};
 	vk::raii::ShaderModule fragShaderModule{createShaderModule(fragBlob, device)};

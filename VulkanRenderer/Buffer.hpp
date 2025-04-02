@@ -21,6 +21,9 @@ public:
 	template <typename T>
 	static void copyVectorToBufferStaged(const Renderer& app, const std::vector<T>& source, const Buffer& destination);
 
+	template <typename T>
+	static void copySpanToBufferStaged(const Renderer& app, const std::span<T>& source, const Buffer& destination);
+
 private:
 	Buffer(vk::raii::Buffer&& buffer, vk::raii::DeviceMemory&& memory);
 
@@ -39,6 +42,12 @@ Buffer::Buffer(const Renderer& app, const std::vector<T>& source, vk::BufferUsag
 
 template <typename T>
 void Buffer::copyVectorToBufferStaged(const Renderer& app, const std::vector<T>& source, const Buffer& destination)
+{
+	copySpanToBufferStaged(app, source, destination);
+}
+
+template<typename T>
+void Buffer::copySpanToBufferStaged(const Renderer &app, const std::span<T> &source, const Buffer &destination)
 {
 	const VkDeviceSize bufferSize = sizeof(T) * source.size();
 

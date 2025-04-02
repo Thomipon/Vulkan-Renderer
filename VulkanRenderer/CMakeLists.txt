@@ -45,6 +45,12 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/Scene/Core/Transform.hpp
         Source/Scene/Camera.cpp
         Source/Scene/Camera.hpp
+        Source/ShaderCompilation/ShaderCursor.cpp
+        Source/ShaderCompilation/ShaderCursor.hpp
+        Source/ShaderCompilation/VulkanShaderObject.cpp
+        Source/ShaderCompilation/VulkanShaderObject.hpp
+        Source/ShaderCompilation/ShaderObject.cpp
+        Source/ShaderCompilation/ShaderObject.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

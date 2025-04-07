@@ -8,6 +8,7 @@
 #include "check.hpp"
 #include "PhysicalDeviceHelper.hpp"
 #include "ValidationLayers.hpp"
+#include "Renderer/RenderSync.hpp"
 
 constexpr uint8_t MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -27,7 +28,8 @@ Renderer::Renderer()
 	  renderPass(createRenderPass(device, physicalDevice, swapchain)),
 	  commandPool(createCommandPool(device, queueIndices)),
 	  commandBuffers(device.allocateCommandBuffers({commandPool, vk::CommandBufferLevel::ePrimary, MAX_FRAMES_IN_FLIGHT})),
-	  swapChainFramebuffers(createFramebuffers(device, renderPass, depthImage.imageView, swapchain.imageViews, swapchain.extent))
+	  swapChainFramebuffers(createFramebuffers(device, renderPass, depthImage.imageView, swapchain.imageViews, swapchain.extent)),
+	  renderSyncObjects(createSyncObjects(device, MAX_FRAMES_IN_FLIGHT))
 {
 }
 
@@ -77,6 +79,42 @@ void Renderer::endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer) co
 	graphicsQueue.waitIdle();
 
 	// TODO: Make sure the command buffer is properly destroyed here
+}
+
+void Renderer::drawScene(const Scene &scene)
+{
+	if (framebufferResized)
+	{
+		recreateSwapchain();
+		framebufferResized = false;
+	}
+
+	updateUniformBuffer(currentFrame);
+
+	vk::raii::CommandBuffer& commandBuffer{commandBuffers[currentFrame]};
+	const RenderSync& renderSync{renderSyncObjects[currentFrame]};
+
+	currentFrame = (currentFrame + 1) % maxFramesInFlight;
+
+	check(device.waitForFences(*renderSync.inFlightFence, true, UINT64_MAX), "Fence wait failed");
+
+	auto [result, imageIndex]{swapchain.swapchain.acquireNextImage(UINT64_MAX, renderSync.imageAvailableSemaphore, nullptr)};
+	if (checkForBadSwapchain(result) == vk::Result::eErrorOutOfDateKHR)
+	{
+		return;
+	}
+
+	commandBuffer.reset({});
+	recordCommandBuffer(commandBuffer, imageIndex);
+
+	vk::PipelineStageFlags waitStages{vk::PipelineStageFlagBits::eColorAttachmentOutput};
+	const vk::SubmitInfo submitInfo{*renderSync.imageAvailableSemaphore, waitStages, *commandBuffer, *renderSync.renderFinishedSemaphore};
+
+	device.resetFences(*renderSync.inFlightFence);
+	graphicsQueue.submit(submitInfo, renderSync.inFlightFence);
+
+	const vk::PresentInfoKHR presentInfo{*renderSync.renderFinishedSemaphore, *swapchain.swapchain, imageIndex, nullptr};
+	checkForBadSwapchain(presentQueue.presentKHR(presentInfo));
 }
 
 vk::raii::Instance Renderer::createInstance(const vk::raii::Context& context)
@@ -237,6 +275,18 @@ std::vector<vk::raii::Framebuffer> Renderer::createFramebuffers(const vk::raii::
 		})
 	};
 	return {framebuffers.begin(), framebuffers.end()};
+}
+
+std::vector<RenderSync> Renderer::createSyncObjects(const vk::raii::Device &device, uint8_t maxFramesInFlight)
+{
+	std::vector<RenderSync> renderSyncObjects{};
+	renderSyncObjects.reserve(maxFramesInFlight);
+
+	for (size_t i = 0; i < maxFramesInFlight; ++i)
+	{
+		renderSyncObjects.emplace_back(device);
+	}
+	return renderSyncObjects;
 }
 
 vk::Bool32 Renderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

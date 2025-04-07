@@ -9,6 +9,7 @@
 #include "TextureImage.hpp"
 #include "Vertex.hpp"
 
+class RenderSync;
 class Buffer;
 
 class HelloTriangleApplication : public Renderer
@@ -36,11 +37,6 @@ private:
     void drawFrame();
 
     void updateUniformBuffer(uint32_t frameIndex);
-
-    std::vector<vk::raii::Semaphore> imageAvailableSemaphores{};
-    std::vector<vk::raii::Semaphore> renderFinishedSemaphores{};
-    std::vector<vk::raii::Fence> inFlightFences{};
-    void createSyncObjects();
 
     std::vector<Buffer> uniformBuffers;
     std::vector<void*> uniformBuffersMapped;

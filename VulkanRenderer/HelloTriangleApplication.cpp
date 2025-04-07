@@ -18,6 +18,7 @@
 #include "Uniforms.hpp"
 #include "Vertex.hpp"
 #include "Asset/Material.hpp"
+#include "Renderer/RenderSync.hpp"
 
 void HelloTriangleApplication::run()
 {
@@ -37,8 +38,6 @@ void HelloTriangleApplication::initVulkan()
 	createUniformBuffers();
 	createDescriptorPool();
 	createDescriptorSets();
-
-	createSyncObjects();
 }
 
 void HelloTriangleApplication::mainLoop()
@@ -168,15 +167,13 @@ void HelloTriangleApplication::drawFrame()
 	updateUniformBuffer(currentFrame);
 
 	vk::raii::CommandBuffer& commandBuffer{commandBuffers[currentFrame]};
-	const vk::raii::Semaphore& imageAvailableSemaphore{imageAvailableSemaphores[currentFrame]};
-	const vk::raii::Semaphore& renderFinishedSemaphore{renderFinishedSemaphores[currentFrame]};
-	const vk::raii::Fence& inFlightFence{inFlightFences[currentFrame]};
+	const RenderSync& renderSync{renderSyncObjects[currentFrame]};
 
 	currentFrame = (currentFrame + 1) % maxFramesInFlight;
 
-	check(device.waitForFences(*inFlightFence, true, UINT64_MAX), "Fence wait failed");
+	check(device.waitForFences(*renderSync.inFlightFence, true, UINT64_MAX), "Fence wait failed");
 
-	auto [result, imageIndex]{swapchain.swapchain.acquireNextImage(UINT64_MAX, imageAvailableSemaphore, nullptr)};
+	auto [result, imageIndex]{swapchain.swapchain.acquireNextImage(UINT64_MAX, renderSync.imageAvailableSemaphore, nullptr)};
 	if (checkForBadSwapchain(result) == vk::Result::eErrorOutOfDateKHR)
 	{
 		return;
@@ -186,12 +183,12 @@ void HelloTriangleApplication::drawFrame()
 	recordCommandBuffer(commandBuffer, imageIndex);
 
 	vk::PipelineStageFlags waitStages{vk::PipelineStageFlagBits::eColorAttachmentOutput};
-	vk::SubmitInfo submitInfo{*imageAvailableSemaphore, waitStages, *commandBuffer, *renderFinishedSemaphore};
+	const vk::SubmitInfo submitInfo{*renderSync.imageAvailableSemaphore, waitStages, *commandBuffer, *renderSync.renderFinishedSemaphore};
 
-	device.resetFences(*inFlightFence);
-	graphicsQueue.submit(submitInfo, inFlightFence);
+	device.resetFences(*renderSync.inFlightFence);
+	graphicsQueue.submit(submitInfo, renderSync.inFlightFence);
 
-	vk::PresentInfoKHR presentInfo{*renderFinishedSemaphore, *swapchain.swapchain, imageIndex, nullptr};
+	const vk::PresentInfoKHR presentInfo{*renderSync.renderFinishedSemaphore, *swapchain.swapchain, imageIndex, nullptr};
 	checkForBadSwapchain(presentQueue.presentKHR(presentInfo));
 }
 
@@ -211,27 +208,6 @@ void HelloTriangleApplication::updateUniformBuffer(uint32_t frameIndex)
 	ubo.projection[1][1] *= -1;
 
 	std::memcpy(uniformBuffersMapped[frameIndex], &ubo, sizeof(ubo));
-}
-
-void HelloTriangleApplication::createSyncObjects()
-{
-	imageAvailableSemaphores.clear();
-	renderFinishedSemaphores.clear();
-	inFlightFences.clear();
-
-	imageAvailableSemaphores.reserve(maxFramesInFlight);
-	renderFinishedSemaphores.reserve(maxFramesInFlight);
-	inFlightFences.reserve(maxFramesInFlight);
-
-	vk::SemaphoreCreateInfo semaphoreCreateInfo{};
-	vk::FenceCreateInfo fenceCreateInfo{vk::FenceCreateFlagBits::eSignaled};
-
-	for (size_t i = 0; i < maxFramesInFlight; ++i)
-	{
-		imageAvailableSemaphores.emplace_back(device, semaphoreCreateInfo);
-		renderFinishedSemaphores.emplace_back(device, semaphoreCreateInfo);
-		inFlightFences.emplace_back(device, fenceCreateInfo);
-	}
 }
 
 void HelloTriangleApplication::createUniformBuffers()

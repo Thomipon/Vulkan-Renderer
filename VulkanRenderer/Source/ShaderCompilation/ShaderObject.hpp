@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <memory>
 #include <span>
+#include <slang/slang.h>
 
 #include "ShaderOffset.hpp"
 
@@ -22,6 +23,12 @@ public:
 	void write(const ShaderOffset& offset, const T& data);
 
 	virtual ~ShaderObject() = default;
+
+	slang::TypeLayoutReflection* typeLayout;
+
+protected:
+	ShaderObject(slang::TypeLayoutReflection* typeLayout);
+
 private:
 	std::shared_ptr<Buffer> buffer{nullptr};
 	std::byte* bufferData{nullptr};

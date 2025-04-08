@@ -134,6 +134,6 @@ std::unique_ptr<VulkanShaderObject> VulkanShaderObject::create(slang::TypeLayout
 }
 
 VulkanShaderObject::VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app)
-	: typeLayout(typeLayout), app(app)
+	: ShaderObject(typeLayout), app(app)
 {
 }

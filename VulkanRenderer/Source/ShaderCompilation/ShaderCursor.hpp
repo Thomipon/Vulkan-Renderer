@@ -2,6 +2,7 @@
 #include <span>
 #include <string_view>
 #include <slang/slang.h>
+#include <vulkan/vulkan_raii.hpp>
 
 #include "ShaderObject.hpp"
 
@@ -10,7 +11,12 @@ class Buffer;
 struct ShaderCursor
 {
 public:
+	ShaderCursor(ShaderObject& shaderObject);
+
 	void write(const void* data, size_t size);
+
+	void writeTexture(const TextureImage& texture);
+	void writeSampler(const TextureImage& texture);
 
 	template <typename T>
 	void write(const std::span<T>& data);
@@ -25,10 +31,10 @@ public:
 	[[nodiscard]] ShaderCursor element(uint32_t index) const;
 
 private:
-	std::shared_ptr<ShaderObject> shaderObject = nullptr;
+	ShaderObject& shaderObject;
 	ShaderOffset offset{};
 
-	slang::TypeLayoutReflection* typeLayout{nullptr};
+	slang::TypeLayoutReflection* typeLayout;
 };
 
 template <typename T>

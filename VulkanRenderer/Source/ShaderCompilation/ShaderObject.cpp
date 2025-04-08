@@ -3,3 +3,8 @@
 //
 
 #include "ShaderObject.hpp"
+
+ShaderObject::ShaderObject(slang::TypeLayoutReflection *typeLayout)
+    : typeLayout(typeLayout)
+{
+}

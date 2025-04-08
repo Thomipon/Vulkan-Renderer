@@ -16,13 +16,13 @@ public:
 	vk::raii::Buffer vkBuffer;
 	vk::raii::DeviceMemory memory;
 
-	static void copyBufferToBuffer(const Renderer& app, const Buffer& source, const Buffer& destination, vk::DeviceSize size);
+	static void copyBufferToBuffer(const Renderer& app, const Buffer& source, const Buffer& destination, vk::DeviceSize size, vk::DeviceSize dstOffset = 0, vk::DeviceSize srcOffset = 0);
 
 	template <typename T>
 	static void copyVectorToBufferStaged(const Renderer& app, const std::vector<T>& source, const Buffer& destination);
 
 	template <typename T>
-	static void copySpanToBufferStaged(const Renderer& app, const std::span<T>& source, const Buffer& destination);
+	static void copySpanToBufferStaged(const Renderer& app, const std::span<T>& source, const Buffer& destination, vk::DeviceSize dstOffset = 0, vk::DeviceSize srcOffset = 0);
 
 private:
 	Buffer(vk::raii::Buffer&& buffer, vk::raii::DeviceMemory&& memory);
@@ -43,11 +43,11 @@ Buffer::Buffer(const Renderer& app, const std::vector<T>& source, vk::BufferUsag
 template <typename T>
 void Buffer::copyVectorToBufferStaged(const Renderer& app, const std::vector<T>& source, const Buffer& destination)
 {
-	copySpanToBufferStaged(app, source, destination);
+	copySpanToBufferStaged(app, std::span{source}, destination);
 }
 
 template<typename T>
-void Buffer::copySpanToBufferStaged(const Renderer &app, const std::span<T> &source, const Buffer &destination)
+void Buffer::copySpanToBufferStaged(const Renderer &app, const std::span<T> &source, const Buffer &destination, vk::DeviceSize dstOffset, vk::DeviceSize srcOffset)
 {
 	const VkDeviceSize bufferSize = sizeof(T) * source.size();
 
@@ -57,7 +57,7 @@ void Buffer::copySpanToBufferStaged(const Renderer &app, const std::span<T> &sou
 	std::memcpy(data, source.data(), bufferSize);
 	stagingBuffer.memory.unmapMemory();
 
-	copyBufferToBuffer(app, stagingBuffer, destination, bufferSize);
+	copyBufferToBuffer(app, stagingBuffer, destination, bufferSize, dstOffset, srcOffset);
 }
 
 template <typename T>

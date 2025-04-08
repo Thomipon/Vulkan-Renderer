@@ -10,8 +10,6 @@
 #include "ValidationLayers.hpp"
 #include "Renderer/RenderSync.hpp"
 
-constexpr uint8_t MAX_FRAMES_IN_FLIGHT = 2;
-
 Renderer::Renderer()
 	: context(),
 	  instance(createInstance(context)),
@@ -27,9 +25,9 @@ Renderer::Renderer()
 	  depthImage(device, physicalDevice, swapchain.extent),
 	  renderPass(createRenderPass(device, physicalDevice, swapchain)),
 	  commandPool(createCommandPool(device, queueIndices)),
-	  commandBuffers(device.allocateCommandBuffers({commandPool, vk::CommandBufferLevel::ePrimary, MAX_FRAMES_IN_FLIGHT})),
+	  commandBuffers(device.allocateCommandBuffers({commandPool, vk::CommandBufferLevel::ePrimary, maxFramesInFlight})),
 	  swapChainFramebuffers(createFramebuffers(device, renderPass, depthImage.imageView, swapchain.imageViews, swapchain.extent)),
-	  renderSyncObjects(createSyncObjects(device, MAX_FRAMES_IN_FLIGHT))
+	  renderSyncObjects(createSyncObjects(device, maxFramesInFlight))
 {
 }
 
@@ -89,7 +87,7 @@ void Renderer::drawScene(const Scene &scene)
 		framebufferResized = false;
 	}
 
-	updateUniformBuffer(currentFrame);
+	//updateUniformBuffer(currentFrame);
 
 	vk::raii::CommandBuffer& commandBuffer{commandBuffers[currentFrame]};
 	const RenderSync& renderSync{renderSyncObjects[currentFrame]};
@@ -105,7 +103,7 @@ void Renderer::drawScene(const Scene &scene)
 	}
 
 	commandBuffer.reset({});
-	recordCommandBuffer(commandBuffer, imageIndex);
+	//recordCommandBuffer(commandBuffer, imageIndex);
 
 	vk::PipelineStageFlags waitStages{vk::PipelineStageFlagBits::eColorAttachmentOutput};
 	const vk::SubmitInfo submitInfo{*renderSync.imageAvailableSemaphore, waitStages, *commandBuffer, *renderSync.renderFinishedSemaphore};
@@ -300,4 +298,19 @@ vk::Bool32 Renderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT mess
 	}
 
 	return false;
+}
+
+vk::Result Renderer::checkForBadSwapchain(vk::Result inResult)
+{
+	if (inResult == vk::Result::eErrorOutOfDateKHR)
+	{
+		recreateSwapchain();
+		framebufferResized = false;
+		return inResult;
+	}
+	if (inResult == vk::Result::eSuboptimalKHR)
+	{
+		return inResult;
+	}
+	return check(inResult);
 }

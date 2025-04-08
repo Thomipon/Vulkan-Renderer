@@ -16,15 +16,12 @@ class HelloTriangleApplication : public Renderer
 {
 public:
     void run();
-    inline static uint32_t maxFramesInFlight{2}; // TODO: This is duplicate currently
 
     inline static std::filesystem::path modelPath{"../../VulkanRenderer/Meshes/Mesh.obj"}; // TODO: Awful file management in many ways. These should be in some asset system
     inline static std::filesystem::path texturePath{"../../VulkanRenderer/Textures/Texture.png"};
 private:
     void initVulkan();
     void mainLoop();
-
-    vk::Result checkForBadSwapchain(vk::Result inResult);
 
     vk::raii::DescriptorSetLayout descriptorSetLayout{VK_NULL_HANDLE};
     vk::raii::PipelineLayout pipelineLayout{VK_NULL_HANDLE};

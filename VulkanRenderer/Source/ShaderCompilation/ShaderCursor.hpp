@@ -7,13 +7,6 @@
 
 class Buffer;
 
-struct ShaderOffset
-{
-	size_t byteOffset{0};
-	uint32_t bindingIndex{0};
-	uint32_t bindingArrayElement{0};
-};
-
 struct ShaderCursor
 {
 public:
@@ -32,7 +25,7 @@ public:
 	[[nodiscard]] ShaderCursor element(uint32_t index) const;
 
 private:
-	ShaderObject* shaderObject{nullptr};
+	std::shared_ptr<ShaderObject> shaderObject = nullptr;
 	ShaderOffset offset{};
 
 	slang::TypeLayoutReflection* typeLayout{nullptr};

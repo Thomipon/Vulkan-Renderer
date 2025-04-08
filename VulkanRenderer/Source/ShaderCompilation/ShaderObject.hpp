@@ -2,7 +2,7 @@
 #include <memory>
 #include <span>
 
-#include "ShaderCursor.hpp"
+#include "ShaderOffset.hpp"
 
 class Buffer;
 

@@ -6,9 +6,9 @@
 #include "Swapchain.hpp"
 #include "VulkanBackend.hpp"
 #include "Window.hpp"
+#include "Renderer/RenderSync.hpp"
 
 class Scene;
-class RenderSync;
 
 class Renderer
 {
@@ -35,6 +35,9 @@ public:
     std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
     std::vector<RenderSync> renderSyncObjects;
 
+    uint32_t maxFramesInFlight{2};
+    uint32_t currentFrame{0};
+
     void recreateSwapchain();
     static void onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight);
 
@@ -56,6 +59,8 @@ private:
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                       vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+protected:
+    vk::Result checkForBadSwapchain(vk::Result inResult);
 
 public:
     bool framebufferResized = false; // TODO: I don't really like that this is here. Also, it should not be public

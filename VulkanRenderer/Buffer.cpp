@@ -18,7 +18,7 @@ Buffer::Buffer(const Renderer& app, vk::DeviceSize size, vk::BufferUsageFlags us
 {
 }
 
-void Buffer::copyBufferToBuffer(const Renderer& app, const Buffer& source, const Buffer& destination, vk::DeviceSize size)
+void Buffer::copyBufferToBuffer(const Renderer& app, const Buffer& source, const Buffer& destination, vk::DeviceSize size, vk::DeviceSize dstOffset, vk::DeviceSize srcOffset)
 {
 	vk::raii::CommandBuffer commandBuffer{app.beginSingleTimeCommands()};
 

@@ -51,21 +51,6 @@ void HelloTriangleApplication::mainLoop()
 	device.waitIdle();
 }
 
-vk::Result HelloTriangleApplication::checkForBadSwapchain(vk::Result inResult)
-{
-	if (inResult == vk::Result::eErrorOutOfDateKHR)
-	{
-		recreateSwapchain();
-		framebufferResized = false;
-		return inResult;
-	}
-	if (inResult == vk::Result::eSuboptimalKHR)
-	{
-		return inResult;
-	}
-	return check(inResult);
-}
-
 void HelloTriangleApplication::createGraphicsPipeline()
 {
 	SlangCompiler compiler;
@@ -252,7 +237,7 @@ void HelloTriangleApplication::createDescriptorPool()
 
 void HelloTriangleApplication::createDescriptorSets()
 {
-	std::vector<vk::DescriptorSetLayout> layouts(maxFramesInFlight, descriptorSetLayout); // TODO: This could be raii?
+	std::vector<vk::DescriptorSetLayout> layouts(maxFramesInFlight, descriptorSetLayout);
 	vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo{descriptorPool, layouts};
 
 	descriptorSets = device.allocateDescriptorSets(descriptorSetAllocateInfo);

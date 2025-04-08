@@ -11,6 +11,9 @@ class VulkanShaderObject : ShaderObject
 public:
 	virtual void write(const ShaderOffset& offset, const void* data, size_t size) override;
 
+	void writeTexture(const ShaderOffset &offset, const TextureImage &texture) override;
+	void writeSampler(const ShaderOffset &offset, const TextureImage &texture) override;
+
 	static std::unique_ptr<VulkanShaderObject> create(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app);
 private:
 	slang::TypeLayoutReflection* typeLayout{nullptr};

@@ -2,6 +2,7 @@
 
 #include "Buffer.hpp"
 #include "Renderer.hpp"
+#include "TextureImage.hpp"
 
 vk::DescriptorType mapDescriptorType(slang::BindingType bindingType)
 {
@@ -62,6 +63,36 @@ void VulkanShaderObject::write(const ShaderOffset& offset, const void* data, siz
 		return;
 	}
 	Buffer::copySpanToBufferStaged(*app, std::span{static_cast<const std::byte*>(data), size}, *buffer, offset.byteOffset); // TODO: Support none-staged buffers
+}
+
+void VulkanShaderObject::writeTexture(const ShaderOffset& offset, const TextureImage& texture)
+{
+	const uint32_t bindingIndex = offset.bindingIndex;//typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
+
+	vk::DescriptorImageInfo image{{}, texture.imageView};
+
+	std::vector<vk::WriteDescriptorSet> descriptorWrites{};
+	descriptorWrites.reserve(descriptorSets.size());
+	for (const auto& descriptorSet: descriptorSets)
+	{
+		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1, mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex)), &image);
+	}
+	app->device.updateDescriptorSets(descriptorWrites, {});
+}
+
+void VulkanShaderObject::writeSampler(const ShaderOffset &offset, const TextureImage &texture)
+{
+	const uint32_t bindingIndex = offset.bindingIndex;//typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
+
+	vk::DescriptorImageInfo image{texture.sampler};
+
+	std::vector<vk::WriteDescriptorSet> descriptorWrites{};
+	descriptorWrites.reserve(descriptorSets.size());
+	for (const auto& descriptorSet: descriptorSets)
+	{
+		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1, mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex)), &image);
+	}
+	app->device.updateDescriptorSets(descriptorWrites, {});
 }
 
 std::unique_ptr<VulkanShaderObject> VulkanShaderObject::create(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app) // TODO: Stage flags as param

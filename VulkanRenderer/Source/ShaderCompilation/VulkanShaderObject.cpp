@@ -3,57 +3,11 @@
 #include "Buffer.hpp"
 #include "Renderer.hpp"
 #include "TextureImage.hpp"
+#include "VulkanShaderObjectLayout.hpp"
 
-vk::DescriptorType mapDescriptorType(slang::BindingType bindingType)
+VulkanShaderObject::VulkanShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layout)
+	: VulkanShaderObject(createShaderObject(layout))
 {
-	switch (bindingType)
-	{
-	case slang::BindingType::Unknown:
-		break;
-	case slang::BindingType::Sampler:
-		return vk::DescriptorType::eSampler;
-	case slang::BindingType::Texture:
-		return vk::DescriptorType::eSampledImage;
-	case slang::BindingType::ConstantBuffer:
-		return vk::DescriptorType::eUniformBuffer;
-	case slang::BindingType::ParameterBlock:
-		return vk::DescriptorType::eUniformBuffer;
-	case slang::BindingType::TypedBuffer:
-		break;
-	case slang::BindingType::RawBuffer:
-		break;
-	case slang::BindingType::CombinedTextureSampler:
-		return vk::DescriptorType::eCombinedImageSampler;
-	case slang::BindingType::InputRenderTarget:
-		break;
-	case slang::BindingType::InlineUniformData:
-		return vk::DescriptorType::eInlineUniformBlock;
-	case slang::BindingType::RayTracingAccelerationStructure:
-		return vk::DescriptorType::eAccelerationStructureKHR;
-	case slang::BindingType::VaryingInput:
-		break;
-	case slang::BindingType::VaryingOutput:
-		break;
-	case slang::BindingType::ExistentialValue:
-		break;
-	case slang::BindingType::PushConstant:
-		break;
-	case slang::BindingType::MutableFlag:
-		break;
-	case slang::BindingType::MutableTexture:
-		return vk::DescriptorType::eStorageImage;
-	case slang::BindingType::MutableTypedBuffer:
-		break;
-	case slang::BindingType::MutableRawBuffer:
-		break;
-	case slang::BindingType::BaseMask:
-		break;
-	case slang::BindingType::ExtMask:
-		break;
-	}
-
-	// TODO: Missing: eUniformTexelBuffer, eStorageTexelBuffer, eUniformBuffer, eStorageBuffer, eUniformBufferDynamic, eStorageBufferDynamic, eInputAttachment, eMutableEXT
-	return vk::DescriptorType::eUniformBuffer;
 }
 
 void VulkanShaderObject::write(const ShaderOffset& offset, const void* data, size_t size)
@@ -67,73 +21,52 @@ void VulkanShaderObject::write(const ShaderOffset& offset, const void* data, siz
 
 void VulkanShaderObject::writeTexture(const ShaderOffset& offset, const TextureImage& texture)
 {
-	const uint32_t bindingIndex = offset.bindingIndex;//typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
+	const uint32_t bindingIndex = offset.bindingIndex; //typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
 
 	vk::DescriptorImageInfo image{{}, texture.imageView};
 
 	std::vector<vk::WriteDescriptorSet> descriptorWrites{};
 	descriptorWrites.reserve(descriptorSets.size());
-	for (const auto& descriptorSet: descriptorSets)
+	for (const auto& descriptorSet : descriptorSets)
 	{
-		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1, mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex)), &image);
+		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1, VulkanShaderObjectLayout::mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex)), &image);
 	}
 	app->device.updateDescriptorSets(descriptorWrites, {});
 }
 
-void VulkanShaderObject::writeSampler(const ShaderOffset &offset, const TextureImage &texture)
+void VulkanShaderObject::writeSampler(const ShaderOffset& offset, const TextureImage& texture)
 {
-	const uint32_t bindingIndex = offset.bindingIndex;//typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
+	const uint32_t bindingIndex = offset.bindingIndex; //typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
 
 	vk::DescriptorImageInfo image{texture.sampler};
 
 	std::vector<vk::WriteDescriptorSet> descriptorWrites{};
 	descriptorWrites.reserve(descriptorSets.size());
-	for (const auto& descriptorSet: descriptorSets)
+	for (const auto& descriptorSet : descriptorSets)
 	{
-		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1, mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex)), &image);
+		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1, VulkanShaderObjectLayout::mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex)), &image);
 	}
 	app->device.updateDescriptorSets(descriptorWrites, {});
 }
 
-std::unique_ptr<VulkanShaderObject> VulkanShaderObject::create(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app) // TODO: Stage flags as param
+VulkanShaderObject VulkanShaderObject::createShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layoutObject) // TODO: Stage flags as param
 {
-	std::unique_ptr<VulkanShaderObject> result{new VulkanShaderObject(typeLayout, app)};
-
-	const bool hasOrdinaryData = typeLayout->getSize() > 0;
+	const bool hasOrdinaryData = layoutObject->typeLayout->getSize() > 0;
+	std::optional<Buffer> buffer{};
 	if (hasOrdinaryData)
 	{
-		result->buffer = std::make_unique<Buffer>(*app, vk::DeviceSize{typeLayout->getSize()}, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlags{});
+		buffer = Buffer{*layoutObject->app, vk::DeviceSize{layoutObject->typeLayout->getSize()}, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlags{}};
 	}
 
-	const auto bindingRangeCount{typeLayout->getBindingRangeCount()};
-	const uint32_t totalBindingCount = bindingRangeCount + hasOrdinaryData ? 1 : 0;
-	std::vector<vk::DescriptorSetLayoutBinding> bindings;
-	bindings.reserve(totalBindingCount);
-	std::vector<vk::DescriptorPoolSize> poolSizes;
-	poolSizes.reserve(totalBindingCount);
-	for (unsigned i = 0; i < bindingRangeCount; ++i)
-	{
-		const vk::DescriptorType descriptorType{mapDescriptorType(typeLayout->getBindingRangeType(i))};
-		bindings.emplace_back(i, descriptorType, static_cast<uint32_t>(typeLayout->getBindingRangeBindingCount(i)), vk::ShaderStageFlags{}, nullptr);
-		poolSizes.emplace_back(descriptorType, app->maxFramesInFlight);
-	}
-	if (hasOrdinaryData)
-	{
-		bindings.emplace_back(bindingRangeCount, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlags{}, nullptr);
-		poolSizes.emplace_back(vk::DescriptorType::eUniformBuffer, app->maxFramesInFlight);
-	}
+	std::vector<vk::DescriptorSetLayout> layouts(layoutObject->app->maxFramesInFlight, layoutObject->descriptorSetLayout);
+	const vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo{layoutObject->descriptorPool, layouts};
+	std::vector<vk::raii::DescriptorSet> descriptorSets{layoutObject->app->device.allocateDescriptorSets(descriptorSetAllocateInfo)};
 
-	result->descriptorSetLayout = vk::raii::DescriptorSetLayout{app->device, {{}, bindings}};
-	result->descriptorPool = vk::raii::DescriptorPool{app->device, {vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, app->maxFramesInFlight, poolSizes}};
-
-	std::vector<vk::DescriptorSetLayout> layouts(app->maxFramesInFlight, result->descriptorSetLayout);
-	const vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo{result->descriptorPool, layouts};
-	result->descriptorSets = app->device.allocateDescriptorSets(descriptorSetAllocateInfo);
-
-	return result;
+	return {layoutObject->typeLayout, layoutObject, std::move(buffer), std::move(descriptorSets), layoutObject->app};
 }
 
-VulkanShaderObject::VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app)
-	: ShaderObject(typeLayout), app(app)
+VulkanShaderObject::VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<VulkanShaderObjectLayout>& layout, std::optional<Buffer>&& buffer,
+                                       std::vector<vk::raii::DescriptorSet>&& descriptorSets, const std::shared_ptr<Renderer>& app)
+	: ShaderObject(typeLayout), buffer(std::move(buffer)), descriptorSets(std::move(descriptorSets)), layout(layout), app(app)
 {
 }

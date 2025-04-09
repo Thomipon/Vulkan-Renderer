@@ -9,19 +9,22 @@
 
 void Material::compile(const SlangCompiler& compiler)
 {
-	auto rasterModule = compiler.loadModule("Core/mainRaster");
-	auto vertEntry = SlangCompiler::findEntryPoint(rasterModule, "vertexMain");
-	auto fragEntry = SlangCompiler::findEntryPoint(rasterModule, "fragmentMain");
+	auto rasterModule{compiler.loadModule("Core/mainRaster")};
+	auto vertEntry{SlangCompiler::findEntryPoint(rasterModule, "vertexMain")};
+	auto fragEntry{SlangCompiler::findEntryPoint(rasterModule, "fragmentMain")};
 
-	auto materialModule = compiler.loadModule("BRDF/phong");
-	auto material = materialModule->getLayout()->findTypeByName("ConstantPhongMaterial");
-	std::vector<slang::SpecializationArg> specializationArgs =
+	auto materialModule{compiler.loadModule("BRDF/phong")};
+	auto material{materialModule->getLayout()->findTypeByName("ConstantPhongMaterial")};
+
+	auto composedProgram{compiler.composeProgram({rasterModule, vertEntry, fragEntry, materialModule})};
+	composedProgram->getLayout()->getTypeLayout(material);
+	/*std::vector<slang::SpecializationArg> specializationArgs =
 	{
 		{
 			slang::SpecializationArg::Kind::Type,
 			materialModule->getLayout()->findTypeByName("ConstantPhongMaterial")
 		}
-	};
+	};*/
 
 	//auto specializedFrag = SlangCompiler::specializeEntryPoint(fragEntry, specializationArgs);
 

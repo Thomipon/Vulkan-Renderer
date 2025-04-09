@@ -54,6 +54,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/Renderer/RenderSync.cpp
         Source/Renderer/RenderSync.hpp
         Source/ShaderCompilation/ShaderOffset.hpp
+        Source/ShaderCompilation/VulkanShaderObjectLayout.cpp
+        Source/ShaderCompilation/VulkanShaderObjectLayout.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

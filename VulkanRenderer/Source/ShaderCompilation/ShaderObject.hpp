@@ -27,11 +27,7 @@ public:
 	slang::TypeLayoutReflection* typeLayout;
 
 protected:
-	ShaderObject(slang::TypeLayoutReflection* typeLayout);
-
-private:
-	std::shared_ptr<Buffer> buffer{nullptr};
-	std::byte* bufferData{nullptr};
+	explicit ShaderObject(slang::TypeLayoutReflection* typeLayout);
 };
 
 template <typename T>

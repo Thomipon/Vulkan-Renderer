@@ -1,27 +1,32 @@
 ﻿#pragma once
 #include <slang/slang.h>
 
+#include "Buffer.hpp"
 #include "ShaderObject.hpp"
 #include "VulkanBackend.hpp"
 
+class VulkanShaderObjectLayout;
 class Renderer;
 
 class VulkanShaderObject : ShaderObject
 {
 public:
+	VulkanShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layout);
+
 	virtual void write(const ShaderOffset& offset, const void* data, size_t size) override;
 
-	void writeTexture(const ShaderOffset &offset, const TextureImage &texture) override;
-	void writeSampler(const ShaderOffset &offset, const TextureImage &texture) override;
+	virtual void writeTexture(const ShaderOffset& offset, const TextureImage& texture) override;
+	virtual void writeSampler(const ShaderOffset& offset, const TextureImage& texture) override;
 
-	static std::unique_ptr<VulkanShaderObject> create(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app);
 private:
-	std::shared_ptr<Buffer> buffer{nullptr}; // TODO: This might not have to be a pointer
-	vk::raii::DescriptorSetLayout descriptorSetLayout{nullptr};
-	vk::raii::DescriptorPool descriptorPool{nullptr};
-	std::vector<vk::raii::DescriptorSet> descriptorSets{};
+	static VulkanShaderObject createShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layoutObject);
 
+	std::optional<Buffer> buffer;
+	std::vector<vk::raii::DescriptorSet> descriptorSets;
+
+	std::shared_ptr<VulkanShaderObjectLayout> layout;
 	std::shared_ptr<Renderer> app;
 
-	VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app);
+	VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<VulkanShaderObjectLayout>& layout, std::optional<Buffer>&& buffer,
+	                   std::vector<vk::raii::DescriptorSet>&& descriptorSets, const std::shared_ptr<Renderer>& app);
 };

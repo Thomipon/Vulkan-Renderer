@@ -56,6 +56,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/ShaderCompilation/ShaderOffset.hpp
         Source/ShaderCompilation/VulkanShaderObjectLayout.cpp
         Source/ShaderCompilation/VulkanShaderObjectLayout.hpp
+        Source/Asset/MaterialInstance.cpp
+        Source/Asset/MaterialInstance.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

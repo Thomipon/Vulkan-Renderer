@@ -66,14 +66,19 @@ VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* 
 VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app)
 {
 	// TODO: This currently does not handle ParameterBlocks!
+	// TODO: We don't need to support all shader stage flags
+
+	std::vector<vk::DescriptorSetLayoutBinding> bindings;
+	std::vector<vk::DescriptorPoolSize> poolSizes;
+
 	const bool hasOrdinaryData = typeLayout->getSize() > 0;
 
 	const auto bindingRangeCount{typeLayout->getBindingRangeCount()};
 	const uint32_t totalBindingCount = bindingRangeCount + hasOrdinaryData ? 1 : 0;
-	std::vector<vk::DescriptorSetLayoutBinding> bindings;
-	bindings.reserve(totalBindingCount);
-	std::vector<vk::DescriptorPoolSize> poolSizes;
-	poolSizes.reserve(totalBindingCount);
+
+	bindings.reserve(bindings.size() + totalBindingCount);
+	poolSizes.reserve(poolSizes.size() + totalBindingCount);
+
 	for (unsigned i = 0; i < bindingRangeCount; ++i)
 	{
 		const vk::DescriptorType descriptorType{mapDescriptorType(typeLayout->getBindingRangeType(i))};
@@ -92,7 +97,7 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayou
 }
 
 VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
-	vk::raii::DescriptorPool&& descriptorPool)
-		: typeLayout(typeLayout), app(app), descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool))
+                                                   vk::raii::DescriptorPool&& descriptorPool)
+	: typeLayout(typeLayout), app(app), descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool))
 {
 }

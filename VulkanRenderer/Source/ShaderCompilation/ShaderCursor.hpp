@@ -11,7 +11,7 @@ class Buffer;
 struct ShaderCursor
 {
 public:
-	ShaderCursor(ShaderObject& shaderObject);
+	ShaderCursor(ShaderObject* shaderObject);
 
 	void write(const void* data, size_t size);
 
@@ -31,7 +31,7 @@ public:
 	[[nodiscard]] ShaderCursor element(uint32_t index) const;
 
 private:
-	ShaderObject& shaderObject;
+	ShaderObject* shaderObject;
 	ShaderOffset offset{};
 
 	slang::TypeLayoutReflection* typeLayout;

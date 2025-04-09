@@ -4,24 +4,24 @@
 
 #include "ShaderCursor.hpp"
 
-ShaderCursor::ShaderCursor(ShaderObject &shaderObject)
-	: shaderObject(shaderObject), typeLayout(shaderObject.typeLayout)
+ShaderCursor::ShaderCursor(ShaderObject* shaderObject)
+	: shaderObject(shaderObject), typeLayout(shaderObject->typeLayout)
 {
 }
 
 void ShaderCursor::write(const void* data, size_t size)
 {
-	shaderObject.write(offset, data, size);
+	shaderObject->write(offset, data, size);
 }
 
-void ShaderCursor::writeTexture(const TextureImage &texture)
+void ShaderCursor::writeTexture(const TextureImage& texture)
 {
-	shaderObject.writeTexture(offset, texture);
+	shaderObject->writeTexture(offset, texture);
 }
 
-void ShaderCursor::writeSampler(const TextureImage &texture)
+void ShaderCursor::writeSampler(const TextureImage& texture)
 {
-	shaderObject.writeSampler(offset, texture);
+	shaderObject->writeSampler(offset, texture);
 }
 
 ShaderCursor ShaderCursor::field(const char* name) const

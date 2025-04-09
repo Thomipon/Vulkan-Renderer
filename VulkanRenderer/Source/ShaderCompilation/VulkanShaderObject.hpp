@@ -8,7 +8,7 @@
 class VulkanShaderObjectLayout;
 class Renderer;
 
-class VulkanShaderObject : ShaderObject
+class VulkanShaderObject : public ShaderObject
 {
 public:
 	VulkanShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layout);

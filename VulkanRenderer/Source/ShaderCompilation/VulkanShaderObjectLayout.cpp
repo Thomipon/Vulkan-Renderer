@@ -65,6 +65,7 @@ VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* 
 
 VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app)
 {
+	// TODO: This currently does not handle ParameterBlocks!
 	const bool hasOrdinaryData = typeLayout->getSize() > 0;
 
 	const auto bindingRangeCount{typeLayout->getBindingRangeCount()};
@@ -76,12 +77,12 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayou
 	for (unsigned i = 0; i < bindingRangeCount; ++i)
 	{
 		const vk::DescriptorType descriptorType{mapDescriptorType(typeLayout->getBindingRangeType(i))};
-		bindings.emplace_back(i, descriptorType, static_cast<uint32_t>(typeLayout->getBindingRangeBindingCount(i)), vk::ShaderStageFlags{}, nullptr);
+		bindings.emplace_back(i, descriptorType, static_cast<uint32_t>(typeLayout->getBindingRangeBindingCount(i)), vk::ShaderStageFlagBits::eAll, nullptr);
 		poolSizes.emplace_back(descriptorType, app.maxFramesInFlight);
 	}
 	if (hasOrdinaryData)
 	{
-		bindings.emplace_back(bindingRangeCount, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlags{}, nullptr);
+		bindings.emplace_back(bindingRangeCount, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eAll, nullptr);
 		poolSizes.emplace_back(vk::DescriptorType::eUniformBuffer, app.maxFramesInFlight);
 	}
 

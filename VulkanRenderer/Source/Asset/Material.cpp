@@ -18,8 +18,10 @@ Material::Material()
 void Material::compile(const SlangCompiler& compiler, const Renderer& app)
 {
 	auto [materialModule, materialType]{loadMaterial("BRDF/phong", "ConstantPhongMaterial", compiler)};
-	spirv = compileSpriv(materialModule, materialType, compiler);
-	shaderLayout = std::make_unique<VulkanShaderObjectLayout>(materialModule->getLayout()->getTypeLayout(materialType), app);
+	auto program{compileMaterialProgram(materialModule, materialType, compiler)};
+	//program->getLayout()->getGlobalParamsTypeLayout()->getBindingRangeType()
+	spirv = compileSpriv(program);
+	shaderLayout = std::make_unique<VulkanShaderObjectLayout>(program->getLayout()->getGlobalParamsTypeLayout(), app);
 	pipelineLayout = createPipelineLayout(*shaderLayout, app);
 	pipeline = createPipeline(spirv, pipelineLayout, app);
 }
@@ -31,7 +33,14 @@ std::pair<Slang::ComPtr<slang::IModule>, slang::TypeReflection*> Material::loadM
 	return {materialModule, material};
 }
 
-Slang::ComPtr<slang::IBlob> Material::compileSpriv(const Slang::ComPtr<slang::IModule>& materialModule, slang::TypeReflection* materialType, const SlangCompiler& compiler)
+Spirv Material::compileSpriv(const Slang::ComPtr<slang::IComponentType>& program)
+{
+	auto linked{SlangCompiler::linkProgram(program)};
+	return {SlangCompiler::getSprirV(linked, 0), SlangCompiler::getSprirV(linked, 1)};
+}
+
+Slang::ComPtr<slang::IComponentType> Material::compileMaterialProgram(const Slang::ComPtr<slang::IModule> &materialModule,
+	slang::TypeReflection *materialType, const SlangCompiler &compiler)
 {
 	auto rasterModule{compiler.loadModule("Core/mainRaster")};
 	auto vertEntry{SlangCompiler::findEntryPoint(rasterModule, "vertexMain")};
@@ -54,9 +63,7 @@ Slang::ComPtr<slang::IBlob> Material::compileSpriv(const Slang::ComPtr<slang::IM
 			materialType
 		},
 	};
-	auto specializedCode{SlangCompiler::specializeProgram(composedProgram, specializationArgs)};
-
-	return SlangCompiler::getSprirV(SlangCompiler::linkProgram(specializedCode));
+	return SlangCompiler::specializeProgram(composedProgram, specializationArgs);
 }
 
 vk::raii::PipelineLayout Material::createPipelineLayout(const VulkanShaderObjectLayout& layout, const Renderer& app)
@@ -66,12 +73,13 @@ vk::raii::PipelineLayout Material::createPipelineLayout(const VulkanShaderObject
 	return {app.device, pipelineLayoutCreateInfo};
 }
 
-vk::raii::Pipeline Material::createPipeline(const Slang::ComPtr<slang::IBlob>& spirv, const vk::raii::PipelineLayout& layout, const Renderer& app)
+vk::raii::Pipeline Material::createPipeline(const Spirv &spirv, const vk::raii::PipelineLayout& layout, const Renderer& app)
 {
-	vk::raii::ShaderModule shaderModule{createShaderModule(spirv, app.device)};
+	vk::raii::ShaderModule vertShaderModule{createShaderModule(spirv.vertSpirv, app.device)};
+	vk::raii::ShaderModule fragShaderModule{createShaderModule(spirv.fragSpirv, app.device)};
 
-	vk::PipelineShaderStageCreateInfo vertShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eVertex, shaderModule, "vertexMain", nullptr};
-	vk::PipelineShaderStageCreateInfo fragShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eFragment, shaderModule, "fragmentMain", nullptr};
+	vk::PipelineShaderStageCreateInfo vertShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eVertex, vertShaderModule, "main", nullptr};
+	vk::PipelineShaderStageCreateInfo fragShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eFragment, fragShaderModule,"main", nullptr};
 
 	// TODO: Move all of these parts somewhere else to make this code self-documenting
 	std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages{vertShaderStageCreateInfo, fragShaderStageCreateInfo};

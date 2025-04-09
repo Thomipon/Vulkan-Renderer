@@ -79,12 +79,12 @@ ComPtr<slang::IComponentType> SlangCompiler::linkProgram(const ComPtr<slang::ICo
 	return linkedProgram;
 }
 
-ComPtr<slang::IBlob> SlangCompiler::getSprirV(const ComPtr<slang::IComponentType>& linkedProgram)
+ComPtr<slang::IBlob> SlangCompiler::getSprirV(const ComPtr<slang::IComponentType>& linkedProgram, const uint32_t entryPointIndex)
 {
 	ComPtr<slang::IBlob> spirvCode;
 	{
 		ComPtr<slang::IBlob> diagnosticsBlob;
-		const auto result = linkedProgram->getEntryPointCode(0, 0, spirvCode.writeRef(), diagnosticsBlob.writeRef());
+		const auto result = linkedProgram->getEntryPointCode(entryPointIndex, 0, spirvCode.writeRef(), diagnosticsBlob.writeRef());
 		diagnoseIfNeeded(diagnosticsBlob);
 		check(result);
 	}
@@ -95,7 +95,7 @@ ComPtr<slang::IBlob> SlangCompiler::compile(const std::string_view& moduleName, 
 {
 	const ComPtr<slang::IModule> module{loadModule(moduleName)};
 	const ComPtr<slang::IEntryPoint> entryPoint{findEntryPoint(module, entryPointName)};
-	return getSprirV(linkProgram(composeProgram({module, entryPoint})));
+	return getSprirV(linkProgram(composeProgram({module, entryPoint})), 0);
 }
 
 ComPtr<slang::IComponentType> SlangCompiler::specializeEntryPoint(const ComPtr<slang::IEntryPoint>& entryPoint, const std::span<slang::SpecializationArg>& specializationArgs)

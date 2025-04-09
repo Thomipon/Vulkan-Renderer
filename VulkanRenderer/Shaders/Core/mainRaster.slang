@@ -10,7 +10,7 @@ struct ViewData
     float3 viewPosition;
 }
 
-ParameterBlock<ViewData> gViewData;
+uniform ViewData gViewData;
 
 struct ModelData
 {
@@ -18,7 +18,7 @@ struct ModelData
     float4x4 inverseTransposeModelTransform;
 }
 
-ParameterBlock<ModelData> gModelData;
+uniform ModelData gModelData;
 
 uniform ILightEnvironment gLightEnvironment;
 uniform IMaterial gMaterial;

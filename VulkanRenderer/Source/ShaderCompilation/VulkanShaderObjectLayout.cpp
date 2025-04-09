@@ -58,12 +58,12 @@ vk::DescriptorType VulkanShaderObjectLayout::mapDescriptorType(slang::BindingTyp
 	return vk::DescriptorType::eUniformBuffer;
 }
 
-VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<const Renderer>& app)
+VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app)
 	: VulkanShaderObjectLayout(createLayout(typeLayout, app))
 {
 }
 
-VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<const Renderer>& app)
+VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app)
 {
 	const bool hasOrdinaryData = typeLayout->getSize() > 0;
 
@@ -77,20 +77,20 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayou
 	{
 		const vk::DescriptorType descriptorType{mapDescriptorType(typeLayout->getBindingRangeType(i))};
 		bindings.emplace_back(i, descriptorType, static_cast<uint32_t>(typeLayout->getBindingRangeBindingCount(i)), vk::ShaderStageFlags{}, nullptr);
-		poolSizes.emplace_back(descriptorType, app->maxFramesInFlight);
+		poolSizes.emplace_back(descriptorType, app.maxFramesInFlight);
 	}
 	if (hasOrdinaryData)
 	{
 		bindings.emplace_back(bindingRangeCount, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlags{}, nullptr);
-		poolSizes.emplace_back(vk::DescriptorType::eUniformBuffer, app->maxFramesInFlight);
+		poolSizes.emplace_back(vk::DescriptorType::eUniformBuffer, app.maxFramesInFlight);
 	}
 
-	vk::raii::DescriptorSetLayout descriptorSetLayout{app->device, {{}, bindings}};
-	vk::raii::DescriptorPool descriptorPool{app->device, {vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, app->maxFramesInFlight, poolSizes}};
+	vk::raii::DescriptorSetLayout descriptorSetLayout{app.device, {{}, bindings}};
+	vk::raii::DescriptorPool descriptorPool{app.device, {vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, app.maxFramesInFlight, poolSizes}};
 	return {typeLayout, app, std::move(descriptorSetLayout), std::move(descriptorPool)};
 }
 
-VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<const Renderer>& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
+VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
 	vk::raii::DescriptorPool&& descriptorPool)
 		: typeLayout(typeLayout), app(app), descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool))
 {

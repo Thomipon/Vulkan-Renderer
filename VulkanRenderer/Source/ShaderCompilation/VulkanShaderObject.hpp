@@ -25,8 +25,8 @@ private:
 	std::vector<vk::raii::DescriptorSet> descriptorSets;
 
 	std::shared_ptr<VulkanShaderObjectLayout> layout;
-	std::shared_ptr<const Renderer> app;
+	const Renderer& app;
 
 	VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<VulkanShaderObjectLayout>& layout, std::optional<Buffer>&& buffer,
-	                   std::vector<vk::raii::DescriptorSet>&& descriptorSets, const std::shared_ptr<const Renderer>& app);
+	                   std::vector<vk::raii::DescriptorSet>&& descriptorSets, const Renderer& app);
 };

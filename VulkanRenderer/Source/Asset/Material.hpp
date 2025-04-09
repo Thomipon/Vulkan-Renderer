@@ -14,7 +14,7 @@ public:
 
 	Slang::ComPtr<slang::IBlob> spirv;
 
-	std::optional<VulkanShaderObjectLayout> shaderLayout; // TODO: This all screams for a refactor that separates material assets from compiled materials
+	std::unique_ptr<VulkanShaderObjectLayout> shaderLayout; // TODO: This all screams for a refactor that separates material assets from compiled materials
 	vk::raii::PipelineLayout pipelineLayout;
 	vk::raii::Pipeline pipeline;
 

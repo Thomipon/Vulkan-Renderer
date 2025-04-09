@@ -6,7 +6,6 @@
 
 #include <array>
 
-
 #include "Renderer.hpp"
 #include "ShaderCompiler.hpp"
 #include "Vertex.hpp"
@@ -20,7 +19,7 @@ void Material::compile(const SlangCompiler& compiler, const Renderer& app)
 {
 	auto [materialModule, materialType]{loadMaterial("BRDF/phong", "ConstantPhongMaterial", compiler)};
 	spirv = compileSpriv(materialModule, materialType, compiler);
-	shaderLayout = VulkanShaderObjectLayout{materialModule->getLayout()->getTypeLayout(materialType), app.shared_from_this()};
+	shaderLayout = std::make_unique<VulkanShaderObjectLayout>(materialModule->getLayout()->getTypeLayout(materialType), app);
 	pipelineLayout = createPipelineLayout(*shaderLayout, app);
 	pipeline = createPipeline(spirv, pipelineLayout, app);
 }
@@ -71,8 +70,8 @@ vk::raii::Pipeline Material::createPipeline(const Slang::ComPtr<slang::IBlob>& s
 {
 	vk::raii::ShaderModule shaderModule{createShaderModule(spirv, app.device)};
 
-	vk::PipelineShaderStageCreateInfo vertShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eVertex, shaderModule, "main", nullptr};
-	vk::PipelineShaderStageCreateInfo fragShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eFragment, shaderModule, "main", nullptr};
+	vk::PipelineShaderStageCreateInfo vertShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eVertex, shaderModule, "vertexMain", nullptr};
+	vk::PipelineShaderStageCreateInfo fragShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eFragment, shaderModule, "fragmentMain", nullptr};
 
 	// TODO: Move all of these parts somewhere else to make this code self-documenting
 	std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages{vertShaderStageCreateInfo, fragShaderStageCreateInfo};

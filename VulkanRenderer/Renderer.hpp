@@ -10,7 +10,7 @@
 
 class Scene;
 
-class Renderer
+class Renderer : public std::enable_shared_from_this<Renderer>
 {
 public:
     Renderer();

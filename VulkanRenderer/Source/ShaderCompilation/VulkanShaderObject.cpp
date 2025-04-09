@@ -66,7 +66,7 @@ VulkanShaderObject VulkanShaderObject::createShaderObject(const std::shared_ptr<
 }
 
 VulkanShaderObject::VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<VulkanShaderObjectLayout>& layout, std::optional<Buffer>&& buffer,
-                                       std::vector<vk::raii::DescriptorSet>&& descriptorSets, const std::shared_ptr<Renderer>& app)
+                                       std::vector<vk::raii::DescriptorSet>&& descriptorSets, const std::shared_ptr<const Renderer>& app)
 	: ShaderObject(typeLayout), buffer(std::move(buffer)), descriptorSets(std::move(descriptorSets)), layout(layout), app(app)
 {
 }

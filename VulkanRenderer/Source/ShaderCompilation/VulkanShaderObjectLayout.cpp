@@ -58,12 +58,12 @@ vk::DescriptorType VulkanShaderObjectLayout::mapDescriptorType(slang::BindingTyp
 	return vk::DescriptorType::eUniformBuffer;
 }
 
-VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app)
+VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<const Renderer>& app)
 	: VulkanShaderObjectLayout(createLayout(typeLayout, app))
 {
 }
 
-VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app)
+VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<const Renderer>& app)
 {
 	const bool hasOrdinaryData = typeLayout->getSize() > 0;
 
@@ -90,7 +90,7 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayou
 	return {typeLayout, app, std::move(descriptorSetLayout), std::move(descriptorPool)};
 }
 
-VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<Renderer>& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
+VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<const Renderer>& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
 	vk::raii::DescriptorPool&& descriptorPool)
 		: typeLayout(typeLayout), app(app), descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool))
 {

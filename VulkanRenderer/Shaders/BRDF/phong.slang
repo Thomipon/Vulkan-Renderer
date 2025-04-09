@@ -1,8 +1,8 @@
 ﻿module phong;
 
-import brdf;
-import material;
-import geometry;
+import Core.brdf;
+import Core.material;
+import Core.geometry;
 
 struct PhongBRDF : IBRDF
 {

@@ -58,7 +58,7 @@ void HelloTriangleApplication::createGraphicsPipeline()
 	auto fragBlob{compiler.compile("default", "fragmentMain")};
 
 	Material material;
-	material.compile(compiler);
+	material.compile(compiler, *this);
 
 	vk::raii::ShaderModule vertShaderModule{createShaderModule(vertBlob, device)};
 	vk::raii::ShaderModule fragShaderModule{createShaderModule(fragBlob, device)};

@@ -2,11 +2,11 @@
 
 #include <chrono>
 #include <vector>
-#include <unordered_map>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "Buffer.hpp"
 #include "check.hpp"
@@ -18,7 +18,11 @@
 #include "Uniforms.hpp"
 #include "Vertex.hpp"
 #include "Asset/Material.hpp"
+#include "Asset/MaterialInstance.hpp"
 #include "Renderer/RenderSync.hpp"
+#include "Scene/Camera.hpp"
+#include "Scene/Model.hpp"
+#include "ShaderCompilation/ShaderCursor.hpp"
 
 void HelloTriangleApplication::run()
 {
@@ -49,6 +53,31 @@ void HelloTriangleApplication::mainLoop()
 	}
 
 	device.waitIdle();
+}
+
+void HelloTriangleApplication::initScene()
+{
+	scene.camera = std::make_unique<Camera>();
+	Model& model{scene.models.emplace_back()};
+	model.mesh = std::make_unique<Mesh>(*this, modelPath);
+	auto material = std::make_unique<Material>();
+	model.material = std::make_unique<MaterialInstance>(std::move(material));
+
+	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
+	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
+	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
+	materialCursor.field("specularity").write(glm::vec1{1.f});
+}
+
+void HelloTriangleApplication::updateCamera()
+{
+	static auto startTime{std::chrono::high_resolution_clock::now()};
+
+	const auto currentTime{std::chrono::high_resolution_clock::now()};
+	const float time{std::chrono::duration<float>(currentTime - startTime).count()};
+
+	scene.camera->transform.translation = rotate(glm::vec3{5.f, 0.f, 0.f}, time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
+	scene.camera->transform.rotation = quatLookAt(glm::vec3{2.0f} - glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f});
 }
 
 void HelloTriangleApplication::createGraphicsPipeline()

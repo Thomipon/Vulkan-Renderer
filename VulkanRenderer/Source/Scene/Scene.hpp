@@ -2,9 +2,10 @@
 #include <memory>
 #include <vector>
 
+#include "Model.hpp"
+#include "Light/Light.hpp"
+
 class Camera;
-class Model;
-class Light;
 
 class Scene
 {

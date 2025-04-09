@@ -8,6 +8,7 @@
 #include "Renderer.hpp"
 #include "TextureImage.hpp"
 #include "Vertex.hpp"
+#include "Scene/Scene.hpp"
 
 class RenderSync;
 class Buffer;
@@ -22,6 +23,11 @@ public:
 private:
     void initVulkan();
     void mainLoop();
+
+    void initScene();
+    void updateCamera();
+
+    Scene scene;
 
     vk::raii::DescriptorSetLayout descriptorSetLayout{VK_NULL_HANDLE};
     vk::raii::PipelineLayout pipelineLayout{VK_NULL_HANDLE};

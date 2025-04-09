@@ -8,7 +8,13 @@
 #include "check.hpp"
 #include "PhysicalDeviceHelper.hpp"
 #include "ValidationLayers.hpp"
+#include "Asset/Material.hpp"
+#include "Asset/MaterialInstance.hpp"
 #include "Renderer/RenderSync.hpp"
+#include "Scene/Camera.hpp"
+#include "Scene/Model.hpp"
+#include "Scene/Scene.hpp"
+#include "ShaderCompilation/ShaderCursor.hpp"
 
 Renderer::Renderer()
 	: context(),
@@ -103,7 +109,7 @@ void Renderer::drawScene(const Scene &scene)
 	}
 
 	commandBuffer.reset({});
-	//recordCommandBuffer(commandBuffer, imageIndex);
+	recordCommandBufferForSceneDraw(commandBuffer, imageIndex, scene);
 
 	vk::PipelineStageFlags waitStages{vk::PipelineStageFlagBits::eColorAttachmentOutput};
 	const vk::SubmitInfo submitInfo{*renderSync.imageAvailableSemaphore, waitStages, *commandBuffer, *renderSync.renderFinishedSemaphore};
@@ -298,6 +304,58 @@ vk::Bool32 Renderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT mess
 	}
 
 	return false;
+}
+
+void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& commandBuffer, unsigned imageIndex, const Scene& scene)
+{
+	vk::CommandBufferBeginInfo beginInfo{{}, nullptr};
+	commandBuffer.begin(beginInfo);
+
+	std::array<vk::ClearValue, 2> clearValues{
+		vk::ClearValue{vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 1.0f}}}, vk::ClearValue{vk::ClearDepthStencilValue{1.0f, 0}}
+	};
+
+	vk::RenderPassBeginInfo renderPassInfo{renderPass, swapChainFramebuffers[imageIndex], vk::Rect2D{{0, 0}, swapchain.extent}, clearValues};
+
+	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+	vk::Viewport viewport{0, 0, static_cast<float>(swapchain.extent.width), static_cast<float>(swapchain.extent.height), 0.f, 1.f};
+	commandBuffer.setViewportWithCount(viewport);
+
+	vk::Rect2D scissor{{0, 0}, swapchain.extent};
+	commandBuffer.setScissorWithCount(scissor);
+
+	for (const auto& model : scene.models)
+	{
+		// TODO: This is extremely inefficient. We should sort the models by material, material instance, mesh to avoid rebinding. Also, we should share descriptor sets
+
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipeline);
+
+		ShaderCursor globalCursor{model.material->getShaderCursor()};
+		ShaderCursor modelCursor{globalCursor.field("gModelData")};
+		modelCursor.field("modelTransform").write(model.transform.getMatrix());
+		modelCursor.field("inverseTransposeModelTransform").write(inverse(transpose(model.transform.getMatrix())));
+
+		ShaderCursor viewCursor{globalCursor.field("gViewData")};
+		viewCursor.field("viewPosition").write(scene.camera->transform.translation);
+		viewCursor.field("viewProjection").write(scene.camera->getVieProjection(glm::vec2{swapchain.extent.width, swapchain.extent.height}));
+
+		ShaderCursor lightCursor{globalCursor.field("gLightEnvironment")};
+		lightCursor.field("direction").write(glm::vec3{1.f, 1.f, 1.f});
+		lightCursor.field("color").write(glm::vec3{1.f, .8f, .6f});
+		lightCursor.field("intensity").write(glm::vec1{5.f});
+
+		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipelineLayout, 0, *model.material->shaderObject.getDescriptorSets()[currentFrame], nullptr);
+
+		commandBuffer.bindVertexBuffers(0, *model.mesh->vertexBuffer.vkBuffer, {0});
+		commandBuffer.bindIndexBuffer(model.mesh->indexBuffer.vkBuffer, 0, vk::IndexType::eUint32);
+
+		commandBuffer.drawIndexed(model.mesh->rawMesh.indices.size(), 1, 0, 0, 0);
+	}
+
+	commandBuffer.endRenderPass();
+
+	commandBuffer.end();
 }
 
 vk::Result Renderer::checkForBadSwapchain(vk::Result inResult)

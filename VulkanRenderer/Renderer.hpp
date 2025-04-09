@@ -60,6 +60,9 @@ private:
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                       vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+
+    void recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& commandBuffer, unsigned imageIndex, const Scene& scene);
+
 protected:
     vk::Result checkForBadSwapchain(vk::Result inResult);
 

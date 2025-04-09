@@ -18,6 +18,8 @@ public:
 	virtual void writeTexture(const ShaderOffset& offset, const TextureImage& texture) override;
 	virtual void writeSampler(const ShaderOffset& offset, const TextureImage& texture) override;
 
+	const std::vector<vk::raii::DescriptorSet>& getDescriptorSets() const;
+
 private:
 	static VulkanShaderObject createShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layoutObject);
 

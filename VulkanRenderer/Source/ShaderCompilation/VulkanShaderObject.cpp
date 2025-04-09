@@ -49,6 +49,11 @@ void VulkanShaderObject::writeSampler(const ShaderOffset& offset, const TextureI
 	app.device.updateDescriptorSets(descriptorWrites, {});
 }
 
+const std::vector<vk::raii::DescriptorSet>& VulkanShaderObject::getDescriptorSets() const
+{
+	return descriptorSets;
+}
+
 VulkanShaderObject VulkanShaderObject::createShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layoutObject) // TODO: Stage flags as param
 {
 	const bool hasOrdinaryData = layoutObject->typeLayout->getSize() > 0;

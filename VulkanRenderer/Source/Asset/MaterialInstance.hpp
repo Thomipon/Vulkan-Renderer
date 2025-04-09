@@ -10,7 +10,7 @@ public:
 	MaterialInstance(const std::shared_ptr<Material>& parentMaterial);
 
 	ShaderCursor getShaderCursor();
-private:
+
 	VulkanShaderObject shaderObject;
 	std::shared_ptr<Material> parentMaterial;
 };

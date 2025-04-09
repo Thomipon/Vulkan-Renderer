@@ -14,6 +14,8 @@ class Renderer
 {
 public:
     Renderer();
+
+    uint32_t maxFramesInFlight{2};
     
     vk::raii::Context context;
     vk::raii::Instance instance;
@@ -35,7 +37,6 @@ public:
     std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
     std::vector<RenderSync> renderSyncObjects;
 
-    uint32_t maxFramesInFlight{2};
     uint32_t currentFrame{0};
 
     void recreateSwapchain();

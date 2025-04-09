@@ -72,8 +72,9 @@ ComPtr<slang::IComponentType> SlangCompiler::linkProgram(const ComPtr<slang::ICo
 	ComPtr<slang::IComponentType> linkedProgram;
 	{
 		ComPtr<slang::IBlob> diagnosticsBlob;
-		check(composedProgram->link(linkedProgram.writeRef(), diagnosticsBlob.writeRef()));
+		const auto result{composedProgram->link(linkedProgram.writeRef(), diagnosticsBlob.writeRef())};
 		diagnoseIfNeeded(diagnosticsBlob);
+		check(result);
 	}
 	return linkedProgram;
 }
@@ -97,7 +98,7 @@ ComPtr<slang::IBlob> SlangCompiler::compile(const std::string_view& moduleName, 
 	return getSprirV(linkProgram(composeProgram({module, entryPoint})));
 }
 
-ComPtr<slang::IComponentType> SlangCompiler::specializeEntryPoint(const ComPtr<slang::IEntryPoint>& entryPoint, const std::vector<slang::SpecializationArg>& specializationArgs)
+ComPtr<slang::IComponentType> SlangCompiler::specializeEntryPoint(const ComPtr<slang::IEntryPoint>& entryPoint, const std::span<slang::SpecializationArg>& specializationArgs)
 {
 	ComPtr<slang::IComponentType> specializedEntryPoint;
 	{
@@ -107,6 +108,18 @@ ComPtr<slang::IComponentType> SlangCompiler::specializeEntryPoint(const ComPtr<s
 		check(result);
 	}
 	return specializedEntryPoint;
+}
+
+ComPtr<slang::IComponentType> SlangCompiler::specializeProgram(const ComPtr<slang::IComponentType>& program, const std::span<slang::SpecializationArg>& specializationArgs)
+{
+	ComPtr<slang::IComponentType> specializedProgram;
+	{
+		ComPtr<slang::IBlob> diagnosticsBlob;
+		const auto result = program->specialize(specializationArgs.data(), specializationArgs.size(), specializedProgram.writeRef(), diagnosticsBlob.writeRef());
+		diagnoseIfNeeded(diagnosticsBlob);
+		check(result);
+	}
+	return specializedProgram;
 }
 
 ComPtr<slang::IGlobalSession> SlangCompiler::createGlobalSession()

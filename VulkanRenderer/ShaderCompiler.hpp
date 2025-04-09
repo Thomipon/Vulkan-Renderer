@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <filesystem>
+#include <span>
 #include <stdexcept>
 #include <vector>
 
@@ -21,7 +22,8 @@ public:
 	[[nodiscard]] static ComPtr<slang::IComponentType> linkProgram(const ComPtr<slang::IComponentType>& composedProgram);
 	[[nodiscard]] static ComPtr<slang::IBlob> getSprirV(const ComPtr<slang::IComponentType>& linkedProgram);
 	[[nodiscard]] ComPtr<slang::IBlob> compile(const std::string_view& moduleName, const std::string_view& entryPointName) const;
-	[[nodiscard]] static ComPtr<slang::IComponentType> specializeEntryPoint(const ComPtr<slang::IEntryPoint>& entryPoint, const std::vector<slang::SpecializationArg>& specializationArgs);
+	[[nodiscard]] static ComPtr<slang::IComponentType> specializeEntryPoint(const ComPtr<slang::IEntryPoint>& entryPoint, const std::span<slang::SpecializationArg>& specializationArgs);
+	[[nodiscard]] static ComPtr<slang::IComponentType> specializeProgram(const ComPtr<slang::IComponentType>& program, const std::span<slang::SpecializationArg>& specializationArgs);
 
 private:
 	ComPtr<slang::IGlobalSession> globalSession;

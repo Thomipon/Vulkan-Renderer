@@ -25,6 +25,7 @@ public:
 	[[nodiscard]] static ComPtr<slang::IComponentType> specializeEntryPoint(const ComPtr<slang::IEntryPoint>& entryPoint, const std::span<slang::SpecializationArg>& specializationArgs);
 	[[nodiscard]] static ComPtr<slang::IComponentType> specializeProgram(const ComPtr<slang::IComponentType>& program, const std::span<slang::SpecializationArg>& specializationArgs);
 
+	[[nodiscard]] static slang::ProgramLayout* getProgramLayout(const ComPtr<slang::IComponentType>& program, int targetIndex = 0);
 private:
 	ComPtr<slang::IGlobalSession> globalSession;
 	slang::TargetDesc targetDesc;

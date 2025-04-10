@@ -30,6 +30,8 @@ public:
 
 	[[nodiscard]] ShaderCursor element(uint32_t index) const;
 
+	[[nodiscard]] const ShaderOffset& getOffset() const;
+
 private:
 	ShaderObject* shaderObject;
 	ShaderOffset offset{};

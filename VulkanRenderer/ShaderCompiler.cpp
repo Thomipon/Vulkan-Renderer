@@ -122,6 +122,17 @@ ComPtr<slang::IComponentType> SlangCompiler::specializeProgram(const ComPtr<slan
 	return specializedProgram;
 }
 
+slang::ProgramLayout* SlangCompiler::getProgramLayout(const ComPtr<slang::IComponentType> &program, int targetIndex)
+{
+	slang::ProgramLayout* programLayout{nullptr};
+	{
+		ComPtr<slang::IBlob> diagnosticsBlob;
+		programLayout = program->getLayout(targetIndex, diagnosticsBlob.writeRef());
+		diagnoseIfNeeded(diagnosticsBlob);
+	}
+	return programLayout;
+}
+
 ComPtr<slang::IGlobalSession> SlangCompiler::createGlobalSession()
 {
 	ComPtr<slang::IGlobalSession> session;

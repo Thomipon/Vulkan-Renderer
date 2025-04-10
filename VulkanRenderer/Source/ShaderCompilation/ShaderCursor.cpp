@@ -58,3 +58,8 @@ ShaderCursor ShaderCursor::element(uint32_t index) const
 
 	return result;
 }
+
+const ShaderOffset& ShaderCursor::getOffset() const
+{
+	return offset;
+}

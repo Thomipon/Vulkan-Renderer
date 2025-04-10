@@ -58,6 +58,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/ShaderCompilation/VulkanShaderObjectLayout.hpp
         Source/Asset/MaterialInstance.cpp
         Source/Asset/MaterialInstance.hpp
+        Source/Debug/SlangDebug.cpp
+        Source/Debug/SlangDebug.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

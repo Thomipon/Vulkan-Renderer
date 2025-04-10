@@ -21,6 +21,8 @@ public:
 
 	Spirv spirv;
 
+	Slang::ComPtr<slang::IComponentType> program;
+
 	std::shared_ptr<VulkanShaderObjectLayout> shaderLayout; // TODO: This all screams for a refactor that separates material assets from compiled materials
 	vk::raii::PipelineLayout pipelineLayout;
 	vk::raii::Pipeline pipeline;

@@ -33,7 +33,8 @@ Renderer::Renderer()
 	  commandPool(createCommandPool(device, queueIndices)),
 	  commandBuffers(device.allocateCommandBuffers({commandPool, vk::CommandBufferLevel::ePrimary, maxFramesInFlight})),
 	  swapChainFramebuffers(createFramebuffers(device, renderPass, depthImage.imageView, swapchain.imageViews, swapchain.extent)),
-	  renderSyncObjects(createSyncObjects(device, maxFramesInFlight))
+	  renderSyncObjects(createSyncObjects(device, maxFramesInFlight)),
+	  compiler()
 {
 }
 
@@ -85,7 +86,7 @@ void Renderer::endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer) co
 	// TODO: Make sure the command buffer is properly destroyed here
 }
 
-void Renderer::drawScene(const Scene &scene)
+void Renderer::drawScene(const Scene& scene)
 {
 	if (framebufferResized)
 	{
@@ -281,7 +282,7 @@ std::vector<vk::raii::Framebuffer> Renderer::createFramebuffers(const vk::raii::
 	return {framebuffers.begin(), framebuffers.end()};
 }
 
-std::vector<RenderSync> Renderer::createSyncObjects(const vk::raii::Device &device, uint8_t maxFramesInFlight)
+std::vector<RenderSync> Renderer::createSyncObjects(const vk::raii::Device& device, uint8_t maxFramesInFlight)
 {
 	std::vector<RenderSync> renderSyncObjects{};
 	renderSyncObjects.reserve(maxFramesInFlight);
@@ -329,7 +330,10 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 	{
 		// TODO: This is extremely inefficient. We should sort the models by material, material instance, mesh to avoid rebinding. Also, we should share descriptor sets
 
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipeline);
+		const vk::raii::Pipeline& pipeline{model.material->parentMaterial->pipeline};
+		vk::Pipeline vkPipeline{*pipeline};
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline);
+		//commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipeline);
 
 		ShaderCursor globalCursor{model.material->getShaderCursor()};
 		ShaderCursor modelCursor{globalCursor.field("gModelData")};

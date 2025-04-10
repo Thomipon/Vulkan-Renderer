@@ -98,6 +98,6 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayou
 
 VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
                                                    vk::raii::DescriptorPool&& descriptorPool)
-	: typeLayout(typeLayout), app(app), descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool))
+	: descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool)), typeLayout(typeLayout), app(app)
 {
 }

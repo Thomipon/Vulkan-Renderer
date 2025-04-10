@@ -32,7 +32,7 @@ void HelloTriangleApplication::run()
 
 void HelloTriangleApplication::initVulkan()
 {
-	createDescriptorSetLayout();
+	/*createDescriptorSetLayout();
 	createGraphicsPipeline();
 
 	loadModel();
@@ -41,7 +41,9 @@ void HelloTriangleApplication::initVulkan()
 
 	createUniformBuffers();
 	createDescriptorPool();
-	createDescriptorSets();
+	createDescriptorSets();*/
+
+	initScene();
 }
 
 void HelloTriangleApplication::mainLoop()
@@ -49,7 +51,8 @@ void HelloTriangleApplication::mainLoop()
 	while (!window.shouldClose())
 	{
 		Window::pollEvents();
-		drawFrame();
+		//drawFrame();
+		drawScene(scene);
 	}
 
 	device.waitIdle();
@@ -58,15 +61,18 @@ void HelloTriangleApplication::mainLoop()
 void HelloTriangleApplication::initScene()
 {
 	scene.camera = std::make_unique<Camera>();
-	Model& model{scene.models.emplace_back()};
+	scene.models.emplace_back();
+	Model& model{scene.models[0]};
 	model.mesh = std::make_unique<Mesh>(*this, modelPath);
-	auto material = std::make_unique<Material>();
-	model.material = std::make_unique<MaterialInstance>(std::move(material));
 
-	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
+	auto material = std::make_shared<Material>();
+	material->compile(compiler, *this);
+	model.material = std::make_shared<MaterialInstance>(material);
+
+	/*ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
 	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
-	materialCursor.field("specularity").write(glm::vec1{1.f});
+	materialCursor.field("specularity").write(glm::vec1{1.f});*/
 }
 
 void HelloTriangleApplication::updateCamera()

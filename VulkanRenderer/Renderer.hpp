@@ -3,6 +3,7 @@
 
 #include "CommandQueues.hpp"
 #include "DepthImage.hpp"
+#include "ShaderCompiler.hpp"
 #include "Swapchain.hpp"
 #include "VulkanBackend.hpp"
 #include "Window.hpp"
@@ -36,6 +37,7 @@ public:
     std::vector<vk::raii::CommandBuffer> commandBuffers;
     std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
     std::vector<RenderSync> renderSyncObjects;
+    SlangCompiler compiler;
 
     uint32_t currentFrame{0};
 

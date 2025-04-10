@@ -7,7 +7,7 @@ class Material;
 class MaterialInstance
 {
 public:
-	MaterialInstance(const std::shared_ptr<Material>& parentMaterial);
+	explicit MaterialInstance(const std::shared_ptr<Material>& parentMaterial);
 
 	ShaderCursor getShaderCursor();
 

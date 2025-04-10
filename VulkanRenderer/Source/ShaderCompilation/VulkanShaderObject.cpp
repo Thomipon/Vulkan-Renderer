@@ -1,5 +1,7 @@
 ﻿#include "VulkanShaderObject.hpp"
 
+#include <iostream>
+
 #include "Buffer.hpp"
 #include "Renderer.hpp"
 #include "TextureImage.hpp"

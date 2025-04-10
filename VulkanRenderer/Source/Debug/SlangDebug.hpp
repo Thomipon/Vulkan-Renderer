@@ -3,36 +3,55 @@
 #include <sstream>
 #include <slang/slang.h>
 
-namespace SlangDebug {
+namespace SlangDebug
+{
+	struct SlangPrinter
+	{
+		SlangPrinter& operator<<(slang::VariableReflection* var);
+		SlangPrinter& operator<<(slang::TypeReflection* type);
+		SlangPrinter& operator<<(slang::TypeReflection::Kind kind);
+		SlangPrinter& operator<<(slang::TypeReflection::ScalarType type);
+		SlangPrinter& operator<<(SlangResourceShape shape);
+		SlangPrinter& operator<<(SlangResourceAccess access);
+		SlangPrinter& operator<<(slang::ParameterCategory category);
 
-    struct SlangPrinter {
-        SlangPrinter& operator<<(slang::VariableReflection* var);
-        SlangPrinter& operator<<(slang::TypeReflection* type);
-        SlangPrinter& operator<<(slang::TypeReflection::Kind kind);
-        SlangPrinter& operator<<(slang::TypeReflection::ScalarType type);
+		SlangPrinter& operator<<(slang::VariableLayoutReflection* layout);
 
-        struct BeginIndent{};
-        struct EndIndent{};
-        struct PrintIndent{};
+		struct BeginIndent
+		{
+		};
 
-        SlangPrinter& operator<<(BeginIndent);
-        SlangPrinter& operator<<(EndIndent);
-        SlangPrinter& operator<<(PrintIndent);
+		struct EndIndent
+		{
+		};
 
-        template<typename T>
-        SlangPrinter& operator<<(const T& t) {
-            s << t;
-            return *this;
-        }
+		struct PrintIndent
+		{
+		};
 
-    private:
-        int indent{0};
-        std::stringstream s;
+		SlangPrinter& operator<<(BeginIndent);
+		SlangPrinter& operator<<(EndIndent);
+		SlangPrinter& operator<<(PrintIndent);
 
-        void printScalarType(slang::TypeReflection* type);
-        void printStructType(slang::TypeReflection* type);
-    };
+		template <typename T>
+		SlangPrinter& operator<<(const T& t)
+		{
+			s << t;
+			return *this;
+		}
 
-    std::ostream& operator<<(std::ostream& os, slang::VariableReflection* var);
-    std::ostream& operator<<(std::ostream& os, slang::TypeReflection* type);
+	private:
+		int indent{0};
+		std::stringstream s;
+
+		void printScalarType(slang::TypeReflection* type);
+		void printStructType(slang::TypeReflection* type);
+		void printArrayType(slang::TypeReflection* type);
+		void printVectorType(slang::TypeReflection* type);
+		void printMatrixType(slang::TypeReflection* type);
+		void printResourceType(slang::TypeReflection* type);
+		void printSingleElementContainerType(slang::TypeReflection* type);
+
+		void printOffset(slang::VariableLayoutReflection* layout);
+	};
 }

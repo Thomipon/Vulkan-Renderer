@@ -7,6 +7,7 @@ namespace SlangDebug
 {
 	struct SlangPrinter
 	{
+		SlangPrinter& operator<<(slang::ProgramLayout* var);
 		SlangPrinter& operator<<(slang::VariableReflection* var);
 		SlangPrinter& operator<<(slang::TypeReflection* type);
 		SlangPrinter& operator<<(slang::TypeReflection::Kind kind);

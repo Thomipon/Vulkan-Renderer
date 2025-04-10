@@ -4,6 +4,11 @@
 
 #include "SlangDebug.hpp"
 
+SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::ProgramLayout* var)
+{
+	return *this;
+}
+
 SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::VariableReflection* var)
 {
 	return *this << "name: \"" << var->getName() << "\"\n" << PrintIndent{} << "type:\n" << BeginIndent{} <<
@@ -293,20 +298,73 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::VariableLa
 SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayoutReflection* layout)
 {
 	*this << "name: \"" << layout->getName() << "\"\n" << PrintIndent{} << "kind: " << layout->getKind() << '\n'
-	<< PrintIndent{} << "sizes:\n"
-	<< BeginIndent{} << PrintIndent{};
+		<< PrintIndent{} << "sizes:\n"
+		<< BeginIndent{} << PrintIndent{};
 	printSizes(layout);
 	*this << EndIndent{};
 
 	if (layout->getSize() > 0)
 	{
 		*this << '\n' << PrintIndent{} << "alignment (bytes): " << layout->getAlignment() << '\n'
-		<< PrintIndent{} << "stride (bytes): " << layout->getStride();
+			<< PrintIndent{} << "stride (bytes): " << layout->getStride();
 	}
 
 	switch (layout->getKind())
 	{
-
+	case slang::TypeReflection::Kind::Struct:
+		{
+			*this << '\n' << PrintIndent{} << "fields:" << BeginIndent{};
+			for (int i = 0; i < layout->getFieldCount(); ++i)
+			{
+				*this << '\n' << PrintIndent{} << layout->getFieldByIndex(i);
+			}
+			*this << EndIndent{};
+		}
+		break;
+	case slang::TypeReflection::Kind::Array:
+		{
+			*this << '\n' << PrintIndent{} << "element count: ";
+			const size_t count{layout->getElementCount()};
+			if (count == ~size_t{0})
+			{
+				*this << "unbounded";
+			}
+			else
+			{
+				*this << count;
+			}
+			*this << '\n' << PrintIndent{} << "element type layout: " << layout->getElementTypeLayout();
+		}
+		break;
+	case slang::TypeReflection::Kind::Matrix:
+		{
+			*this << '\n' << PrintIndent{} << "matrix layout mode: ";
+			switch (layout->getMatrixLayoutMode())
+			{
+			case SLANG_MATRIX_LAYOUT_MODE_UNKNOWN:
+				*this << "unknown";
+			case SLANG_MATRIX_LAYOUT_ROW_MAJOR:
+				*this << "row major";
+			case SLANG_MATRIX_LAYOUT_COLUMN_MAJOR:
+				*this << "column major";
+			}
+		}
+		break;
+	case slang::TypeReflection::Kind::ConstantBuffer:
+	case slang::TypeReflection::Kind::ParameterBlock:
+	case slang::TypeReflection::Kind::TextureBuffer:
+	case slang::TypeReflection::Kind::ShaderStorageBuffer:
+		{
+			*this << '\n' << PrintIndent{} << "container: ";
+			printOffset(layout->getContainerVarLayout());
+			*this << '\n' << PrintIndent{} << "element: ";
+			printOffset(layout->getElementVarLayout());
+			*this << '\n' << PrintIndent{} << "type layout:\n"
+			<< BeginIndent{} << PrintIndent{} << layout->getElementVarLayout()->getTypeLayout() << EndIndent{};
+		}
+		break;
+	default:
+		break;
 	}
 
 	return *this;
@@ -419,6 +477,6 @@ void SlangDebug::SlangPrinter::printSizes(slang::TypeLayoutReflection* layout)
 		const auto unit{layout->getCategoryByIndex(i)};
 		const auto size{layout->getSize(static_cast<SlangParameterCategory>(unit))};
 		*this << "value: " << size << '\n'
-		<< PrintIndent{} << "unit: " << unit;
+			<< PrintIndent{} << "unit: " << unit;
 	}
 }

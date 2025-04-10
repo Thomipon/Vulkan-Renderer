@@ -16,6 +16,7 @@ namespace SlangDebug
 		SlangPrinter& operator<<(slang::ParameterCategory category);
 
 		SlangPrinter& operator<<(slang::VariableLayoutReflection* layout);
+		SlangPrinter& operator<<(slang::TypeLayoutReflection* layout);
 
 		struct BeginIndent
 		{
@@ -53,5 +54,6 @@ namespace SlangDebug
 		void printSingleElementContainerType(slang::TypeReflection* type);
 
 		void printOffset(slang::VariableLayoutReflection* layout);
+		void printSizes(slang::TypeLayoutReflection* layout);
 	};
 }

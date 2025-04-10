@@ -290,6 +290,28 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::VariableLa
 		BeginIndent{} << PrintIndent{} << layout->getTypeLayout() << EndIndent{};
 }
 
+SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayoutReflection* layout)
+{
+	*this << "name: \"" << layout->getName() << "\"\n" << PrintIndent{} << "kind: " << layout->getKind() << '\n'
+	<< PrintIndent{} << "sizes:\n"
+	<< BeginIndent{} << PrintIndent{};
+	printSizes(layout);
+	*this << EndIndent{};
+
+	if (layout->getSize() > 0)
+	{
+		*this << '\n' << PrintIndent{} << "alignment (bytes): " << layout->getAlignment() << '\n'
+		<< PrintIndent{} << "stride (bytes): " << layout->getStride();
+	}
+
+	switch (layout->getKind())
+	{
+
+	}
+
+	return *this;
+}
+
 SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(BeginIndent)
 {
 	++indent;
@@ -374,5 +396,29 @@ void SlangDebug::SlangPrinter::printOffset(slang::VariableLayoutReflection* layo
 		const auto unit{layout->getCategoryByIndex(i)};
 		*this << "value: " << layout->getOffset(static_cast<SlangParameterCategory>(unit)) << '\n'
 			<< PrintIndent{} << "unit: " << unit;
+
+		switch (unit)
+		{
+		case slang::ParameterCategory::ConstantBuffer:
+		case slang::ParameterCategory::ShaderResource:
+		case slang::ParameterCategory::UnorderedAccess:
+		case slang::ParameterCategory::SamplerState:
+		case slang::ParameterCategory::DescriptorTableSlot:
+			*this << '\n' << PrintIndent{} << "space: " << layout->getBindingSpace(static_cast<SlangParameterCategory>(unit));
+		default:
+			break;
+		}
+	}
+}
+
+void SlangDebug::SlangPrinter::printSizes(slang::TypeLayoutReflection* layout)
+{
+	const uint32_t layoutUnitCount{layout->getCategoryCount()};
+	for (int i = 0; i < layoutUnitCount; ++i)
+	{
+		const auto unit{layout->getCategoryByIndex(i)};
+		const auto size{layout->getSize(static_cast<SlangParameterCategory>(unit))};
+		*this << "value: " << size << '\n'
+		<< PrintIndent{} << "unit: " << unit;
 	}
 }

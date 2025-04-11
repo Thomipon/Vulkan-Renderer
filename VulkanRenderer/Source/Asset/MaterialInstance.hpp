@@ -11,6 +11,6 @@ public:
 
 	ShaderCursor getShaderCursor();
 
-	VulkanShaderObject shaderObject;
 	std::shared_ptr<Material> parentMaterial;
+	VulkanShaderObject shaderObject;
 };

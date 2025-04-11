@@ -70,10 +70,9 @@ void HelloTriangleApplication::initScene()
 	model.material = std::make_shared<MaterialInstance>(material);
 
 	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
-	materialCursor.printLayout();
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
-	/*materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
-	materialCursor.field("specularity").write(glm::vec1{1.f});*/
+	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
+	materialCursor.field("specularity").write(glm::vec1{1.f});
 }
 
 void HelloTriangleApplication::updateCamera()

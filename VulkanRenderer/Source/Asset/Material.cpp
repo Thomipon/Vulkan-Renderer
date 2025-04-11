@@ -20,7 +20,7 @@ void Material::compile(const SlangCompiler& compiler, const Renderer& app)
 	auto [materialModule, materialType]{loadMaterial("BRDF/phong", "ConstantPhongMaterial", compiler)};
 	program = {compileMaterialProgram(materialModule, materialType, compiler)};
 	spirv = compileSpriv(program);
-	shaderLayout = std::make_unique<VulkanShaderObjectLayout>(SlangCompiler::getProgramLayout(program)->getGlobalParamsTypeLayout(), app);
+	shaderLayout = std::make_unique<VulkanShaderObjectLayout>(SlangCompiler::getProgramLayout(program)->getGlobalParamsVarLayout(), app);
 	pipelineLayout = createPipelineLayout(*shaderLayout, app);
 	pipeline = createPipeline(spirv, pipelineLayout, app);
 }

@@ -32,6 +32,8 @@ public:
 
 	[[nodiscard]] const ShaderOffset& getOffset() const;
 
+	void printLayout() const;
+
 private:
 	ShaderObject* shaderObject;
 	ShaderOffset offset{};

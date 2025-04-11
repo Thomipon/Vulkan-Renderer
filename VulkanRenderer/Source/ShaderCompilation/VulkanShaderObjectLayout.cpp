@@ -58,15 +58,27 @@ vk::DescriptorType VulkanShaderObjectLayout::mapDescriptorType(slang::BindingTyp
 	return vk::DescriptorType::eUniformBuffer;
 }
 
-VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app)
-	: VulkanShaderObjectLayout(createLayout(typeLayout, app))
+slang::TypeLayoutReflection* VulkanShaderObjectLayout::getTypeLayout() const
+{
+	return variableLayout->getTypeLayout();
+}
+
+uint32_t VulkanShaderObjectLayout::getBindingIndex() const
+{
+	return variableLayout->getBindingIndex();
+}
+
+VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::VariableLayoutReflection* variableLayout, const Renderer& app)
+	: VulkanShaderObjectLayout(createLayout(variableLayout, app))
 {
 }
 
-VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app)
+VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::VariableLayoutReflection* variableLayout, const Renderer& app)
 {
 	// TODO: This currently does not handle ParameterBlocks!
 	// TODO: We don't need to support all shader stage flags
+
+	const auto typeLayout{variableLayout->getTypeLayout()};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings;
 	std::vector<vk::DescriptorPoolSize> poolSizes;
@@ -93,11 +105,11 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::TypeLayou
 
 	vk::raii::DescriptorSetLayout descriptorSetLayout{app.device, {{}, bindings}};
 	vk::raii::DescriptorPool descriptorPool{app.device, {vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, app.maxFramesInFlight, poolSizes}};
-	return {typeLayout, app, std::move(descriptorSetLayout), std::move(descriptorPool)};
+	return {variableLayout, app, std::move(descriptorSetLayout), std::move(descriptorPool)};
 }
 
-VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::TypeLayoutReflection* typeLayout, const Renderer& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
+VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::VariableLayoutReflection* variableLayout, const Renderer& app, vk::raii::DescriptorSetLayout&& descriptorSetLayout,
                                                    vk::raii::DescriptorPool&& descriptorPool)
-	: descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool)), typeLayout(typeLayout), app(app)
+	: descriptorSetLayout(std::move(descriptorSetLayout)), descriptorPool(std::move(descriptorPool)), variableLayout(variableLayout), app(app)
 {
 }

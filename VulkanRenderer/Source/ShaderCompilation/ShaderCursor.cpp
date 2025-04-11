@@ -4,6 +4,10 @@
 
 #include "ShaderCursor.hpp"
 
+#include <iostream>
+
+#include "Debug/SlangDebug.hpp"
+
 ShaderCursor::ShaderCursor(ShaderObject* shaderObject)
 	: shaderObject(shaderObject), typeLayout(shaderObject->typeLayout)
 {
@@ -62,4 +66,11 @@ ShaderCursor ShaderCursor::element(uint32_t index) const
 const ShaderOffset& ShaderCursor::getOffset() const
 {
 	return offset;
+}
+
+void ShaderCursor::printLayout() const
+{
+	SlangDebug::SlangPrinter printer{};
+	printer << typeLayout;
+	std::cout << printer << std::endl;
 }

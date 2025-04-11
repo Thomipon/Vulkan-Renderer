@@ -29,7 +29,7 @@ private:
 	std::shared_ptr<VulkanShaderObjectLayout> layout;
 	const Renderer& app;
 
-	void initializeGlobalDescriptorSet(const ShaderOffset& offset);
+	void initializeGlobalDescriptorSet();
 
 	VulkanShaderObject(slang::TypeLayoutReflection* typeLayout, const std::shared_ptr<VulkanShaderObjectLayout>& layout, std::optional<Buffer>&& buffer,
 	                   std::vector<vk::raii::DescriptorSet>&& descriptorSets, const Renderer& app);

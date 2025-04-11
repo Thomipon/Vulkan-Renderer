@@ -363,8 +363,7 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::EntryPoint
 SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::VariableLayoutReflection* layout)
 {
 	*this << "name: \"" << layout->getName() << "\"\n"
-		<< PrintIndent{} << "relative offset:\n"
-		<< BeginIndent{} << PrintIndent{};
+		<< PrintIndent{} << "relative offset:" << BeginIndent{};
 	printOffset(layout);
 	*this << EndIndent{} << '\n'
 		<< PrintIndent{} << "type layout:\n" <<
@@ -376,14 +375,14 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::VariableLa
 		<< "name: \"" << layout->getSemanticName() << "\"\n"
 		<< PrintIndent{} << "index: " << layout->getSemanticIndex() << EndIndent{};
 	}
+
 	return *this;
 }
 
 SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayoutReflection* layout)
 {
 	*this << "name: \"" << layout->getName() << "\"\n" << PrintIndent{} << "kind: " << layout->getKind() << '\n'
-		<< PrintIndent{} << "sizes:\n"
-		<< BeginIndent{} << PrintIndent{};
+		<< PrintIndent{} << "sizes:" << BeginIndent{};
 	printSizes(layout);
 	*this << EndIndent{};
 
@@ -439,11 +438,11 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayout
 	case slang::TypeReflection::Kind::TextureBuffer:
 	case slang::TypeReflection::Kind::ShaderStorageBuffer:
 		{
-			*this << '\n' << PrintIndent{} << "container: ";
+			*this << '\n' << PrintIndent{} << "container:" << BeginIndent{};
 			printOffset(layout->getContainerVarLayout());
-			*this << '\n' << PrintIndent{} << "element: ";
+			*this << EndIndent{} << '\n' << PrintIndent{} << "element:" << BeginIndent{};
 			printOffset(layout->getElementVarLayout());
-			*this << '\n' << PrintIndent{} << "type layout:\n"
+			*this << EndIndent{} << '\n' << PrintIndent{} << "type layout:\n"
 				<< BeginIndent{} << PrintIndent{} << layout->getElementVarLayout()->getTypeLayout() << EndIndent{};
 		}
 		break;
@@ -549,7 +548,7 @@ void SlangDebug::SlangPrinter::printOffset(slang::VariableLayoutReflection* layo
 	for (int i = 0; i < layoutUnitCount; ++i)
 	{
 		const auto unit{layout->getCategoryByIndex(i)};
-		*this << "value: " << layout->getOffset(static_cast<SlangParameterCategory>(unit)) << '\n'
+		*this << '\n' << PrintIndent{} << "value: " << layout->getOffset(static_cast<SlangParameterCategory>(unit)) << '\n'
 			<< PrintIndent{} << "unit: " << unit;
 
 		switch (unit)
@@ -573,7 +572,7 @@ void SlangDebug::SlangPrinter::printSizes(slang::TypeLayoutReflection* layout)
 	{
 		const auto unit{layout->getCategoryByIndex(i)};
 		const auto size{layout->getSize(static_cast<SlangParameterCategory>(unit))};
-		*this << "value: " << size << '\n'
+		*this << '\n' << PrintIndent{} << "value: " << size << '\n'
 			<< PrintIndent{} << "unit: " << unit;
 	}
 }
@@ -594,14 +593,14 @@ void SlangDebug::SlangPrinter::printScope(slang::VariableLayoutReflection* layou
 		}
 		break;
 	case slang::TypeReflection::Kind::ConstantBuffer:
-		*this << "automatically-introduced constant buffer:\n" << BeginIndent{} << PrintIndent{};
+		*this << "automatically-introduced constant buffer:" << BeginIndent{};
 		printOffset(scopeTypeLayout->getContainerVarLayout());
 
 		*this << '\n' << PrintIndent{};
 		printScope(scopeTypeLayout->getElementVarLayout());
 		break;
 	case slang::TypeReflection::Kind::ParameterBlock:
-		*this << "automatically-introduced parameter block:\n" << BeginIndent{} << PrintIndent{};
+		*this << "automatically-introduced parameter block:" << BeginIndent{};
 		printOffset(scopeTypeLayout->getContainerVarLayout());
 
 		*this << '\n' << PrintIndent{};

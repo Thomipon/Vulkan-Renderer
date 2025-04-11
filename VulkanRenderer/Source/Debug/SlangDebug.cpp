@@ -4,8 +4,15 @@
 
 #include "SlangDebug.hpp"
 
-SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::ProgramLayout* var)
+SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::ProgramLayout* program)
 {
+	*this << "global scope:\n" << BeginIndent{} << PrintIndent{};
+	printScope(program->getGlobalParamsVarLayout());
+	*this << EndIndent{} << "entry points:\n" << BeginIndent{} << PrintIndent{};
+	for (int i = 0; i < program->getEntryPointCount(); ++i)
+	{
+		*this << '\n' << PrintIndent{} << program->getEntryPointByIndex(i);
+	}
 	return *this;
 }
 
@@ -284,15 +291,92 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::ParameterC
 	return *this;
 }
 
+SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(SlangStage stage)
+{
+	switch (stage)
+	{
+	case SLANG_STAGE_NONE:
+		return *this << "none";
+	case SLANG_STAGE_VERTEX:
+		return *this << "vertex";
+	case SLANG_STAGE_HULL:
+		return *this << "hull";
+	case SLANG_STAGE_DOMAIN:
+		return *this << "domain";
+	case SLANG_STAGE_GEOMETRY:
+		return *this << "geometry";
+	case SLANG_STAGE_FRAGMENT:
+		return *this << "fragment";
+	case SLANG_STAGE_COMPUTE:
+		return *this << "compute";
+	case SLANG_STAGE_RAY_GENERATION:
+		return *this << "ray generation";
+	case SLANG_STAGE_INTERSECTION:
+		return *this << "ray intersection";
+	case SLANG_STAGE_ANY_HIT:
+		return *this << "ray any hit";
+	case SLANG_STAGE_CLOSEST_HIT:
+		return *this << "ray closest hit";
+	case SLANG_STAGE_MISS:
+		return *this << "ray miss";
+	case SLANG_STAGE_CALLABLE:
+		return *this << "callable";
+	case SLANG_STAGE_MESH:
+		return *this << "mesh";
+	case SLANG_STAGE_AMPLIFICATION:
+		return *this << "amplification";
+	}
+	return *this;
+}
+
+SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::EntryPointReflection* entryPoint)
+{
+	*this << "name: \"" << entryPoint->getName() << "\"\n"
+		<< PrintIndent{} << "stage: " << entryPoint->getStage() << '\n' << PrintIndent{};
+	printScope(entryPoint->getVarLayout());
+	auto resultVarLayout = entryPoint->getResultVarLayout();
+	if (resultVarLayout->getTypeLayout()->getKind() != slang::TypeReflection::Kind::None)
+	{
+		*this << '\n' << PrintIndent{} << "result:\n" << BeginIndent{} << PrintIndent{} << resultVarLayout << EndIndent{};
+	}
+
+	switch (entryPoint->getStage())
+	{
+	case SLANG_STAGE_COMPUTE:
+		{
+			SlangUInt sizes[3];
+			entryPoint->getComputeThreadGroupSize(3, sizes);
+
+			*this << '\n' << PrintIndent{} << "thread group size:" << BeginIndent{};
+			*this << '\n' << PrintIndent{} << "x: " << sizes[0];
+			*this << '\n' << PrintIndent{} << "y: " << sizes[1];
+			*this << '\n' << PrintIndent{} << "z: " << sizes[2] << EndIndent{};
+		}
+		break;
+	default:
+		break;
+	}
+
+	return *this;
+}
+
 SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::VariableLayoutReflection* layout)
 {
 	*this << "name: \"" << layout->getName() << "\"\n"
 		<< PrintIndent{} << "relative offset:\n"
 		<< BeginIndent{} << PrintIndent{};
 	printOffset(layout);
-	return *this << EndIndent{} << '\n'
+	*this << EndIndent{} << '\n'
 		<< PrintIndent{} << "type layout:\n" <<
 		BeginIndent{} << PrintIndent{} << layout->getTypeLayout() << EndIndent{};
+
+	if (layout->getStage() != SlangStage::SLANG_STAGE_NONE)
+	{
+		*this << '\n' << PrintIndent{} << "semantic:\n" << BeginIndent{} << PrintIndent{}
+		<< "name: \"" << layout->getSemanticName() << "\"\n"
+		<< PrintIndent{} << "index: " << layout->getSemanticIndex() << EndIndent{};
+	}
+	return *this;
 }
 
 SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayoutReflection* layout)
@@ -360,7 +444,7 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayout
 			*this << '\n' << PrintIndent{} << "element: ";
 			printOffset(layout->getElementVarLayout());
 			*this << '\n' << PrintIndent{} << "type layout:\n"
-			<< BeginIndent{} << PrintIndent{} << layout->getElementVarLayout()->getTypeLayout() << EndIndent{};
+				<< BeginIndent{} << PrintIndent{} << layout->getElementVarLayout()->getTypeLayout() << EndIndent{};
 		}
 		break;
 	default:
@@ -387,6 +471,19 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(PrintIndent)
 	for (int i = 0; i < indent; ++i)
 	{
 		s << "\t";
+	}
+	return *this;
+}
+
+SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(const char* str)
+{
+	if (str)
+	{
+		s << str;
+	}
+	else
+	{
+		s << "none";
 	}
 	return *this;
 }
@@ -479,4 +576,43 @@ void SlangDebug::SlangPrinter::printSizes(slang::TypeLayoutReflection* layout)
 		*this << "value: " << size << '\n'
 			<< PrintIndent{} << "unit: " << unit;
 	}
+}
+
+void SlangDebug::SlangPrinter::printScope(slang::VariableLayoutReflection* layout)
+{
+	auto scopeTypeLayout{layout->getTypeLayout()};
+	switch (scopeTypeLayout->getKind())
+	{
+	case slang::TypeReflection::Kind::Struct:
+		{
+			*this << "parameters:" << BeginIndent{};
+			for (int i = 0; i < scopeTypeLayout->getFieldCount(); ++i)
+			{
+				*this << '\n' << PrintIndent{} << scopeTypeLayout->getFieldByIndex(i);
+			}
+			*this << EndIndent{};
+		}
+		break;
+	case slang::TypeReflection::Kind::ConstantBuffer:
+		*this << "automatically-introduced constant buffer:\n" << BeginIndent{} << PrintIndent{};
+		printOffset(scopeTypeLayout->getContainerVarLayout());
+
+		*this << '\n' << PrintIndent{};
+		printScope(scopeTypeLayout->getElementVarLayout());
+		break;
+	case slang::TypeReflection::Kind::ParameterBlock:
+		*this << "automatically-introduced parameter block:\n" << BeginIndent{} << PrintIndent{};
+		printOffset(scopeTypeLayout->getContainerVarLayout());
+
+		*this << '\n' << PrintIndent{};
+		printScope(scopeTypeLayout->getElementVarLayout());
+		break;
+	default:
+		break;
+	}
+}
+
+std::ostream& SlangDebug::operator<<(std::ostream& os, const SlangPrinter& printer)
+{
+	return os << printer.s.view();
 }

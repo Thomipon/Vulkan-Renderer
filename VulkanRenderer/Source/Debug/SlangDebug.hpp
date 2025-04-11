@@ -7,7 +7,7 @@ namespace SlangDebug
 {
 	struct SlangPrinter
 	{
-		SlangPrinter& operator<<(slang::ProgramLayout* var);
+		SlangPrinter& operator<<(slang::ProgramLayout* program);
 		SlangPrinter& operator<<(slang::VariableReflection* var);
 		SlangPrinter& operator<<(slang::TypeReflection* type);
 		SlangPrinter& operator<<(slang::TypeReflection::Kind kind);
@@ -15,6 +15,8 @@ namespace SlangDebug
 		SlangPrinter& operator<<(SlangResourceShape shape);
 		SlangPrinter& operator<<(SlangResourceAccess access);
 		SlangPrinter& operator<<(slang::ParameterCategory category);
+		SlangPrinter& operator<<(SlangStage stage);
+		SlangPrinter& operator<<(slang::EntryPointReflection* entryPoint);
 
 		SlangPrinter& operator<<(slang::VariableLayoutReflection* layout);
 		SlangPrinter& operator<<(slang::TypeLayoutReflection* layout);
@@ -34,6 +36,8 @@ namespace SlangDebug
 		SlangPrinter& operator<<(BeginIndent);
 		SlangPrinter& operator<<(EndIndent);
 		SlangPrinter& operator<<(PrintIndent);
+
+		SlangPrinter& operator<<(const char* str);
 
 		template <typename T>
 		SlangPrinter& operator<<(const T& t)
@@ -56,5 +60,11 @@ namespace SlangDebug
 
 		void printOffset(slang::VariableLayoutReflection* layout);
 		void printSizes(slang::TypeLayoutReflection* layout);
+
+		void printScope(slang::VariableLayoutReflection* layout);
+
+		friend std::ostream& operator<<(std::ostream& os, const SlangPrinter& printer);
 	};
+
+	std::ostream& operator<<(std::ostream& os, const SlangPrinter& printer);
 }

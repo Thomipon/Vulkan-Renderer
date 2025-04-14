@@ -22,6 +22,8 @@ public:
 
     template<typename T>
     [[nodiscard]] bool isExactType() const;
+
+    void destruct(size_t index);
 private:
     std::vector<std::byte> assetData;
     size_t assetSize;

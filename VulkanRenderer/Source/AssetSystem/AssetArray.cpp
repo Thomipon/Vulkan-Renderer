@@ -13,6 +13,10 @@ size_t AssetArray::size() const {
     return assetData.size() / assetSize;
 }
 
+void AssetArray::destruct(size_t index) {
+    // TODO
+}
+
 AssetArray::AssetArray(const std::type_index &assetType, const size_t &assetSize)
     : assetSize(assetSize), assetType(assetType)
 {

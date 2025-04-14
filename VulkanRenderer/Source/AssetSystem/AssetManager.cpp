@@ -13,10 +13,11 @@ void AssetManager::increaseRefCount(const size_t assetUUID)
 
 void AssetManager::decreaseRefCount(const size_t assetUUID) {
     if (assetUUID != 0) {
-        auto& refCount{assetInfosByUUID.find(assetUUID)->second.refCount};
-        refCount -= 1;
-        if (refCount == 0) {
-
+        auto& assetInfo{assetInfosByUUID.find(assetUUID)->second};
+        assetInfo.refCount -= 1;
+        if (assetInfo.refCount == 0) {
+            assets[assetInfo.type].destruct(assetInfo.index);
+            // TODO: update index of swapped item
         }
     }
 }

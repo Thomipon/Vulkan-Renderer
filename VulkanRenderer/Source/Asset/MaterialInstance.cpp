@@ -7,8 +7,8 @@
 #include "Material.hpp"
 #include "ShaderCompilation/ShaderCursor.hpp"
 
-MaterialInstance::MaterialInstance(const std::shared_ptr<Material>& parentMaterial)
-	: shaderObject(parentMaterial->shaderLayout), parentMaterial(parentMaterial)
+MaterialInstance::MaterialInstance(const AssetHandle<Material>& parentMaterial)
+	: parentMaterial(parentMaterial), shaderObject(parentMaterial->shaderLayout)
 {
 }
 

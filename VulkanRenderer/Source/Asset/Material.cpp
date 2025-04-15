@@ -19,7 +19,7 @@ void Material::compile(const SlangCompiler& compiler, const Renderer& app)
 {
 	auto [materialModule, materialType]{loadMaterial("BRDF/phong", "ConstantPhongMaterial", compiler)};
 	program = {compileMaterialProgram(materialModule, materialType, compiler)};
-	spirv = compileSpriv(program);
+	spirv = compileSpirv(program);
 	shaderLayout = std::make_unique<VulkanShaderObjectLayout>(SlangCompiler::getProgramLayout(program)->getGlobalParamsVarLayout(), app);
 	pipelineLayout = createPipelineLayout(*shaderLayout, app);
 	pipeline = createPipeline(spirv, pipelineLayout, app);
@@ -32,7 +32,7 @@ std::pair<Slang::ComPtr<slang::IModule>, slang::TypeReflection*> Material::loadM
 	return {materialModule, material};
 }
 
-Spirv Material::compileSpriv(const Slang::ComPtr<slang::IComponentType>& program)
+Spirv Material::compileSpirv(const Slang::ComPtr<slang::IComponentType>& program)
 {
 	auto linked{SlangCompiler::linkProgram(program)};
 	return {SlangCompiler::getSprirV(linked, 0), SlangCompiler::getSprirV(linked, 1)};

@@ -2,6 +2,7 @@
 #include <vector>
 #include <filesystem>
 
+#include "AssetBase.hpp"
 #include "Buffer.hpp"
 #include "Vertex.hpp"
 
@@ -20,8 +21,8 @@ private:
 	RawMesh(std::vector<Vertex>&& vertices, std::vector<Index>&& indices);
 };
 
-class Mesh {
-
+class Mesh : public AssetBase
+{
 public:
 	Mesh(const Renderer& app, const std::filesystem::path& sourcePath);
 

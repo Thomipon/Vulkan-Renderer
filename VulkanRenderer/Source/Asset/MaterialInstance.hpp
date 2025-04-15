@@ -1,16 +1,18 @@
 ﻿#pragma once
+#include "AssetBase.hpp"
+#include "Material.hpp"
+#include "AssetSystem/AssetHandle.hpp"
 #include "ShaderCompilation/VulkanShaderObject.hpp"
 
 struct ShaderCursor;
-class Material;
 
-class MaterialInstance
+class MaterialInstance : public AssetBase
 {
 public:
-	explicit MaterialInstance(const std::shared_ptr<Material>& parentMaterial);
+	explicit MaterialInstance(const AssetHandle<Material>& parentMaterial);
 
 	ShaderCursor getShaderCursor();
 
-	std::shared_ptr<Material> parentMaterial;
+	AssetHandle<Material> parentMaterial;
 	VulkanShaderObject shaderObject;
 };

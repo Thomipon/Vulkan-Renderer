@@ -22,7 +22,7 @@ void Buffer::copyBufferToBuffer(const Renderer& app, const Buffer& source, const
 {
 	vk::raii::CommandBuffer commandBuffer{app.beginSingleTimeCommands()};
 
-	vk::BufferCopy copyRegion{0, 0, size};
+	vk::BufferCopy copyRegion{srcOffset, dstOffset, size};
 
 	commandBuffer.copyBuffer(source.vkBuffer, destination.vkBuffer, copyRegion);
 

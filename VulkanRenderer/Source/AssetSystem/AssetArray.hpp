@@ -18,7 +18,7 @@ public:
 	T& push(const T& newElement);
 
 	template <Asset T, typename... Args>
-	T& emplace(Args... args);
+	T& emplace(Args&&... args);
 
 	template <Asset T>
 	T& at(size_t index);
@@ -59,7 +59,7 @@ T& AssetArray::push(const T& newElement)
 }
 
 template <Asset T, typename... Args>
-T& AssetArray::emplace(Args... args)
+T& AssetArray::emplace(Args&&... args)
 {
 	assert(isExactType<T>());
 	const auto index{assetData.size()};

@@ -12,7 +12,7 @@ class AssetManager
 {
 public:
 	template <Asset T, typename... Args>
-	AssetHandle<T> createAsset(Args... args);
+	AssetHandle<T> createAsset(Args&&... args);
 
 private:
 	std::map<std::type_index, AssetArray> assets;
@@ -32,7 +32,7 @@ private:
 };
 
 template <Asset T, typename... Args>
-AssetHandle<T> AssetManager::createAsset(Args... args)
+AssetHandle<T> AssetManager::createAsset(Args&&... args)
 {
 	const std::type_index typeIndex{typeid(T)};
 	auto assetArrayIterator{assets.find(typeIndex)};

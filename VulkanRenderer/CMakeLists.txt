@@ -61,11 +61,11 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/Debug/SlangDebug.cpp
         Source/Debug/SlangDebug.hpp
         Source/AssetSystem/AssetManager.cpp
-        Source/AssetSystem/AssetManager.h
+        Source/AssetSystem/AssetManager.hpp
         Source/AssetSystem/AssetArray.cpp
-        Source/AssetSystem/AssetArray.h
+        Source/AssetSystem/AssetArray.hpp
         Source/AssetSystem/AssetHandle.cpp
-        Source/AssetSystem/AssetHandle.h
+        Source/AssetSystem/AssetHandle.hpp
         Source/AssetSystem/AssetSystemStructs.h
 )
 

@@ -1,6 +1,6 @@
 #pragma once
-#include <map>
 #include <typeindex>
+#include <unordered_map>
 
 #include "AssetArray.hpp"
 #include "AssetSystemStructs.h"
@@ -15,8 +15,8 @@ public:
 	AssetHandle<T> createAsset(Args&&... args);
 
 private:
-	std::map<std::type_index, AssetArray> assets;
-	std::map<size_t, AssetInfo> assetInfosByUUID;
+	std::unordered_map<std::type_index, AssetArray> assets;
+	std::unordered_map<size_t, AssetInfo> assetInfosByUUID;
 
 	void increaseRefCount(size_t assetUUID);
 

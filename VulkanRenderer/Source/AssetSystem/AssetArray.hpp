@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <cstring>
 #include <span>
 #include <typeindex>
 #include <vector>
@@ -63,7 +64,7 @@ T& AssetArray::emplace(Args&&... args)
 {
 	assert(isExactType<T>());
 	const auto index{assetData.size()};
-	assetData.reserve(assetData.size() + assetSize);
+	assetData.resize(assetData.size() + assetSize); // TODO: Ideally this would not init the bytes
 	auto* data = &assetData[index];
 	T* object{new (data) T(std::forward<Args>(args)...)};
 	return *object;

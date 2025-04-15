@@ -36,14 +36,14 @@ AssetHandle<T>::AssetHandle(AssetManager& assetManager)
 template <Asset T>
 T& AssetHandle<T>::operator*() const
 {
-	const AssetInfo assetInfo{assetManager.assetInfosByUUID[uuid.value]};
-	return assetManager.assets[assetInfo.type].at<T>(assetInfo.index);
+	const AssetInfo assetInfo{assetManager.assetInfosByUUID.find(uuid.value)->second};
+	return assetManager.assets.find(assetInfo.type)->second.at<T>(assetInfo.index);
 }
 
 template <Asset T>
 T* AssetHandle<T>::operator->() const
 {
-	return **this;
+	return &**this;
 }
 
 template <Asset T>
@@ -64,6 +64,7 @@ template <Asset T>
 AssetHandle<T>& AssetHandle<T>::operator=(const AssetHandle& other)
 {
 	assert(&assetManager == &other.assetManager);
+	assetManager.decreaseRefCount<T>(uuid.value);
 	uuid = other.uuid;
 	assetManager.increaseRefCount(uuid.value);
 	return *this;
@@ -73,6 +74,7 @@ template <Asset T>
 AssetHandle<T>& AssetHandle<T>::operator=(AssetHandle&& other) noexcept
 {
 	assert(&assetManager == &other.assetManager);
+	assetManager.decreaseRefCount<T>(uuid.value);
 	uuid = other.uuid;
 	other.uuid = {};
 	return *this;

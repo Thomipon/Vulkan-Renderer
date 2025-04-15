@@ -41,7 +41,7 @@ AssetHandle<T> AssetManager::createAsset(Args... args)
 		const auto [it, success]{assets.emplace(typeIndex, AssetArray::create<T>())};
 		if (!success)
 		{
-			return {};
+			return AssetHandle<T>{*this};
 		}
 		assetArrayIterator = it;
 	}
@@ -51,7 +51,7 @@ AssetHandle<T> AssetManager::createAsset(Args... args)
 	const auto[_, success]{assetInfosByUUID.emplace(uuid.value, AssetInfo{uuid, 1, typeIndex, index})};
 	if (!success)
 	{
-		return {};
+		return AssetHandle<T>{*this};
 	}
 	array.emplace<T>(std::forward<Args>(args)...).setUUID(uuid);
 	return {*this, uuid};
@@ -66,7 +66,7 @@ void AssetManager::decreaseRefCount(const size_t assetUUID)
 		assetInfo.refCount -= 1;
 		if (assetInfo.refCount == 0)
 		{
-			const UUID lastAssetUUID{assets[assetInfo.type].destruct<T>(assetInfo.index)};
+			const UUID lastAssetUUID{assets.find(assetInfo.type)->second.destruct<T>(assetInfo.index)};
 			auto& lastAssetInfo{assetInfosByUUID.find(lastAssetUUID.value)->second};
 			lastAssetInfo.index = assetInfo.index;
 		}

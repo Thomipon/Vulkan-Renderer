@@ -74,7 +74,7 @@ T& AssetArray::at(const size_t index)
 {
 	assert(isExactType<T>());
 	std::byte* object{&assetData[index * assetSize]};
-	return *static_cast<T*>(object);
+	return *reinterpret_cast<T*>(object);
 }
 
 template <Asset T>
@@ -82,7 +82,7 @@ const T& AssetArray::at(const size_t index) const
 {
 	assert(isExactType<T>());
 	const std::byte* object{&assetData[index * assetSize]};
-	return *static_cast<const T*>(object);
+	return *reinterpret_cast<const T*>(object);
 }
 
 template <Asset T>

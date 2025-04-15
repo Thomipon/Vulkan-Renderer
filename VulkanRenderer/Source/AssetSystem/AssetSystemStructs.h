@@ -1,9 +1,10 @@
 #pragma once
 #include <cstdint>
 #include <typeindex>
+#include <concepts>
 
 template <typename T>
-concept Asset = std::derived_from<T, class AssetBase>;
+concept Asset = std::is_base_of_v<class AssetBase, T>;
 
 struct UUID
 {
@@ -12,7 +13,7 @@ struct UUID
 
 struct AssetInfo
 {
-	AssetInfo(const UUID& uuid, const uint32_t refCount, const std::type_index& type, const uint32_t index)
+	AssetInfo(const UUID& uuid, const uint32_t refCount, const std::type_index& type, const size_t index)
 		: uuid(uuid),
 		  refCount(refCount),
 		  type(type),
@@ -23,5 +24,5 @@ struct AssetInfo
 	UUID uuid;
 	uint32_t refCount;
 	std::type_index type;
-	uint32_t index;
+	size_t index;
 };

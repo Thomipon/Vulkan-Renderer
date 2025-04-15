@@ -5,13 +5,13 @@
 #include "AssetArray.hpp"
 #include "AssetSystemStructs.h"
 
-template <typename T>
+template <Asset T>
 struct AssetHandle;
 
 class AssetManager
 {
 public:
-	template <typename T, typename... Args>
+	template <Asset T, typename... Args>
 	AssetHandle<T> createAsset(Args... args);
 
 private:
@@ -20,18 +20,18 @@ private:
 
 	void increaseRefCount(size_t assetUUID);
 
-	template <typename T>
+	template <Asset T>
 	void decreaseRefCount(size_t assetUUID);
 
 	UUID createUUID();
 
 	size_t currentUUID{1};
 
-	template <typename T>
+	template <Asset T>
 	friend struct AssetHandle;
 };
 
-template <typename T, typename... Args>
+template <Asset T, typename... Args>
 AssetHandle<T> AssetManager::createAsset(Args... args)
 {
 	const std::type_index typeIndex{typeid(T)};
@@ -57,7 +57,7 @@ AssetHandle<T> AssetManager::createAsset(Args... args)
 	return {*this, uuid};
 }
 
-template <typename T>
+template <Asset T>
 void AssetManager::decreaseRefCount(const size_t assetUUID)
 {
 	if (assetUUID != 0)

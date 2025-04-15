@@ -2,6 +2,9 @@
 #include <cstdint>
 #include <typeindex>
 
+template <typename T>
+concept Asset = std::derived_from<T, class AssetBase>;
+
 struct UUID
 {
 	size_t value{0};

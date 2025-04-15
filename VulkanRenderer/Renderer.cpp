@@ -16,11 +16,13 @@
 #include "Scene/Scene.hpp"
 #include "ShaderCompilation/ShaderCursor.hpp"
 
+using namespace std::placeholders;
+
 Renderer::Renderer()
 	: context(),
 	  instance(createInstance(context)),
 	  debugMessenger(createDebugMessenger(instance)),
-	  window(800, 600, onFrameBufferResized, this),
+	  window(1600, 1200, std::bind(onFrameBufferResized, this, _1, _2)),
 	  surface(window.createWindowSurface(instance)),
 	  physicalDevice(pickPhysicalDevice(instance, surface)),
 	  queueIndices(findQueueFamilies(physicalDevice, surface)),
@@ -56,10 +58,9 @@ void Renderer::recreateSwapchain()
 	// TODO: There is a slight performance overhead here by not reusing the vector
 }
 
-void Renderer::onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight)
+void Renderer::onFrameBufferResized(int inWidth, int inHeight)
 {
-	auto* app = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window)); // TODO: This needs to be encapsulated
-	app->framebufferResized = true;
+	framebufferResized = true;
 }
 
 vk::raii::CommandBuffer Renderer::beginSingleTimeCommands() const
@@ -330,9 +331,10 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 	{
 		// TODO: This is extremely inefficient. We should sort the models by material, material instance, mesh to avoid rebinding. Also, we should share descriptor sets
 
-		const vk::raii::Pipeline& pipeline{model.material->parentMaterial->pipeline};
+		auto materialInstance{model.material};
+		auto material{materialInstance->parentMaterial};
+		const vk::raii::Pipeline& pipeline{material->pipeline};
 		vk::Pipeline vkPipeline{*pipeline};
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline);
 		//commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipeline);
 
 		ShaderCursor globalCursor{model.material->getShaderCursor()};
@@ -341,13 +343,15 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 		modelCursor.field("inverseTransposeModelTransform").write(inverse(transpose(model.transform.getMatrix())));
 
 		ShaderCursor viewCursor{globalCursor.field("gViewData")};
-		viewCursor.field("viewPosition").write(scene.camera->transform.translation);
-		viewCursor.field("viewProjection").write(scene.camera->getVieProjection(glm::vec2{swapchain.extent.width, swapchain.extent.height}));
+		viewCursor.field("viewPosition").write(scene.camera.transform.translation);
+		viewCursor.field("viewProjection").write(scene.camera.getViewProjection(glm::vec2{swapchain.extent.width, swapchain.extent.height}));
 
 		ShaderCursor lightCursor{globalCursor.field("gLightEnvironment")};
 		lightCursor.field("direction").write(glm::vec3{1.f, 1.f, 1.f});
 		lightCursor.field("color").write(glm::vec3{1.f, .8f, .6f});
 		lightCursor.field("intensity").write(glm::vec1{5.f});
+
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline);
 
 		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipelineLayout, 0, *model.material->shaderObject.getDescriptorSets()[currentFrame], nullptr);
 

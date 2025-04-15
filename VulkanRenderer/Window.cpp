@@ -2,15 +2,19 @@
 
 #include "check.hpp"
 
-Window::Window(int width, int height, GLFWframebuffersizefun frameBufferResizedCallback, void* userPtr)
+Window::Window(int width, int height, const std::function<void(int, int)>& frameBufferResizedCallback)
+    : frameBufferResizedCallback(frameBufferResizedCallback)
 {
     glfwInit(); // TODO: We might want to separate the glfw instance
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     window = glfwCreateWindow(width, height, "Vulkan", nullptr, nullptr);
-    glfwSetWindowUserPointer(window, userPtr);
-    glfwSetFramebufferSizeCallback(window, frameBufferResizedCallback);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, onFramebufferResized);
+
+    glfwSetKeyCallback(window, onKeyCallback);
+    glfwSetCursorPosCallback(window, onMouseMoveCallback);
 }
 
 Window::~Window()
@@ -58,4 +62,35 @@ glm::vec<2, int> Window::getFramebufferSize() const
 void Window::waitEvents()
 {
     glfwWaitEvents();
+}
+
+void Window::registerInputHandler(InputHandler& newInputHandler)
+{
+    inputHandler = &newInputHandler;
+}
+
+void Window::onFramebufferResized(GLFWwindow* window, int width, int height)
+{
+    const Window* self{static_cast<Window*>(glfwGetWindowUserPointer(window))};
+    self->frameBufferResizedCallback(width, height);
+}
+
+void Window::onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    const Window* self{static_cast<Window*>(glfwGetWindowUserPointer(window))};
+
+    if (self->inputHandler)
+    {
+        self->inputHandler->glfwOnKeyPressed(key, scancode, action, mods);
+    }
+}
+
+void Window::onMouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    const Window* self{static_cast<Window*>(glfwGetWindowUserPointer(window))};
+
+    if (self->inputHandler)
+    {
+        self->inputHandler->glfwOnMouseMove(xpos, ypos);
+    }
 }

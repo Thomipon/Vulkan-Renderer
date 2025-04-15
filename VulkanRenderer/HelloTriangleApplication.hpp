@@ -28,6 +28,9 @@ private:
     void updateCamera();
 
     AssetManager assetManager;
+    InputHandler inputHandler;
+
+    void handleCameraMovement(const InputEvent& keyEvent);
 
     Scene scene;
 

@@ -69,6 +69,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/AssetSystem/AssetSystemStructs.h
         Source/Asset/AssetBase.cpp
         Source/Asset/AssetBase.hpp
+        Source/Input/InputHandler.cpp
+        Source/Input/InputHandler.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

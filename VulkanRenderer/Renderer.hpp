@@ -42,7 +42,6 @@ public:
     uint32_t currentFrame{0};
 
     void recreateSwapchain();
-    static void onFrameBufferResized(GLFWwindow* window, int inWidth, int inHeight);
 
     [[nodiscard]] vk::raii::CommandBuffer beginSingleTimeCommands() const;
     void endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer) const;
@@ -64,6 +63,8 @@ private:
                                                       vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
     void recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& commandBuffer, unsigned imageIndex, const Scene& scene);
+
+    void onFrameBufferResized(int inWidth, int inHeight);
 
 protected:
     vk::Result checkForBadSwapchain(vk::Result inResult);

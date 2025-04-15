@@ -47,9 +47,13 @@ AssetHandle<T> AssetManager::createAsset(Args... args)
 	}
 	auto& array{assetArrayIterator->second};
 	const size_t index{array.size()};
-	array.emplace<T>(std::forward<Args>(args)...);
 	const UUID uuid{createUUID()};
-	assetInfosByUUID.emplace(uuid.value, AssetInfo{uuid, 1, typeIndex, index});
+	const auto[_, success]{assetInfosByUUID.emplace(uuid.value, AssetInfo{uuid, 1, typeIndex, index})};
+	if (!success)
+	{
+		return {};
+	}
+	array.emplace<T>(std::forward<Args>(args)...).setUUID(uuid);
 	return {*this, uuid};
 }
 

@@ -7,7 +7,7 @@
 
 #include "Renderer.hpp"
 #include "TextureImage.hpp"
-#include "Vertex.hpp"
+#include "AssetSystem/AssetManager.hpp"
 #include "Scene/Scene.hpp"
 
 class RenderSync;
@@ -26,6 +26,8 @@ private:
 
     void initScene();
     void updateCamera();
+
+    AssetManager assetManager;
 
     Scene scene;
 

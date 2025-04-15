@@ -10,7 +10,6 @@
 
 #include "Buffer.hpp"
 #include "check.hpp"
-#include "IOHelper.hpp"
 #include "Asset/Mesh.hpp"
 #include "Shader.hpp"
 #include "ShaderCompiler.hpp"
@@ -52,6 +51,7 @@ void HelloTriangleApplication::mainLoop()
 	{
 		Window::pollEvents();
 		//drawFrame();
+		updateCamera();
 		drawScene(scene);
 	}
 
@@ -60,14 +60,13 @@ void HelloTriangleApplication::mainLoop()
 
 void HelloTriangleApplication::initScene()
 {
-	scene.camera = std::make_unique<Camera>();
-	scene.models.emplace_back();
-	Model& model{scene.models[0]};
-	model.mesh = std::make_unique<Mesh>(*this, modelPath);
-
-	auto material = std::make_shared<Material>();
+	auto material{assetManager.createAsset<Material>()};
 	material->compile(compiler, *this);
-	model.material = std::make_shared<MaterialInstance>(material);
+
+	scene.models.emplace_back(assetManager.createAsset<Mesh>(*this, modelPath), assetManager.createAsset<MaterialInstance>(material));
+	Model& model{scene.models[0]};
+
+	model.transform.translation = glm::vec3{1.0f, 0.f, 0.5f};
 
 	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
@@ -82,8 +81,11 @@ void HelloTriangleApplication::updateCamera()
 	const auto currentTime{std::chrono::high_resolution_clock::now()};
 	const float time{std::chrono::duration<float>(currentTime - startTime).count()};
 
-	scene.camera->transform.translation = rotate(glm::vec3{5.f, 0.f, 0.f}, time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
-	scene.camera->transform.rotation = quatLookAt(glm::vec3{2.0f} - glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f});
+	//scene.camera->transform.translation = rotate(glm::vec3{5.f, 0.f, 0.f}, time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
+	//scene.camera->transform.translation = glm::vec3{-2.0f, 0.0f, 0.0f};
+	//scene.camera->transform.rotation = quatLookAt(glm::vec3{2.0f} - glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f});
+	//scene.camera->transform.rotation = quatLookAt(glm::vec3{2.0f, 0.0f, 0.0f}, glm::vec3{0.f, 0.f, 1.f});
+	scene.camera.transform.rotation = glm::rotate(glm::quat{1.f, 0.f, 0.f, 0.f}, glm::radians(time * 180.f), glm::vec3{0.f, 0.f, 1.f});
 }
 
 void HelloTriangleApplication::createGraphicsPipeline()

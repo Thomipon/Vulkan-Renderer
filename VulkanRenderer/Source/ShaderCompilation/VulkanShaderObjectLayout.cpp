@@ -85,7 +85,7 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::VariableL
 
 	const bool hasOrdinaryData = typeLayout->getSize() > 0;
 
-	const auto bindingRangeCount{typeLayout->getBindingRangeCount()};
+	const int64_t bindingRangeCount{typeLayout->getBindingRangeCount()};
 	const uint32_t totalBindingCount = bindingRangeCount + hasOrdinaryData ? 1 : 0;
 
 	bindings.reserve(bindings.size() + totalBindingCount);
@@ -99,7 +99,7 @@ VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::VariableL
 	}
 	if (hasOrdinaryData)
 	{
-		bindings.emplace_back(bindingRangeCount, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eAll, nullptr);
+		bindings.emplace_back(static_cast<uint32_t>(bindingRangeCount), vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eAll, nullptr);
 		poolSizes.emplace_back(vk::DescriptorType::eUniformBuffer, app.maxFramesInFlight);
 	}
 

@@ -47,11 +47,11 @@ inline QueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& device, co
     {
         if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
         {
-            indices.graphicsFamily = i;
+            indices.graphicsFamily = static_cast<uint32_t>(i);
         }
         if (device.getSurfaceSupportKHR(i, surface))
         {
-            indices.presentFamily = i;
+            indices.presentFamily =static_cast<uint32_t>(i);
         }
     }
 

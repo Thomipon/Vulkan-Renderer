@@ -6,6 +6,8 @@ template <typename T>
 struct AssetHandle
 {
 public:
+	explicit AssetHandle(AssetManager& assetManager);
+
 	T& operator*() const;
 	T* operator->() const;
 
@@ -19,7 +21,17 @@ private:
 	AssetManager& assetManager;
 
 	UUID uuid;
+
+	AssetHandle(AssetManager& assetManager, const UUID& uuid);
+
+	friend AssetManager;
 };
+
+template <typename T>
+AssetHandle<T>::AssetHandle(AssetManager& assetManager)
+	: assetManager(assetManager)
+{
+}
 
 template <typename T>
 T& AssetHandle<T>::operator*() const
@@ -73,4 +85,10 @@ AssetHandle<T>::~AssetHandle()
 	{
 		assetManager.decreaseRefCount<T>(uuid.value);
 	}
+}
+
+template <typename T>
+AssetHandle<T>::AssetHandle(AssetManager& assetManager, const UUID& uuid)
+	: assetManager(assetManager), uuid(uuid)
+{
 }

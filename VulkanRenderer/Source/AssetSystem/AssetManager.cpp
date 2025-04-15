@@ -11,3 +11,8 @@ void AssetManager::increaseRefCount(const size_t assetUUID)
 		assetInfosByUUID.find(assetUUID)->second.refCount += 1;
 	}
 }
+
+UUID AssetManager::createUUID()
+{
+	return {currentUUID++};
+}

@@ -9,23 +9,29 @@
 class AssetArray
 {
 public:
+	template<typename T>
+	static AssetArray create();
+
 	void reserve(size_t newCapacity);
 
-	template<typename T>
+	template <typename T>
 	T& push(const T& newElement);
 
-	template<typename T>
+	template <typename T, typename... Args>
+	T& emplace(Args... args);
+
+	template <typename T>
 	T& at(size_t index);
 
-	template<typename T>
+	template <typename T>
 	const T& at(size_t index) const;
 
 	[[nodiscard]] size_t size() const;
 
-	template<typename T>
+	template <typename T>
 	[[nodiscard]] bool isExactType() const;
 
-	template<typename T>
+	template <typename T>
 	UUID destruct(size_t index);
 
 private:
@@ -36,7 +42,13 @@ private:
 	AssetArray(const std::type_index& assetType, const size_t& assetSize);
 };
 
-template<typename T>
+template <typename T>
+AssetArray AssetArray::create()
+{
+	return {std::type_index(typeid(T)), sizeof(T)};
+}
+
+template <typename T>
 T& AssetArray::push(const T& newElement)
 {
 	assert(isExactType<T>());
@@ -46,7 +58,18 @@ T& AssetArray::push(const T& newElement)
 	return this->at<T>(size() - 1);
 }
 
-template<typename T>
+template <typename T, typename... Args>
+T& AssetArray::emplace(Args... args)
+{
+	assert(isExactType<T>());
+	const auto index{assetData.size()};
+	assetData.reserve(assetData.size() + assetSize);
+	auto* data = &assetData[index];
+	T* object{new (data) T(std::forward<Args>(args)...)};
+	return *object;
+}
+
+template <typename T>
 T& AssetArray::at(const size_t index)
 {
 	assert(isExactType<T>());
@@ -54,7 +77,7 @@ T& AssetArray::at(const size_t index)
 	return *static_cast<T*>(object);
 }
 
-template<typename T>
+template <typename T>
 const T& AssetArray::at(const size_t index) const
 {
 	assert(isExactType<T>());

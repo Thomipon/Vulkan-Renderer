@@ -63,7 +63,7 @@ void HelloTriangleApplication::initScene()
 	window.registerInputHandler(inputHandler);
 	inputHandler.registerKeyCallback(std::bind(handleCameraMovement, this, std::placeholders::_1));
 
-	auto material{assetManager.createAsset<Material>()};
+	auto material{assetManager.createAsset<Material>("BRDF/phong", "ConstantPhongMaterial")};
 	material->compile(compiler, *this);
 
 	scene.models.emplace_back(assetManager.createAsset<Mesh>(*this, modelPath), assetManager.createAsset<MaterialInstance>(material));
@@ -149,9 +149,6 @@ void HelloTriangleApplication::createGraphicsPipeline()
 	SlangCompiler compiler;
 	auto vertBlob{compiler.compile("default", "vertexMain")};
 	auto fragBlob{compiler.compile("default", "fragmentMain")};
-
-	Material material;
-	material.compile(compiler, *this);
 
 	vk::raii::ShaderModule vertShaderModule{createShaderModule(vertBlob, device)};
 	vk::raii::ShaderModule fragShaderModule{createShaderModule(fragBlob, device)};

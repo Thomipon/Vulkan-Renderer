@@ -71,8 +71,6 @@ void HelloTriangleApplication::initScene()
 
 	model.transform.translation = glm::vec3{0.0f, 0.f, 0.5f};
 
-	model.material->getShaderCursor().printLayout();
-
 	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
 	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});

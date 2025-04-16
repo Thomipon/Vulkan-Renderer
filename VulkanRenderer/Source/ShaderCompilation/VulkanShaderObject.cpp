@@ -17,7 +17,7 @@ void VulkanShaderObject::write(const ShaderOffset& offset, const void* data, siz
 	{
 		return;
 	}
-	Buffer::copySpanToBufferStaged(app, std::span{static_cast<const std::byte*>(data), size}, *buffer, offset.byteOffset); // TODO: Support none-staged buffers
+	Buffer::copySpanToBufferStaged(app, std::span{static_cast<const std::byte*>(data), size}, *buffer, offset.byteOffset); // TODO: Support non-staged buffers
 }
 
 void VulkanShaderObject::writeTexture(const ShaderOffset& offset, const TextureImage& texture)
@@ -50,6 +50,11 @@ void VulkanShaderObject::writeSampler(const ShaderOffset& offset, const TextureI
 	app.device.updateDescriptorSets(descriptorWrites, {});
 }
 
+size_t VulkanShaderObject::existentialToByteOffset(const size_t& existentialObjectOffset)
+{
+	return layout->getByteOffsetOfExistentialObject(existentialObjectOffset);
+}
+
 const std::vector<vk::raii::DescriptorSet>& VulkanShaderObject::getDescriptorSets() const
 {
 	return descriptorSets;
@@ -58,12 +63,12 @@ const std::vector<vk::raii::DescriptorSet>& VulkanShaderObject::getDescriptorSet
 VulkanShaderObject VulkanShaderObject::createShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layoutObject) // TODO: Stage flags as param
 {
 	const auto typeLayout{layoutObject->getTypeLayout()->getElementVarLayout()->getTypeLayout()};
-	const bool hasOrdinaryData{typeLayout->getSize() > 0};
+	const bool hasOrdinaryData{layoutObject->getOrdinaryDataSize() > 0};
 	std::optional<Buffer> buffer{};
 	if (hasOrdinaryData)
 	{
 		// TODO: Give the option to have this host visible instead
-		buffer = Buffer{layoutObject->app, vk::DeviceSize{typeLayout->getSize()}, vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlags{}};
+		buffer = Buffer{layoutObject->app, vk::DeviceSize{layoutObject->getOrdinaryDataSize()}, vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlags{}};
 	}
 
 	std::vector<vk::DescriptorSetLayout> layouts(layoutObject->app.maxFramesInFlight, layoutObject->descriptorSetLayout);
@@ -79,7 +84,7 @@ void VulkanShaderObject::initializeGlobalDescriptorSet()
 	{
 		const uint32_t bindingIndex = layout->getBindingIndex(); //offset.bindingIndex; //typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
 
-		vk::DescriptorBufferInfo bufferInfo{buffer->vkBuffer, 0, typeLayout->getSize()};
+		vk::DescriptorBufferInfo bufferInfo{buffer->vkBuffer, 0, layout->getOrdinaryDataSize()};
 
 		std::vector<vk::WriteDescriptorSet> descriptorWrites{};
 		descriptorWrites.reserve(descriptorSets.size());

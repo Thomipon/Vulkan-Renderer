@@ -37,10 +37,20 @@ ShaderCursor ShaderCursor::field(uint32_t index) const
 {
 	slang::VariableLayoutReflection* field{typeLayout->getFieldByIndex(index)};
 	ShaderCursor result{*this};
-	result.typeLayout = field->getTypeLayout();
-	result.offset.byteOffset += field->getOffset();
-	result.offset.bindingIndex += typeLayout->getFieldBindingRangeOffset(index);
-
+	if (field->getTypeLayout()->getKind() == slang::TypeReflection::Kind::Interface)
+	{
+		// TODO: All of this is bad architecture
+		size_t existentialObjectOffset{field->getOffset(SLANG_PARAMETER_CATEGORY_EXISTENTIAL_OBJECT_PARAM)};
+		result.typeLayout = field->getTypeLayout()->getPendingDataTypeLayout();
+		result.offset.byteOffset = shaderObject->existentialToByteOffset(existentialObjectOffset);
+		result.offset.bindingIndex += typeLayout->getFieldBindingRangeOffset(index);
+	}
+	else
+	{
+		result.typeLayout = field->getTypeLayout();
+		result.offset.byteOffset += field->getOffset();
+		result.offset.bindingIndex += typeLayout->getFieldBindingRangeOffset(index);
+	}
 	return result;
 }
 

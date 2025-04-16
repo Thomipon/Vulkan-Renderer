@@ -32,7 +32,8 @@ private:
 	static std::pair<Slang::ComPtr<slang::IModule>, slang::TypeReflection*> loadMaterial(const std::string_view& materialModuleName, const std::string_view& materialType,
 	                                                                                     const SlangCompiler& compiler);
 	static Spirv compileSpirv(const Slang::ComPtr<slang::IComponentType>& program);
-	static Slang::ComPtr<slang::IComponentType> compileMaterialProgram(const Slang::ComPtr<slang::IModule>& materialModule, slang::TypeReflection* materialType, const SlangCompiler& compiler);
+	static std::pair<Slang::ComPtr<slang::IComponentType>, std::vector<slang::TypeLayoutReflection*>> compileMaterialProgram(const Slang::ComPtr<slang::IModule>& materialModule, slang::TypeReflection* materialType,
+	                                                                                                     const SlangCompiler& compiler);
 	static vk::raii::PipelineLayout createPipelineLayout(const VulkanShaderObjectLayout& layout, const Renderer& app);
 	static vk::raii::Pipeline createPipeline(const Spirv &spirv, const vk::raii::PipelineLayout& layout, const Renderer& app);
 	static vk::raii::ShaderModule createShaderModule(const Slang::ComPtr<slang::IBlob>& codeBlob, const vk::raii::Device& device);

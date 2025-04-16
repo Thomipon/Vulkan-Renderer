@@ -68,9 +68,40 @@ uint32_t VulkanShaderObjectLayout::getBindingIndex() const
 	return variableLayout->getBindingIndex();
 }
 
-VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::VariableLayoutReflection* variableLayout, const Renderer& app)
+VulkanShaderObjectLayout::VulkanShaderObjectLayout(slang::VariableLayoutReflection* variableLayout, const std::vector<slang::TypeLayoutReflection*>& existentialObjectLayouts, const Renderer& app)
 	: VulkanShaderObjectLayout(createLayout(variableLayout, app))
 {
+	this->existentialObjectLayouts = existentialObjectLayouts; // TODO: This should be changed but apparently the slang API is not yet updated for this?
+	buildOffsets();
+}
+
+size_t VulkanShaderObjectLayout::getOrdinaryDataSize() const
+{
+	const size_t numExistentialObjects{existentialObjectLayouts.size()};
+	const size_t lastSize{numExistentialObjects > 0 ? existentialObjectSizes[numExistentialObjects - 1] : getTypeLayout()->getElementVarLayout()->getTypeLayout()->getSize()};
+	const size_t lastOffset{numExistentialObjects > 0 ? existentialObjectOffsets[numExistentialObjects - 1] : 0};
+	return lastOffset + lastSize;
+}
+
+size_t VulkanShaderObjectLayout::getByteOffsetOfExistentialObject(const size_t& existentialObjectOffset) const
+{
+	return existentialObjectOffsets[existentialObjectOffset];
+}
+
+void VulkanShaderObjectLayout::buildOffsets()
+{
+	existentialObjectOffsets.clear();
+	existentialObjectSizes.clear();
+	existentialObjectOffsets.reserve(existentialObjectLayouts.size());
+	existentialObjectSizes.reserve(existentialObjectLayouts.size());
+	size_t currentOffset{getTypeLayout()->getElementVarLayout()->getTypeLayout()->getSize()};
+	for (const auto& existentialObjectLayout : existentialObjectLayouts)
+	{
+		const size_t size{existentialObjectLayout->getSize()};
+		existentialObjectSizes.emplace_back(size);
+		existentialObjectOffsets.emplace_back(currentOffset);
+		currentOffset += size;
+	}
 }
 
 VulkanShaderObjectLayout VulkanShaderObjectLayout::createLayout(slang::VariableLayoutReflection* variableLayout, const Renderer& app)

@@ -329,13 +329,7 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 
 	for (const auto& model : scene.models)
 	{
-		// TODO: This is extremely inefficient. We should sort the models by material, material instance, mesh to avoid rebinding. Also, we should share descriptor sets
-
-		auto materialInstance{model.material};
-		auto material{materialInstance->parentMaterial};
-		const vk::raii::Pipeline& pipeline{material->pipeline};
-		vk::Pipeline vkPipeline{*pipeline};
-		//commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipeline);
+		// TODO: This is extremely inefficient. We should sort the models by material, material instance, mesh to avoid rebinding. Also, we should share descriptor sets and maybe use push constants
 
 		ShaderCursor globalCursor{model.material->getShaderCursor()};
 		ShaderCursor modelCursor{globalCursor.field("gModelData")};
@@ -349,9 +343,9 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 		ShaderCursor lightCursor{globalCursor.field("gLightEnvironment")};
 		lightCursor.field("direction").write(glm::vec3{1.f, 1.f, 1.f});
 		lightCursor.field("color").write(glm::vec3{1.f, .8f, .6f});
-		lightCursor.field("intensity").write(glm::vec1{5.f});
+		lightCursor.field("intensity").write(glm::vec1{.5f});
 
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline);
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipeline);
 
 		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipelineLayout, 0, *model.material->shaderObject.getDescriptorSets()[currentFrame], nullptr);
 

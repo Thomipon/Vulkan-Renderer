@@ -449,6 +449,16 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayout
 				<< BeginIndent{} << PrintIndent{} << layout->getElementVarLayout()->getTypeLayout() << EndIndent{};
 		}
 		break;
+	case slang::TypeReflection::Kind::Interface:
+		{
+			*this << '\n' << PrintIndent{} << "pending layout:" << BeginIndent{};
+			for (int i = 0; i < layout->getSubObjectRangeCount(); ++i)
+			{
+				*this << '\n' << PrintIndent{} << layout->getSubObjectRangeOffset(i)->getPendingDataLayout();
+			}
+			*this << EndIndent{};
+		}
+		break;
 	default:
 		break;
 	}

@@ -1,4 +1,4 @@
-﻿#include "HelloTriangleApplication.hpp"
+﻿#include "Application.hpp"
 
 #include <chrono>
 #include <vector>
@@ -6,42 +6,35 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 
-#include "Buffer.hpp"
-#include "check.hpp"
 #include "Asset/Mesh.hpp"
 #include "Shader.hpp"
-#include "ShaderCompiler.hpp"
 #include "Swapchain.hpp"
-#include "Uniforms.hpp"
 #include "Vertex.hpp"
 #include "Asset/Material.hpp"
 #include "Asset/MaterialInstance.hpp"
-#include "Renderer/RenderSync.hpp"
 #include "Scene/Camera.hpp"
 #include "Scene/Model.hpp"
 #include "ShaderCompilation/ShaderCursor.hpp"
 
-void HelloTriangleApplication::run()
+void Application::run()
 {
 	initScene();
 	mainLoop();
 }
 
-void HelloTriangleApplication::mainLoop()
+void Application::mainLoop()
 {
 	while (!window.shouldClose())
 	{
 		Window::pollEvents();
-		updateCamera();
 		drawScene(scene);
 	}
 
 	device.waitIdle();
 }
 
-void HelloTriangleApplication::initScene()
+void Application::initScene()
 {
 	window.registerInputHandler(inputHandler);
 	inputHandler.registerKeyCallback(std::bind(handleCameraMovement, this, std::placeholders::_1));
@@ -60,21 +53,7 @@ void HelloTriangleApplication::initScene()
 	materialCursor.field("specularity").write(glm::vec1{1.f});
 }
 
-void HelloTriangleApplication::updateCamera()
-{
-	static auto startTime{std::chrono::high_resolution_clock::now()};
-
-	const auto currentTime{std::chrono::high_resolution_clock::now()};
-	const float time{std::chrono::duration<float>(currentTime - startTime).count()};
-
-	//scene.camera->transform.translation = rotate(glm::vec3{5.f, 0.f, 0.f}, time * glm::radians(90.f), glm::vec3{0.0f, 0.0f, 1.0f});
-	//scene.camera->transform.translation = glm::vec3{-2.0f, 0.0f, 0.0f};
-	//scene.camera->transform.rotation = quatLookAt(glm::vec3{2.0f} - glm::vec3{0.f}, glm::vec3{0.f, 0.f, 1.f});
-	//scene.camera->transform.rotation = quatLookAt(glm::vec3{2.0f, 0.0f, 0.0f}, glm::vec3{0.f, 0.f, 1.f});
-	//scene.camera.transform.rotation = glm::rotate(glm::quat{1.f, 0.f, 0.f, 0.f}, glm::radians(time * 180.f), glm::vec3{0.f, 0.f, 1.f});
-}
-
-void HelloTriangleApplication::handleCameraMovement(const InputEvent& keyEvent)
+void Application::handleCameraMovement(const InputEvent& keyEvent)
 {
 	// TODO: Keys should be encapsulated
 	if (keyEvent.type == InputType::keyPress)

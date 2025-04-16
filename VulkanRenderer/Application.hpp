@@ -1,19 +1,11 @@
 ﻿#pragma once
 
-#include <vector>
-
-#include "Asset/Mesh.hpp"
-#include "VulkanBackend.hpp"
-
 #include "Renderer.hpp"
 #include "TextureImage.hpp"
 #include "AssetSystem/AssetManager.hpp"
 #include "Scene/Scene.hpp"
 
-class RenderSync;
-class Buffer;
-
-class HelloTriangleApplication : public Renderer
+class Application : public Renderer
 {
 public:
     void run();
@@ -24,7 +16,6 @@ private:
     void mainLoop();
 
     void initScene();
-    void updateCamera();
 
     AssetManager assetManager;
     InputHandler inputHandler;

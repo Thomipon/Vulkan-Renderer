@@ -3,12 +3,12 @@
 #include <exception>
 #include <iostream>
 
-#include "HelloTriangleApplication.hpp"
+#include "Application.hpp"
 
 int main() {
     try
     {
-        HelloTriangleApplication app;
+        Application app;
         app.run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

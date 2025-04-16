@@ -2,8 +2,8 @@ add_executable(${PROJECT_NAME} main.cpp
         CommandQueues.hpp
         DeviceExtensions.hpp
         DeviceExtensions.hpp
-        HelloTriangleApplication.cpp
-        HelloTriangleApplication.hpp
+        Application.cpp
+        Application.hpp
         stb.hpp
         IOHelper.hpp
         PhysicalDeviceHelper.hpp

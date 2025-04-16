@@ -13,6 +13,7 @@ class VulkanShaderObject : public ShaderObject
 public:
 	VulkanShaderObject(const std::shared_ptr<VulkanShaderObjectLayout>& layout);
 
+	// TODO: We may need to treat matrices differently: For CPU targets, they need to be forced into row-major. For GPU targets, non 4x4 matrices need to be forced into certain layouts
 	virtual void write(const ShaderOffset& offset, const void* data, size_t size) override;
 
 	virtual void writeTexture(const ShaderOffset& offset, const TextureImage& texture) override;

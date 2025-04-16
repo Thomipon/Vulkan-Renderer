@@ -426,10 +426,13 @@ SlangDebug::SlangPrinter& SlangDebug::SlangPrinter::operator<<(slang::TypeLayout
 			{
 			case SLANG_MATRIX_LAYOUT_MODE_UNKNOWN:
 				*this << "unknown";
+				break;
 			case SLANG_MATRIX_LAYOUT_ROW_MAJOR:
 				*this << "row major";
+				break;
 			case SLANG_MATRIX_LAYOUT_COLUMN_MAJOR:
 				*this << "column major";
+				break;
 			}
 		}
 		break;

@@ -5,7 +5,6 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
@@ -72,6 +71,8 @@ void HelloTriangleApplication::initScene()
 
 	model.transform.translation = glm::vec3{0.0f, 0.f, 0.5f};
 
+	model.material->getShaderCursor().printLayout();
+
 	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
 	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
@@ -133,8 +134,7 @@ void HelloTriangleApplication::handleCameraMovement(const InputEvent& keyEvent)
 			direction = mat3_cast(scene.camera.transform.rotation) * direction;
 
 			auto& translation{scene.camera.transform.translation};
-			translation += -direction * speed * time;
-			std::cout << translation.x << '\t' << translation.y << '\t' << translation.z << std::endl;
+			translation += direction * speed * time;
 		}
 	}
 	if (keyEvent.type == InputType::mouseMove)
@@ -143,9 +143,6 @@ void HelloTriangleApplication::handleCameraMovement(const InputEvent& keyEvent)
 		normalizedMousePos = 2.f * (normalizedMousePos - glm::vec2{0.5f, 0.5f});
 		glm::vec2 angles{glm::radians(normalizedMousePos.x * 180), glm::radians(normalizedMousePos.y * 90)};
 		scene.camera.transform.rotation = glm::quat{glm::vec3{angles.y, angles.x, 0.0f}};
-
-		const glm::vec3 direction{mat3_cast(scene.camera.transform.rotation) * glm::vec3{1.0f, 0.0f, 0.0f}};
-		std::cout << "looking in: " << direction.x << '\t' << direction.y << '\t' << direction.z << std::endl;
 	}
 }
 

@@ -14,16 +14,23 @@ SlangCompiler::SlangCompiler()
 		  .profile = globalSession->findProfile("spirv_1_5")
 	  },
 	  options{
-		  {
+		  slang::CompilerOptionEntry{
 			  .name = slang::CompilerOptionName::EmitSpirvDirectly,
 			  .value = {
 				  .kind = slang::CompilerOptionValueKind::Int, .intValue0 = 1, .intValue1 = 0, .stringValue0 = nullptr, .stringValue1 = nullptr
+			  }
+		  },
+		  slang::CompilerOptionEntry{
+			  .name = slang::CompilerOptionName::MatrixLayoutColumn,
+			  .value = {
+				  .kind = slang::CompilerOptionValueKind::Int, .intValue0 = 1, .intValue1 = 1, .stringValue0 = nullptr, .stringValue1 = nullptr
 			  }
 		  }
 	  },
 	  sessionDesc{
 		  .targets = &targetDesc,
 		  .targetCount = 1,
+		  .defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR,
 		  .searchPaths = baseShaderPaths.data(),
 		  .searchPathCount = static_cast<uint32_t>(baseShaderPaths.size()),
 		  .compilerOptionEntries = options.data(),
@@ -122,7 +129,7 @@ ComPtr<slang::IComponentType> SlangCompiler::specializeProgram(const ComPtr<slan
 	return specializedProgram;
 }
 
-slang::ProgramLayout* SlangCompiler::getProgramLayout(const ComPtr<slang::IComponentType> &program, int targetIndex)
+slang::ProgramLayout* SlangCompiler::getProgramLayout(const ComPtr<slang::IComponentType>& program, int targetIndex)
 {
 	slang::ProgramLayout* programLayout{nullptr};
 	{

@@ -37,10 +37,10 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/Scene/Model.hpp
         Source/Asset/Material.cpp
         Source/Asset/Material.hpp
-        Source/Scene/Light/Light.cpp
-        Source/Scene/Light/Light.hpp
-        Source/Scene/Light/PointLight.cpp
-        Source/Scene/Light/PointLight.hpp
+        Source/Scene/Light/LightEnvironment.cpp
+        Source/Scene/Light/LightEnvironment.hpp
+        Source/Scene/Light/BasicLights.cpp
+        Source/Scene/Light/BasicLights.hpp
         Source/Scene/Core/Transform.cpp
         Source/Scene/Core/Transform.hpp
         Source/Scene/Camera.cpp
@@ -71,6 +71,10 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/Asset/AssetBase.hpp
         Source/Input/InputHandler.cpp
         Source/Input/InputHandler.hpp
+        Source/Scene/Light/CompositeLights.cpp
+        Source/Scene/Light/CompositeLights.hpp
+        Source/Scene/Light/UniversalLightEnvironment.cpp
+        Source/Scene/Light/UniversalLightEnvironment.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

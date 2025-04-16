@@ -39,13 +39,23 @@ void Application::initScene()
 	window.registerInputHandler(inputHandler);
 	inputHandler.registerKeyCallback(std::bind(handleCameraMovement, this, std::placeholders::_1));
 
+	DirectionalLight directionalLight{};
+	directionalLight.direction = glm::vec3{1.f, 1.f, 1.f};
+	directionalLight.color = glm::vec3{1.f, .8f, .6f};
+	directionalLight.intensity = .5f;
+	scene.lightEnvironment.second.lights.emplace_back(directionalLight);
+	directionalLight.direction = glm::vec3{-1.f, 1.f, 1.f};
+	scene.lightEnvironment.second.lights.emplace_back(directionalLight);
+
 	auto material{assetManager.createAsset<Material>("BRDF/phong", "ConstantPhongMaterial")};
 	material->compile(compiler, *this);
 
 	scene.models.emplace_back(assetManager.createAsset<Mesh>(*this, modelPath), assetManager.createAsset<MaterialInstance>(material));
 	Model& model{scene.models[0]};
 
-	model.transform.translation = glm::vec3{0.0f, 0.f, 0.5f};
+	model.transform.translation = glm::vec3{0.0f, 0.f, 0.f};
+
+	model.material->getShaderCursor().printLayout();
 
 	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
@@ -103,5 +113,6 @@ void Application::handleCameraMovement(const InputEvent& keyEvent)
 		normalizedMousePos = 2.f * (normalizedMousePos - glm::vec2{0.5f, 0.5f});
 		glm::vec2 angles{glm::radians(normalizedMousePos.x * 180), glm::radians(normalizedMousePos.y * 90)};
 		scene.camera.transform.rotation = glm::quat{glm::vec3{angles.y, angles.x, 0.0f}};
+		scene.camera.transform.translation = mat3_cast(scene.camera.transform.rotation) * glm::vec3{-2., 0., 0.};
 	}
 }

@@ -3,12 +3,12 @@
 
 #include "Camera.hpp"
 #include "Model.hpp"
-#include "Light/Light.hpp"
+#include "Light/UniversalLightEnvironment.hpp"
 
 class Scene
 {
 public:
 	std::vector<Model> models;
-	std::vector<Light> lights;
+	UniversalLightEnvironment lightEnvironment;
 	Camera camera;
 };

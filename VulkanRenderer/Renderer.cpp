@@ -341,9 +341,7 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 		viewCursor.field("viewProjection").write(scene.camera.getViewProjection(glm::vec2{swapchain.extent.width, swapchain.extent.height}));
 
 		ShaderCursor lightCursor{globalCursor.field("gLightEnvironment")};
-		lightCursor.field("direction").write(glm::vec3{1.f, 1.f, 1.f});
-		lightCursor.field("color").write(glm::vec3{1.f, .8f, .6f});
-		lightCursor.field("intensity").write(glm::vec1{.5f});
+		scene.lightEnvironment.writeToCursor(lightCursor);
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, model.material->parentMaterial->pipeline);
 

@@ -1,7 +1,7 @@
 # Description
 
 A toy renderer written with Vulkan.<br>
-The renderer is only tested to work with Windows!
+The renderer is only tested to work with Windows and MinGW!
 
 # Dependencies
 

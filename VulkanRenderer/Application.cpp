@@ -113,6 +113,6 @@ void Application::handleCameraMovement(const InputEvent& keyEvent)
 		normalizedMousePos = 2.f * (normalizedMousePos - glm::vec2{0.5f, 0.5f});
 		glm::vec2 angles{glm::radians(normalizedMousePos.x * 180), glm::radians(normalizedMousePos.y * 90)};
 		scene.camera.transform.rotation = glm::quat{glm::vec3{angles.y, angles.x, 0.0f}};
-		scene.camera.transform.translation = mat3_cast(scene.camera.transform.rotation) * glm::vec3{-2., 0., 0.};
+		scene.camera.transform.translation = mat3_cast(scene.camera.transform.rotation) * glm::vec3{-.5, 0., 0.};
 	}
 }

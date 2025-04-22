@@ -60,7 +60,7 @@ struct PointLight : ILightEnvironment
 {
     float3 position;
     float3 color;
-    float3 intensity;
+    float intensity;
 
     float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
     {

@@ -44,7 +44,11 @@ RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
 					attrib.vertices[3 * index.vertex_index + 1],
 					attrib.vertices[3 * index.vertex_index + 2]
 				},
-				.color = {1.f, 1.f, 1.f},
+				.normal = {
+					attrib.normals[3 * index.vertex_index + 0],
+					attrib.normals[3 * index.vertex_index + 1],
+					attrib.normals[3 * index.vertex_index + 2]
+				},
 				.texCoord = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
 					1.f - attrib.texcoords[2 * index.texcoord_index + 1]

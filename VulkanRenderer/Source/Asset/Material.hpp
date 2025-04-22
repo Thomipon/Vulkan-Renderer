@@ -16,7 +16,7 @@ class SlangCompiler;
 class Material : public AssetBase
 {
 public:
-	Material();
+	Material(const std::string_view& materialModuleName, const std::string_view& materialTypeName);
 
 	void compile(const SlangCompiler& compiler, const Renderer& app);
 
@@ -29,6 +29,9 @@ public:
 	vk::raii::Pipeline pipeline;
 
 private:
+	std::string materialModuleName;
+	std::string materialTypeName;
+
 	static std::pair<Slang::ComPtr<slang::IModule>, slang::TypeReflection*> loadMaterial(const std::string_view& materialModuleName, const std::string_view& materialType,
 	                                                                                     const SlangCompiler& compiler);
 	static Spirv compileSpirv(const Slang::ComPtr<slang::IComponentType>& program);

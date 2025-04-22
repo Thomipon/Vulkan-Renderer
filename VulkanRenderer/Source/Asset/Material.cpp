@@ -5,29 +5,27 @@
 #include "Material.hpp"
 
 #include <array>
-#include <iostream>
 
 #include "Renderer.hpp"
 #include "ShaderCompiler.hpp"
 #include "Vertex.hpp"
 #include "Debug/SlangDebug.hpp"
+#include "Scene/Light/BasicLights.hpp"
+#include "Scene/Light/CompositeLights.hpp"
+#include "Scene/Light/UniversalLightEnvironment.hpp"
 
-Material::Material()
-	: pipelineLayout(nullptr), pipeline(nullptr)
+Material::Material(const std::string_view& materialModuleName, const std::string_view& materialTypeName)
+	: pipelineLayout(nullptr), pipeline(nullptr), materialModuleName(materialModuleName), materialTypeName(materialTypeName)
 {
 }
 
 void Material::compile(const SlangCompiler& compiler, const Renderer& app)
 {
-	auto [materialModule, materialType]{loadMaterial("BRDF/phong", "ConstantPhongMaterial", compiler)};
+	auto [materialModule, materialType]{loadMaterial(materialModuleName, materialTypeName, compiler)};
 	auto [newProgram, existentialObjects]{compileMaterialProgram(materialModule, materialType, compiler)};
 	program = newProgram;
 	spirv = compileSpirv(program);
 	shaderLayout = std::make_unique<VulkanShaderObjectLayout>(SlangCompiler::getProgramLayout(program)->getGlobalParamsVarLayout(), existentialObjects, app);
-	/*SlangDebug::SlangPrinter printer{};
-	printer << /*program->getLayout() << '\n' << *//*program->getLayout()->getParameterByIndex(3);
-	std::cout << program->getLayout()->getGlobalParamsTypeLayout()->getSize(SLANG_PARAMETER_CATEGORY_EXISTENTIAL_TYPE_PARAM) << std::endl;
-	std::cout << printer << std::endl;*/
 	pipelineLayout = createPipelineLayout(*shaderLayout, app);
 	pipeline = createPipeline(spirv, pipelineLayout, app);
 }
@@ -53,7 +51,7 @@ std::pair<ComPtr<slang::IComponentType>, std::vector<slang::TypeLayoutReflection
 	auto fragEntry{SlangCompiler::findEntryPoint(rasterModule, "fragmentMain")};
 
 	auto lightModule{compiler.loadModule("Core/lights")};
-	auto lightType{lightModule->getLayout()->findTypeByName("DirectionalLight")};
+	auto lightType{lightModule->getLayout()->findTypeByName(UniversalLightEnvironment::getLightTypeNameStatic().c_str())};
 
 	auto composedProgram{compiler.composeProgram({rasterModule, vertEntry, fragEntry, materialModule, lightModule})};
 

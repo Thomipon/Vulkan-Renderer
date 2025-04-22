@@ -20,4 +20,4 @@ include_directories(${CMAKE_SOURCE_DIR}/External/tinyobjloader)
 add_subdirectory(External)
 add_subdirectory(VulkanRenderer)
 
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} Vulkan::Vulkan ${Slang_LIBRARY}) # GLM::GLM)
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} Vulkan::Vulkan ${Slang_LIBRARY} imgui) # GLM::GLM)

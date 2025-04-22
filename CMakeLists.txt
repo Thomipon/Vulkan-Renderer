@@ -14,6 +14,7 @@ find_package(Vulkan REQUIRED)
 find_library(Slang_LIBRARY NAMES slang HINTS ${Vulkan_LIBRARY}/../ NO_DEFAULT_PATH)
 
 include_directories(${CMAKE_SOURCE_DIR}/External/glfw/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/External/stb)
 include_directories(${CMAKE_SOURCE_DIR}/External/tinyobjloader)
 

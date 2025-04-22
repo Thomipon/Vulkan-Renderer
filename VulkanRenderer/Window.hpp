@@ -25,6 +25,8 @@ public:
 
     void registerInputHandler(InputHandler& newInputHandler);
 
+    GLFWwindow* getGLFWWindow() const;
+
 private:
     GLFWwindow* window;
 

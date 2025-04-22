@@ -69,6 +69,11 @@ void Window::registerInputHandler(InputHandler& newInputHandler)
     inputHandler = &newInputHandler;
 }
 
+GLFWwindow* Window::getGLFWWindow() const
+{
+    return window;
+}
+
 void Window::onFramebufferResized(GLFWwindow* window, int width, int height)
 {
     const Window* self{static_cast<Window*>(glfwGetWindowUserPointer(window))};

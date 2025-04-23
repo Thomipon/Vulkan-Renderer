@@ -45,9 +45,9 @@ void Application::initScene()
 	directionalLight.direction = glm::vec3{1.f, 1.f, 1.f};
 	directionalLight.color = glm::vec3{1.f, .8f, .6f};
 	directionalLight.intensity = .5f;
-	scene.lightEnvironment.second.lights.emplace_back(directionalLight);
+	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 	directionalLight.direction = glm::vec3{-1.f, 1.f, 1.f};
-	scene.lightEnvironment.second.lights.emplace_back(directionalLight);
+	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 
 	auto material{assetManager.createAsset<Material>("BRDF/phong", "ConstantPhongMaterial")};
 	material->compile(compiler, *this);

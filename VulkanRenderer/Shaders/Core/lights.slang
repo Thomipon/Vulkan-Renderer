@@ -72,3 +72,14 @@ struct PointLight : ILightEnvironment
         return brdf.evaluate(viewDirection, direction, illumination);
     }
 }
+
+struct AmbientLight : ILightEnvironment
+{
+    float3 color;
+    float intensity;
+
+    float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
+    {
+        return brdf.evaluateDiffuse(color * intensity);
+    }
+}

@@ -19,6 +19,11 @@ struct PhongBRDF : IBRDF
 
         return lightColor * (kd * nDotL + ks * pow(nDotH, specularity));
     }
+
+    float3 evaluateDiffuse(float3 lightColor)
+    {
+        return lightColor * kd;
+    }
 }
 
 struct ConstantPhongMaterial : IMaterial

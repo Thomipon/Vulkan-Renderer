@@ -62,7 +62,7 @@ void Scene::drawImGui()
 			case 1:
 			// Directional light
 			{
-				lightEnvironment.second.addLight();
+				lightEnvironment.second.first.addLight();
 			}
 			break;
 			default:

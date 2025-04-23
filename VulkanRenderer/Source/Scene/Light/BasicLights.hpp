@@ -8,8 +8,8 @@ class PointLight : public LightEnvironment
 {
 public:
 	Transform transform;
-	glm::vec3 color;
-	float intensity;
+	glm::vec3 color{1.f};
+	float intensity{.5f};
 
 	IMPLEMENT_LIGHT_TYPE("PointLight")
 
@@ -20,11 +20,23 @@ public:
 class DirectionalLight : public LightEnvironment
 {
 public:
-	glm::vec3 direction;
-	glm::vec3 color;
-	float intensity;
+	glm::vec3 direction{1.f, 0.f, 0.f};
+	glm::vec3 color{1.f};
+	float intensity{.5f};
 
 	IMPLEMENT_LIGHT_TYPE("DirectionalLight")
+
+	virtual void writeToCursor(const ShaderCursor& cursor) const override;
+	virtual void drawImGui() override;
+};
+
+class AmbientLight : public LightEnvironment
+{
+public:
+	glm::vec3 color{1.f};
+	float intensity{.1f};
+
+	IMPLEMENT_LIGHT_TYPE("AmbientLight")
 
 	virtual void writeToCursor(const ShaderCursor& cursor) const override;
 	virtual void drawImGui() override;

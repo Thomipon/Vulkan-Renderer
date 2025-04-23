@@ -42,3 +42,18 @@ void DirectionalLight::drawImGui()
 	ImGui::Text("Intensity:");
 	ImGui::DragFloat("##intensity", &intensity, 0.1f);
 }
+
+void AmbientLight::writeToCursor(const ShaderCursor &cursor) const
+{
+	cursor.field("color").write(color);
+	cursor.field("intensity").write(intensity);
+}
+
+void AmbientLight::drawImGui()
+{
+	ImGui::SeparatorText("AmbientLight");
+	ImGui::Text("Color:");
+	ImGui::ColorEdit3("##color", reinterpret_cast<float*>(&color));
+	ImGui::Text("Intensity:");
+	ImGui::DragFloat("##intensity", &intensity, 0.1f);
+}

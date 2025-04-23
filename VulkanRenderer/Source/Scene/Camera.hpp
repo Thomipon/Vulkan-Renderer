@@ -4,7 +4,7 @@
 class Camera {
 public:
 	Transform transform{};
-	float fieldOfView = 90.f;
+	float fieldOfView = 70.f;
 
 	[[nodiscard]] glm::mat4 getViewProjection(const glm::vec2& viewExtent) const;
 

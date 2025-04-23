@@ -40,7 +40,8 @@ void Application::initScene()
 	window.registerInputHandler(inputHandler);
 	//inputHandler.registerKeyCallback(std::bind(handleCameraMovement, this, std::placeholders::_1));
 
-	scene.camera.transform.translation = glm::vec3(0.f, 0.f, .5f);
+	scene.camera.transform.translation = glm::vec3{0.f, .05f, .2f};
+	scene.camera.transform.rotation = glm::quat{radians(glm::vec3{-15.f, 0.f, 0.f})};
 
 	DirectionalLight directionalLight{};
 	directionalLight.direction = glm::vec3{1.f, 1.f, 1.f};

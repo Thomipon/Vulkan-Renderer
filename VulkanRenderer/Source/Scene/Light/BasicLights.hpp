@@ -14,6 +14,7 @@ public:
 	IMPLEMENT_LIGHT_TYPE("PointLight")
 
 	virtual void writeToCursor(const ShaderCursor& cursor) const override;
+	virtual void drawImGui() override;
 };
 
 class DirectionalLight : public LightEnvironment
@@ -26,4 +27,5 @@ public:
 	IMPLEMENT_LIGHT_TYPE("DirectionalLight")
 
 	virtual void writeToCursor(const ShaderCursor& cursor) const override;
+	virtual void drawImGui() override;
 };

@@ -13,22 +13,26 @@ void Scene::drawImGui()
 
 	ImGui::Text("Scene");
 
-	ImGui::BeginChild("Camera");
-
 	camera.drawImGui();
 
-	ImGui::EndChild();
-
-	ImGui::BeginChild("Models");
+	ImGui::SeparatorText("Models");
 
 	for (const auto& [index, model] : std::ranges::views::enumerate(models))
 	{
 		ImGui::PushID(static_cast<int>(index));
 
+		model.drawImGui();
+
 		ImGui::PopID();
 	}
 
-	ImGui::EndChild();
+	ImGui::SeparatorText("Lights");
+
+	ImGui::PushID("lights");
+
+	lightEnvironment.drawImGui();
+
+	ImGui::PopID();
 
 	ImGui::End();
 }

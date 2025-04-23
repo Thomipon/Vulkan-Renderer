@@ -18,4 +18,6 @@ public:
 
 	AssetHandle<Mesh> mesh;
 	AssetHandle<MaterialInstance> material; // TODO: Support multiple material slots
+
+	void drawImGui();
 };

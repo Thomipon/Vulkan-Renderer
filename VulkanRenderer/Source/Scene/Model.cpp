@@ -3,3 +3,9 @@
 //
 
 #include "Model.hpp"
+
+void Model::drawImGui()
+{
+    transform.drawImGui();
+    // TODO: Mesh/Material picker
+}

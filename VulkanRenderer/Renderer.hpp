@@ -7,6 +7,7 @@
 #include "Swapchain.hpp"
 #include "VulkanBackend.hpp"
 #include "Window.hpp"
+#include "ImGUI/ImGUI.hpp"
 #include "Renderer/RenderSync.hpp"
 
 class Scene;
@@ -38,6 +39,7 @@ public:
     std::vector<vk::raii::Framebuffer> swapChainFramebuffers;
     std::vector<RenderSync> renderSyncObjects;
     SlangCompiler compiler;
+    ImGUI imGui;
 
     uint32_t currentFrame{0};
 
@@ -58,6 +60,7 @@ private:
     static vk::raii::RenderPass createRenderPass(const vk::raii::Device& device, const vk::PhysicalDevice& physicalDevice, const Swapchain& swapchain);
     static std::vector<vk::raii::Framebuffer> createFramebuffers(const vk::raii::Device& device, const vk::raii::RenderPass& renderPass, const vk::raii::ImageView& depthImageView, const std::vector<vk::raii::ImageView>& imageViews, const vk::Extent2D& swapchainExtent);
     static std::vector<RenderSync> createSyncObjects(const vk::raii::Device& device, uint8_t maxFramesInFlight);
+    ImGUI initImGUI() const;
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                       vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);

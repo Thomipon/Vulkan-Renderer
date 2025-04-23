@@ -1,8 +1,10 @@
 ﻿#include "Renderer.hpp"
 
+#include <imgui.h>
 #include <iostream>
 #include <ranges>
 #include <set>
+#include <backends/imgui_impl_vulkan.h>
 
 #include "DepthImage.hpp"
 #include "check.hpp"
@@ -36,7 +38,8 @@ Renderer::Renderer()
 	  commandBuffers(device.allocateCommandBuffers({commandPool, vk::CommandBufferLevel::ePrimary, maxFramesInFlight})),
 	  swapChainFramebuffers(createFramebuffers(device, renderPass, depthImage.imageView, swapchain.imageViews, swapchain.extent)),
 	  renderSyncObjects(createSyncObjects(device, maxFramesInFlight)),
-	  compiler()
+	  compiler(),
+	  imGui(initImGUI())
 {
 }
 
@@ -95,8 +98,6 @@ void Renderer::drawScene(const Scene& scene)
 		framebufferResized = false;
 	}
 
-	//updateUniformBuffer(currentFrame);
-
 	vk::raii::CommandBuffer& commandBuffer{commandBuffers[currentFrame]};
 	const RenderSync& renderSync{renderSyncObjects[currentFrame]};
 
@@ -109,6 +110,9 @@ void Renderer::drawScene(const Scene& scene)
 	{
 		return;
 	}
+
+	imGui.newFrame();
+	ImGui::ShowDemoWindow();
 
 	commandBuffer.reset({});
 	recordCommandBufferForSceneDraw(commandBuffer, imageIndex, scene);
@@ -295,6 +299,27 @@ std::vector<RenderSync> Renderer::createSyncObjects(const vk::raii::Device& devi
 	return renderSyncObjects;
 }
 
+ImGUI Renderer::initImGUI() const
+{
+	// TODO: I don't know if all of this is correct...
+	ImGui_ImplVulkan_InitInfo initInfo{
+		.ApiVersion = vk::ApiVersion14,
+		.Instance = *instance,
+		.PhysicalDevice = *physicalDevice,
+		.Device = *device,
+		.QueueFamily = *queueIndices.graphicsFamily,
+		.Queue = *graphicsQueue,
+		.DescriptorPool = nullptr,
+		.RenderPass = *renderPass,
+		.MinImageCount = 2,
+		.ImageCount = maxFramesInFlight,
+		.MSAASamples = {},
+		.DescriptorPoolSize = 7
+	};
+	ImGUI imGui{window, initInfo};
+	return imGui;
+}
+
 vk::Bool32 Renderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                    vk::DebugUtilsMessageTypeFlagsEXT messageType,
                                    const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -352,6 +377,8 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 
 		commandBuffer.drawIndexed(model.mesh->rawMesh.indices.size(), 1, 0, 0, 0);
 	}
+
+	imGui.Render(commandBuffer);
 
 	commandBuffer.endRenderPass();
 

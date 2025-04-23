@@ -7,6 +7,9 @@
 #include <imgui.h>
 #include <ranges>
 
+constexpr std::array lightTypes{"PointLight", "DirectionalLight"};
+int selectedLightType;
+
 void Scene::drawImGui()
 {
 	ImGui::Begin("Scene");
@@ -27,6 +30,45 @@ void Scene::drawImGui()
 	}
 
 	ImGui::SeparatorText("Lights");
+
+	if (ImGui::BeginCombo("##lightcombo", lightTypes[selectedLightType]))
+	{
+		for (int i = 0; i < lightTypes.size(); ++i)
+		{
+			const bool isSelected = selectedLightType == i;
+			if (ImGui::Selectable(lightTypes[i], isSelected))
+			{
+				selectedLightType = i;
+			}
+			if (isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Add light"))
+	{
+		switch (selectedLightType)
+		{
+			case 0:
+			// Point light
+			{
+				lightEnvironment.first.addLight();
+			}
+			break;
+			case 1:
+			// Directional light
+			{
+				lightEnvironment.second.addLight();
+			}
+			break;
+			default:
+				break;
+		}
+	}
 
 	ImGui::PushID("lights");
 

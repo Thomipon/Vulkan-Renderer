@@ -42,6 +42,7 @@ public:
 
 	virtual void writeToCursor(const ShaderCursor& cursor) const override;
 	virtual void drawImGui() override;
+	bool addLight();
 };
 
 template <LightEnv L1, LightEnv L2>
@@ -84,4 +85,15 @@ void LightArray<L, n>::drawImGui()
 		lights[i].drawImGui();
 		ImGui::PopID();
 	}
+}
+
+template<LightEnv L, int n>
+bool LightArray<L, n>::addLight()
+{
+	if (lights.size() < n)
+	{
+		lights.emplace_back();
+		return true;
+	}
+	return false;
 }

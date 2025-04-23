@@ -90,7 +90,7 @@ void Renderer::endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer) co
 	// TODO: Make sure the command buffer is properly destroyed here
 }
 
-void Renderer::drawScene(const Scene& scene)
+void Renderer::drawScene(Scene& scene)
 {
 	if (framebufferResized)
 	{
@@ -112,6 +112,7 @@ void Renderer::drawScene(const Scene& scene)
 	}
 
 	imGui.newFrame();
+	scene.drawImGui();
 	ImGui::ShowDemoWindow();
 
 	commandBuffer.reset({});

@@ -11,4 +11,6 @@ public:
 	std::vector<Model> models;
 	UniversalLightEnvironment lightEnvironment;
 	Camera camera;
+
+	void drawImGui();
 };

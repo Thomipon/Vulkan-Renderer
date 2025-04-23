@@ -48,7 +48,7 @@ public:
     [[nodiscard]] vk::raii::CommandBuffer beginSingleTimeCommands() const;
     void endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer) const;
 
-    void drawScene(const Scene& scene);
+    void drawScene(Scene& scene);
 
 private:
 

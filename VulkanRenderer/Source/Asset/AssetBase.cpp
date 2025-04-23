@@ -4,11 +4,26 @@
 
 #include "AssetBase.hpp"
 
+AssetBase::AssetBase(const std::string_view& name)
+	: name(name)
+{
+}
+
+AssetBase::AssetBase(std::string&& name)
+	: name(std::move(name))
+{
+}
+
 AssetBase::~AssetBase() = default;
 
 UUID AssetBase::getUUID() const
 {
 	return uuid;
+}
+
+std::string_view AssetBase::getName() const
+{
+	return name;
 }
 
 void AssetBase::setUUID(const UUID& uuid)

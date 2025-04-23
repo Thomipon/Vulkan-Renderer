@@ -15,7 +15,8 @@
 #include "Scene/Light/UniversalLightEnvironment.hpp"
 
 Material::Material(const std::string_view& materialModuleName, const std::string_view& materialTypeName)
-	: pipelineLayout(nullptr), pipeline(nullptr), materialModuleName(materialModuleName), materialTypeName(materialTypeName)
+	: AssetBase((std::string{materialModuleName} + "/").append(materialTypeName)),
+	  pipelineLayout(nullptr), pipeline(nullptr), materialModuleName(materialModuleName), materialTypeName(materialTypeName)
 {
 }
 
@@ -43,8 +44,9 @@ Spirv Material::compileSpirv(const Slang::ComPtr<slang::IComponentType>& program
 	return {SlangCompiler::getSprirV(linked, 0), SlangCompiler::getSprirV(linked, 1)};
 }
 
-std::pair<ComPtr<slang::IComponentType>, std::vector<slang::TypeLayoutReflection*>> Material::compileMaterialProgram(const Slang::ComPtr<slang::IModule>& materialModule, slang::TypeReflection* materialType,
-                                                                                                 const SlangCompiler& compiler)
+std::pair<ComPtr<slang::IComponentType>, std::vector<slang::TypeLayoutReflection*>> Material::compileMaterialProgram(const Slang::ComPtr<slang::IModule>& materialModule,
+                                                                                                                     slang::TypeReflection* materialType,
+                                                                                                                     const SlangCompiler& compiler)
 {
 	auto rasterModule{compiler.loadModule("Core/mainRaster")};
 	auto vertEntry{SlangCompiler::findEntryPoint(rasterModule, "vertexMain")};

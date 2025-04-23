@@ -71,7 +71,8 @@ RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
 
 
 Mesh::Mesh(const Renderer& app, const std::filesystem::path& sourcePath)
-	: rawMesh(sourcePath),
+	: AssetBase(sourcePath.filename().string()),
+	  rawMesh(sourcePath),
 	  vertexBuffer(app, rawMesh.vertices, vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal),
 	  indexBuffer(app, rawMesh.indices, vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal)
 {

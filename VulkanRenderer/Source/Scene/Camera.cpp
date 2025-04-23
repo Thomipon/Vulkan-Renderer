@@ -16,7 +16,10 @@ glm::mat4 Camera::getViewProjection(const glm::vec2& viewExtent) const
 
 void Camera::drawImGui()
 {
+	ImGui::PushID("camera");
 	ImGui::SeparatorText("Camera");
-	ImGui::Text("Position:");
-	ImGui::DragFloat3("", reinterpret_cast<float*>(&transform.translation));
+	transform.drawImGui(false);
+	ImGui::Text("FOV:");
+	ImGui::DragFloat("##4", &fieldOfView);
+	ImGui::PopID();
 }

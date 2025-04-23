@@ -9,4 +9,6 @@ struct Transform {
 	glm::vec3 scale{1.};
 
 	[[nodiscard]] glm::mat4 getMatrix() const;
+
+	void drawImGui(bool drawScale = true, bool drawRotation = true, bool drawLocation = true);
 };

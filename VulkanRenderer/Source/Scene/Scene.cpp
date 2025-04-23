@@ -5,6 +5,7 @@
 #include "Scene.hpp"
 
 #include <imgui.h>
+#include <ranges>
 
 void Scene::drawImGui()
 {
@@ -20,9 +21,11 @@ void Scene::drawImGui()
 
 	ImGui::BeginChild("Models");
 
-	for (auto& model : models)
+	for (const auto& [index, model] : std::ranges::views::enumerate(models))
 	{
+		ImGui::PushID(static_cast<int>(index));
 
+		ImGui::PopID();
 	}
 
 	ImGui::EndChild();

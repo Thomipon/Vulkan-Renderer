@@ -9,7 +9,7 @@ struct ShaderCursor;
 class MaterialInstance : public AssetBase
 {
 public:
-	explicit MaterialInstance(const AssetHandle<Material>& parentMaterial);
+	explicit MaterialInstance(const AssetHandle<Material>& parentMaterial, const std::string_view& name);
 
 	ShaderCursor getShaderCursor();
 

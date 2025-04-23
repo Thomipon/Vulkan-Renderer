@@ -10,12 +10,10 @@
 #include "ShaderCompiler.hpp"
 #include "Vertex.hpp"
 #include "Debug/SlangDebug.hpp"
-#include "Scene/Light/BasicLights.hpp"
-#include "Scene/Light/CompositeLights.hpp"
 #include "Scene/Light/UniversalLightEnvironment.hpp"
 
 Material::Material(const std::string_view& materialModuleName, const std::string_view& materialTypeName)
-	: AssetBase((std::string{materialModuleName} + "/").append(materialTypeName)),
+	: AssetBase((std::string{materialModuleName} + " - ").append(materialTypeName)),
 	  pipelineLayout(nullptr), pipeline(nullptr), materialModuleName(materialModuleName), materialTypeName(materialTypeName)
 {
 }

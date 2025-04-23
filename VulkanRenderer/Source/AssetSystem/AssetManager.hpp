@@ -14,6 +14,9 @@ public:
 	template <Asset T, typename... Args>
 	AssetHandle<T> createAsset(Args&&... args);
 
+	template <Asset T>
+	AssetHandle<T> loadFromUUID(const UUID& uuid);
+
 	template<Asset T>
 	std::span<T> getAssetIterator() const;
 
@@ -57,6 +60,22 @@ AssetHandle<T> AssetManager::createAsset(Args&&... args)
 		return AssetHandle<T>{*this};
 	}
 	array.emplace<T>(std::forward<Args>(args)...).setUUID(uuid);
+	return {*this, uuid};
+}
+
+template <Asset T>
+AssetHandle<T> AssetManager::loadFromUUID(const UUID& uuid)
+{
+	const auto assetInfoIt{assetInfosByUUID.find(uuid.value)};
+	if (assetInfoIt == assetInfosByUUID.end())
+	{
+		return AssetHandle<T>{*this};
+	}
+	if (assetInfoIt->second.type != std::type_index{typeid(T)})
+	{
+		return AssetHandle<T>{*this};
+	}
+	assetInfoIt->second.refCount += 1;
 	return {*this, uuid};
 }
 

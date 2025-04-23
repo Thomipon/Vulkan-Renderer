@@ -52,7 +52,7 @@ void Application::initScene()
 	auto material{assetManager.createAsset<Material>("BRDF/phong", "ConstantPhongMaterial")};
 	material->compile(compiler, *this);
 
-	scene.models.emplace_back(assetManager.createAsset<Mesh>(*this, modelPath), assetManager.createAsset<MaterialInstance>(material));
+	scene.models.emplace_back(assetManager.createAsset<Mesh>(*this, modelPath), assetManager.createAsset<MaterialInstance>(material, "constant phong"));
 	Model& model{scene.models[0]};
 
 	model.transform.translation = glm::vec3{0.0f, 0.f, 0.f};

@@ -17,6 +17,9 @@ public:
 	AssetHandle& operator=(AssetHandle&& other) noexcept;
 	~AssetHandle();
 
+	[[nodiscard]] AssetManager& getAssetManager() {return assetManager;}
+	[[nodiscard]] const AssetManager& getAssetManager() const {return assetManager;}
+
 private:
 	AssetManager& assetManager;
 

@@ -36,7 +36,7 @@ public:
 	UUID destruct(size_t index);
 
 	template<Asset T>
-	std::span<T> getSpan();
+	std::span<T> getSpan() const;
 
 private:
 	std::vector<std::byte> assetData;
@@ -108,7 +108,7 @@ UUID AssetArray::destruct(const size_t index)
 }
 
 template<Asset T>
-std::span<T> AssetArray::getSpan()
+std::span<T> AssetArray::getSpan() const
 {
 	assert(isExactType<T>());
 	return {reinterpret_cast<T*>(assetData.data()), size()};

@@ -20,6 +20,9 @@ public:
 	template<Asset T>
 	std::span<T> getAssetIterator() const;
 
+	template<Asset T>
+	[[nodiscard]] AssetHandle<T> createHandleOf(const size_t& index);
+
 private:
 	std::unordered_map<std::type_index, AssetArray> assets;
 	std::unordered_map<size_t, AssetInfo> assetInfosByUUID;
@@ -88,6 +91,12 @@ std::span<T> AssetManager::getAssetIterator() const
 		return {};
 	}
 	return arrayIt->second.getSpan<T>();
+}
+
+template <Asset T>
+AssetHandle<T> AssetManager::createHandleOf(const size_t& index)
+{
+	return loadFromUUID<T>(getAssetIterator<const T>()[index].getUUID());
 }
 
 template <Asset T>

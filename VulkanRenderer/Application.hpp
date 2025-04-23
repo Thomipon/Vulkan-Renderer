@@ -17,10 +17,14 @@ private:
 
     void initScene();
 
+    void loadAssets();
+
     AssetManager assetManager;
     InputHandler inputHandler;
 
     void handleCameraMovement(const InputEvent& keyEvent);
+
+    std::vector<AssetHandle<Mesh>> meshes;
 
     Scene scene;
 };

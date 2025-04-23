@@ -13,6 +13,8 @@ public:
 	template<Asset T>
 	static AssetArray create();
 
+	// TODO: Destructor
+
 	void reserve(size_t newCapacity);
 
 	template <Asset T>

@@ -19,6 +19,7 @@
 
 void Application::run()
 {
+	loadAssets();
 	initScene();
 	mainLoop();
 }
@@ -52,7 +53,7 @@ void Application::initScene()
 	auto material{assetManager.createAsset<Material>("BRDF/phong", "ConstantPhongMaterial")};
 	material->compile(compiler, *this);
 
-	scene.models.emplace_back(assetManager.createAsset<Mesh>(*this, modelPath), assetManager.createAsset<MaterialInstance>(material, "constant phong"));
+	scene.models.emplace_back(meshes[0], assetManager.createAsset<MaterialInstance>(material, "constant phong"));
 	Model& model{scene.models[0]};
 
 	model.transform.translation = glm::vec3{0.0f, 0.f, 0.f};
@@ -63,6 +64,19 @@ void Application::initScene()
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
 	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
 	materialCursor.field("specularity").write(glm::vec1{1.f});
+}
+
+void Application::loadAssets()
+{
+	static const std::filesystem::path assetBasePath{"../../VulkanRenderer/"}; // TODO: This should be improved as asset locations depend on the working directory
+	for (const auto& file : std::filesystem::recursive_directory_iterator{assetBasePath / "Meshes"})
+	{
+		if (file.is_regular_file() && file.path().extension() == ".obj")
+		{
+			// TODO: This screams for some soft asset references
+			meshes.emplace_back(assetManager.createAsset<Mesh>(*this, file.path()));
+		}
+	}
 }
 
 void Application::handleCameraMovement(const InputEvent& keyEvent)

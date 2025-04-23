@@ -14,6 +14,9 @@ public:
 	template <Asset T, typename... Args>
 	AssetHandle<T> createAsset(Args&&... args);
 
+	template<Asset T>
+	std::span<T> getAssetIterator() const;
+
 private:
 	std::unordered_map<std::type_index, AssetArray> assets;
 	std::unordered_map<size_t, AssetInfo> assetInfosByUUID;
@@ -55,6 +58,17 @@ AssetHandle<T> AssetManager::createAsset(Args&&... args)
 	}
 	array.emplace<T>(std::forward<Args>(args)...).setUUID(uuid);
 	return {*this, uuid};
+}
+
+template<Asset T>
+std::span<T> AssetManager::getAssetIterator() const
+{
+	const auto arrayIt{assets.find(std::type_index{typeid(T)})};
+	if (arrayIt == assets.end())
+	{
+		return {};
+	}
+	return arrayIt->second.getSpan<T>();
 }
 
 template <Asset T>

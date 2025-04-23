@@ -35,6 +35,9 @@ public:
 	template <Asset T>
 	UUID destruct(size_t index);
 
+	template<Asset T>
+	std::span<T> getSpan();
+
 private:
 	std::vector<std::byte> assetData;
 	size_t assetSize;
@@ -102,4 +105,11 @@ UUID AssetArray::destruct(const size_t index)
 	std::memcpy(assetData.data() + index * assetSize, assetData.data() + lastIndex, assetSize);
 	assetData.erase(assetData.begin() + static_cast<uint32_t>(lastIndex), assetData.end());
 	return at<T>(index).getUUID();
+}
+
+template<Asset T>
+std::span<T> AssetArray::getSpan()
+{
+	assert(isExactType<T>());
+	return {reinterpret_cast<T*>(assetData.data()), size()};
 }

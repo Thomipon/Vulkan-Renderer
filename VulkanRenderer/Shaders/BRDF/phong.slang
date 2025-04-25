@@ -3,6 +3,7 @@
 import Core.brdf;
 import Core.material;
 import Core.geometry;
+import Core.indirectLighting;
 
 struct PhongBRDF : IBRDF
 {
@@ -20,7 +21,7 @@ struct PhongBRDF : IBRDF
         return lightColor * (kd * nDotL + ks * pow(nDotH, specularity));
     }
 
-    float3 evaluateIndirect(float3 viewDirection, float3 lightColor)
+    float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, float3 lightColor, Environment environment)
     {
         return lightColor * kd;
     }

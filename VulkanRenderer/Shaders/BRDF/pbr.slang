@@ -3,6 +3,7 @@
 import Core.brdf;
 import Core.material;
 import Core.geometry;
+import Core.indirectLighting;
 
 import Library.fresnel;
 
@@ -60,7 +61,7 @@ struct PBRBRDF : IBRDF
         return lerp(diffuse, specular, f) * lightColor;
     }
 
-    float3 evaluateIndirect(float3 viewDirection, float3 lightColor)
+    float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, float3 lightColor, Environment environment)
     {
         float fresnel = schlickFresnel(viewDirection, normal);
         float3 f = lerp(f0, f90, fresnel);

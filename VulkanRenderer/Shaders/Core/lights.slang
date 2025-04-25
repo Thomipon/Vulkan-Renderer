@@ -2,6 +2,7 @@
 
 import brdf;
 import geometry;
+import indirectLighting;
 
 public interface ILightEnvironment
 {
@@ -73,13 +74,18 @@ struct PointLight : ILightEnvironment
     }
 }
 
-struct AmbientLight : ILightEnvironment
+struct AmbientLight : ILightEnvironment, IIndirectLightEnvironment
 {
     float3 color;
     float intensity;
 
     float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
     {
-        return brdf.evaluateIndirect(viewDirection, color * intensity);
+        return brdf.evaluateIndirect(viewDirection, color * intensity, this);
+    }
+
+    float3 sampleEnvironment(float3 direction, float3 footPoint)
+    {
+        return color * intensity;
     }
 }

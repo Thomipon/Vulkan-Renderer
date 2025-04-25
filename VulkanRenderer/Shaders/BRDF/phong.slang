@@ -21,9 +21,9 @@ struct PhongBRDF : IBRDF
         return lightColor * (kd * nDotL + ks * pow(nDotH, specularity));
     }
 
-    float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, float3 lightColor, Environment environment)
+    float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
     {
-        return lightColor * kd;
+        return environment.sampleEnvironment(normal) * kd;
     }
 }
 

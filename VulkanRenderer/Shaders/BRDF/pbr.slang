@@ -61,12 +61,13 @@ struct PBRBRDF : IBRDF
         return lerp(diffuse, specular, f) * lightColor;
     }
 
-    float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, float3 lightColor, Environment environment)
+    float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
     {
         float fresnel = schlickFresnel(viewDirection, normal);
         float3 f = lerp(f0, f90, fresnel);
-        float3 diffuse = lambertDiffuse() * lightColor;
-        float3 specular = lightColor;
+        float3 diffuse = lambertDiffuse() * environment.sampleEnvironment(normal);
+        float3 r = reflect(viewDirection, normal);
+        float3 specular = geometryGGX(viewDirection, r, roughness * roughness) * environment.sampleEnvironment(r);
         return lerp(diffuse, specular, f) * ambientOcclusion;
     }
 }

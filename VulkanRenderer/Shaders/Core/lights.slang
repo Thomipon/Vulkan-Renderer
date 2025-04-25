@@ -81,11 +81,29 @@ struct AmbientLight : ILightEnvironment, IIndirectLightEnvironment
 
     float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
     {
-        return brdf.evaluateIndirect(viewDirection, color * intensity, this);
+        return brdf.evaluateIndirect(viewDirection, this);
     }
 
-    float3 sampleEnvironment(float3 direction, float3 footPoint)
+    float3 sampleEnvironment(float3 direction)
     {
+        return color * intensity;
+    }
+}
+
+struct AmbientCubemapLight : ILightEnvironment, IIndirectLightEnvironment
+{
+    SamplerCube environmentMap;
+    float intensity;
+
+    float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
+    {
+        float3 color = environmentMap.Sample(geometry.worldNormal).rgb;
+        return brdf.evaluateIndirect(viewDirection, this);
+    }
+
+    float3 sampleEnvironment(float3 direction)
+    {
+        float3 color = environmentMap.Sample(direction).rgb;
         return color * intensity;
     }
 }

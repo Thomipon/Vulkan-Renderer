@@ -111,10 +111,6 @@ void Renderer::drawScene(Scene& scene)
 		return;
 	}
 
-	imGui.newFrame();
-	scene.drawImGui();
-	ImGui::ShowDemoWindow();
-
 	commandBuffer.reset({});
 	recordCommandBufferForSceneDraw(commandBuffer, imageIndex, scene);
 

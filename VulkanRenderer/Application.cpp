@@ -29,6 +29,17 @@ void Application::mainLoop()
 	while (!window.shouldClose())
 	{
 		Window::pollEvents();
+
+		imGui.newFrame();
+
+		ImGui::Begin("Settings");
+
+		scene.drawImGui();
+
+		updateMaterials();
+
+		ImGui::End();
+
 		drawScene(scene);
 	}
 
@@ -54,19 +65,46 @@ void Application::initScene()
 	auto material{assetManager.createAsset<Material>("BRDF/pbr", "ConstantPBRMaterial")};
 	material->compile(compiler, *this);
 
-	scene.models.emplace_back(meshes[0], assetManager.createAsset<MaterialInstance>(material, "constant pbr"));
-	Model& model{scene.models[0]};
+	materialHandle = assetManager.createAsset<MaterialInstance>(material, "constant pbr");
 
-	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
-	materialCursor.field("albedo").write(glm::vec3{.5f, .1f, 1.f});
-	materialCursor.field("f0").write(glm::vec3{.02f});
-	materialCursor.field("f90").write(glm::vec3{1.f});
-	materialCursor.field("roughness").write(glm::vec1{.1f});
+	scene.models.emplace_back(meshes[0], materialHandle);
 
-	/*ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
-	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
-	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
-	materialCursor.field("specularity").write(glm::vec1{1.f});*/
+	ShaderCursor materialCursor{materialHandle->getShaderCursor().field("gMaterial")};
+	materialCursor.field("albedo").write(albedo);
+	materialCursor.field("f0").write(f0);
+	materialCursor.field("f90").write(f90);
+	materialCursor.field("roughness").write(glm::vec1{roughness});
+}
+
+void Application::updateMaterials()
+{
+	ImGui::SeparatorText("Materials");
+
+	ShaderCursor materialCursor{materialHandle->getShaderCursor().field("gMaterial")};
+
+	ImGui::Text("Albedo:");
+	if (ImGui::ColorEdit3("##albedo", reinterpret_cast<float*>(&albedo), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel))
+	{
+		materialCursor.field("albedo").write(albedo);
+	}
+
+	ImGui::Text("F0:");
+	if (ImGui::ColorEdit3("##f0", reinterpret_cast<float*>(&f0)), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel)
+	{
+		materialCursor.field("f0").write(f0);
+	}
+
+	ImGui::Text("F90:");
+	if (ImGui::ColorEdit3("##f90", reinterpret_cast<float*>(&f90)), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel)
+	{
+		materialCursor.field("f90").write(f90);
+	}
+
+	ImGui::Text("Roughness:");
+	if (ImGui::SliderFloat("##roughness", &roughness, 0.f, 1.f))
+	{
+		materialCursor.field("roughness").write(glm::vec1{roughness});
+	}
 }
 
 void Application::loadAssets()

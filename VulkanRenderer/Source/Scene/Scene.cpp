@@ -12,8 +12,6 @@ int selectedLightType;
 
 void Scene::drawImGui()
 {
-	ImGui::Begin("Scene");
-
 	ImGui::Text("Scene");
 
 	camera.drawImGui();
@@ -75,6 +73,4 @@ void Scene::drawImGui()
 	lightEnvironment.drawImGui();
 
 	ImGui::PopID();
-
-	ImGui::End();
 }

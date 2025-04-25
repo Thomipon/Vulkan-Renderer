@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <memory>
+
 #include <span>
 #include <slang/slang.h>
 

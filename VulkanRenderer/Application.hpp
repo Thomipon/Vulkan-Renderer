@@ -14,6 +14,8 @@ private:
 
     void initScene();
 
+    void updateMaterials();
+
     void loadAssets();
 
     AssetManager assetManager;
@@ -24,4 +26,14 @@ private:
     std::vector<AssetHandle<Mesh>> meshes;
 
     Scene scene;
+
+    // TODO: All of this is bad!
+    AssetHandle<MaterialInstance> materialHandle;
+    glm::vec3 albedo{.5f};
+    glm::vec3 f0{.04f};
+    glm::vec3 f90{1.f};
+    float roughness{.5};
+public:
+    Application() : materialHandle(assetManager) {}
+
 };

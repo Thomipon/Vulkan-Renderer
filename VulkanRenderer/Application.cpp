@@ -46,25 +46,27 @@ void Application::initScene()
 	DirectionalLight directionalLight{};
 	directionalLight.direction = glm::vec3{1.f, 1.f, 1.f};
 	directionalLight.color = glm::vec3{1.f, .8f, .6f};
-	directionalLight.intensity = .5f;
+	directionalLight.intensity = 3.f;
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 	directionalLight.direction = glm::vec3{-1.f, 1.f, 1.f};
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 
-	auto material{assetManager.createAsset<Material>("BRDF/phong", "ConstantPhongMaterial")};
+	auto material{assetManager.createAsset<Material>("BRDF/pbr", "ConstantPBRMaterial")};
 	material->compile(compiler, *this);
 
-	scene.models.emplace_back(meshes[0], assetManager.createAsset<MaterialInstance>(material, "constant phong"));
+	scene.models.emplace_back(meshes[0], assetManager.createAsset<MaterialInstance>(material, "constant pbr"));
 	Model& model{scene.models[0]};
 
-	model.transform.translation = glm::vec3{0.0f, 0.f, 0.f};
-
-	model.material->getShaderCursor().printLayout();
-
 	ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
+	materialCursor.field("albedo").write(glm::vec3{.5f, .1f, 1.f});
+	materialCursor.field("f0").write(glm::vec3{.02f});
+	materialCursor.field("f90").write(glm::vec3{1.f});
+	materialCursor.field("roughness").write(glm::vec1{.1f});
+
+	/*ShaderCursor materialCursor{model.material->getShaderCursor().field("gMaterial")};
 	materialCursor.field("diffuseColor").write(glm::vec3{.5f, .1f, 1.f});
 	materialCursor.field("specularColor").write(glm::vec3{.05f, .5f, 1.f});
-	materialCursor.field("specularity").write(glm::vec1{1.f});
+	materialCursor.field("specularity").write(glm::vec1{1.f});*/
 }
 
 void Application::loadAssets()

@@ -80,6 +80,6 @@ struct AmbientLight : ILightEnvironment
 
     float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
     {
-        return brdf.evaluateDiffuse(color * intensity);
+        return brdf.evaluateIndirect(viewDirection, color * intensity);
     }
 }

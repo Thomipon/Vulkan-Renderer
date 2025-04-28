@@ -4,8 +4,8 @@
 #include "Renderer.hpp"
 #include "stb.hpp"
 
-TextureImage::TextureImage(const std::filesystem::path& path, const Renderer& app)
-	: Image(createImageFromPath(path, app)), sampler(createTextureSampler(app.device, app.physicalDevice))
+TextureImage::TextureImage(const std::filesystem::path& path, const vk::ImageViewType viewType, const Renderer& app)
+	: Image(createImageFromPath(path, viewType, app)), sampler(createTextureSampler(app.device, app.physicalDevice))
 {
 	generateMipMaps(vk::Format::eR8G8B8A8Srgb, width, height, mipLevels, app);
 }
@@ -18,9 +18,12 @@ void TextureImage::generateMipMaps(const vk::Format& imageFormat, uint32_t width
 	}
 	vk::raii::CommandBuffer commandBuffer{app.beginSingleTimeCommands()};
 
+	const bool isCube{imageViewType == vk::ImageViewType::eCube || imageViewType == vk::ImageViewType::eCubeArray};
+	const unsigned arrayLayers{isCube ? 6u : 1u};
+
 	vk::ImageMemoryBarrier barrier{
 		{}, {}, vk::ImageLayout::eUndefined, vk::ImageLayout::eUndefined, vk::QueueFamilyIgnored, vk::QueueFamilyIgnored, image,
-		vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
+		vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, arrayLayers}
 	};
 
 	int32_t mipWidth{static_cast<int32_t>(width)};
@@ -38,8 +41,8 @@ void TextureImage::generateMipMaps(const vk::Format& imageFormat, uint32_t width
 		commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, {}, nullptr, nullptr, barrier);
 
 		vk::ImageBlit blit{
-			vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, i - 1, 0, 1}, std::array{vk::Offset3D{0, 0, 0}, vk::Offset3D{mipWidth, mipHeight, 1}},
-			vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, i, 0, 1},
+			vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, i - 1, 0, arrayLayers}, std::array{vk::Offset3D{0, 0, 0}, vk::Offset3D{mipWidth, mipHeight, 1}},
+			vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, i, 0, arrayLayers},
 			std::array{vk::Offset3D{0, 0, 0,}, vk::Offset3D{mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1}}
 		};
 
@@ -72,7 +75,7 @@ void TextureImage::generateMipMaps(const vk::Format& imageFormat, uint32_t width
 	app.endSingleTimeCommands(std::move(commandBuffer));
 }
 
-Image TextureImage::createImageFromPath(const std::filesystem::path& path, const Renderer& app)
+Image TextureImage::createImageFromPath(const std::filesystem::path& path, const vk::ImageViewType viewType, const Renderer& app)
 {
 	int texWidth, texHeight, texChannels;
 	stbi_uc* pixels{stbi_load(path.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha)};
@@ -97,7 +100,7 @@ Image TextureImage::createImageFromPath(const std::filesystem::path& path, const
 		vk::ImageTiling::eOptimal,
 		vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc,
 		// TODO: Can't we create the mips in the staging one and safe this eTransferSrc?
-		vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eColor, mipLevels
+		vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eColor, mipLevels, viewType
 	};
 
 
@@ -114,10 +117,10 @@ vk::raii::Sampler TextureImage::createTextureSampler(const vk::raii::Device& dev
 	vk::PhysicalDeviceProperties deviceProperties{physicalDevice.getProperties()};
 
 	vk::SamplerCreateInfo samplerInfo{
-			{}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
-			vk::SamplerAddressMode::eRepeat, 0.f, true, deviceProperties.limits.maxSamplerAnisotropy, false, vk::CompareOp::eAlways, 0.f, vk::LodClampNone,
-			vk::BorderColor::eIntOpaqueBlack, false
-		};
+		{}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
+		vk::SamplerAddressMode::eRepeat, 0.f, true, deviceProperties.limits.maxSamplerAnisotropy, false, vk::CompareOp::eAlways, 0.f, vk::LodClampNone,
+		vk::BorderColor::eIntOpaqueBlack, false
+	};
 
 	return vk::raii::Sampler{device, samplerInfo};
 }

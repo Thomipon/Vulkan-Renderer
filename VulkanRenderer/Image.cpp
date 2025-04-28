@@ -7,16 +7,19 @@
 
 Image::Image(const vk::raii::Device& device, const vk::PhysicalDevice& physicalDevice, uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage,
              vk::MemoryPropertyFlags properties,
-             vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
-	: Image(createImage(device, physicalDevice, width, height, format, tiling, usage, properties, aspectFlags, mipLevels))
+             vk::ImageAspectFlags aspectFlags, uint32_t mipLevels, const vk::ImageViewType viewType)
+	: Image(createImage(device, physicalDevice, width, height, format, tiling, usage, properties, aspectFlags, mipLevels, viewType))
 {
 }
 
 Image Image::createImage(const vk::raii::Device& device, const vk::PhysicalDevice& physicalDevice, uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling,
-                         vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
+                         vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels, const vk::ImageViewType viewType)
 {
+	const bool isCube{viewType == vk::ImageViewType::eCube || viewType == vk::ImageViewType::eCubeArray};
+	const vk::ImageCreateFlags createFlags{isCube ? vk::ImageCreateFlagBits::eCubeCompatible : vk::ImageCreateFlags{}};
+	const unsigned arrayLayers{isCube ? 6u : 1u};
 	vk::ImageCreateInfo imageCreateInfo{
-		{}, vk::ImageType::e2D, format, vk::Extent3D{width, height, 1}, mipLevels, 1, vk::SampleCountFlagBits::e1, tiling, usage, vk::SharingMode::eExclusive, nullptr,
+		createFlags, vk::ImageType::e2D, format, vk::Extent3D{width, height, 1}, mipLevels, arrayLayers, vk::SampleCountFlagBits::e1, tiling, usage, vk::SharingMode::eExclusive, nullptr,
 		vk::ImageLayout::eUndefined
 	};
 	vk::raii::Image image{device, imageCreateInfo};
@@ -28,15 +31,15 @@ Image Image::createImage(const vk::raii::Device& device, const vk::PhysicalDevic
 
 	image.bindMemory(imageMemory, 0);
 
-	vk::raii::ImageView imageView{createImageView(device, image, format, aspectFlags, mipLevels)};
+	vk::raii::ImageView imageView{createImageView(device, image, format, aspectFlags, mipLevels, viewType)};
 
-	return Image{(std::move(image)), (std::move(imageMemory)), std::move(imageView), width, height, mipLevels};
+	return Image{(std::move(image)), (std::move(imageMemory)), std::move(imageView), width, height, mipLevels, viewType};
 }
 
-vk::raii::ImageView Image::createImageView(const vk::raii::Device& device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
+vk::raii::ImageView Image::createImageView(const vk::raii::Device& device, const vk::Image& image, const vk::Format format, const vk::ImageAspectFlags aspectFlags, const uint32_t mipLevels, const vk::ImageViewType viewType)
 {
 	vk::ImageViewCreateInfo imageViewCreateInfo{
-		{}, image, vk::ImageViewType::e2D, format, vk::ComponentMapping{}, vk::ImageSubresourceRange{aspectFlags, 0, mipLevels, 0, 1}
+		{}, image, viewType, format, vk::ComponentMapping{}, vk::ImageSubresourceRange{aspectFlags, 0, mipLevels, 0, vk::RemainingArrayLayers} // TODO: Research what remaining array layers is
 	};
 	return vk::raii::ImageView{device, imageViewCreateInfo};
 }
@@ -63,9 +66,12 @@ void Image::transitionImageLayout(const Renderer& app, vk::Format format, vk::Im
 	vk::PipelineStageFlags sourceStage;
 	vk::PipelineStageFlags destinationStage;
 
+	const bool isCube{imageViewType == vk::ImageViewType::eCube || imageViewType == vk::ImageViewType::eCubeArray};
+	const unsigned arrayLayers{isCube ? 6u : 1u};
+
 	vk::ImageMemoryBarrier barrier{
 		{}, {}, oldLayout, newLayout, vk::QueueFamilyIgnored, vk::QueueFamilyIgnored, image,
-		vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, mipLevels, 0, 1}
+		vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, mipLevels, 0, arrayLayers}
 	};
 
 	if (newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
@@ -132,8 +138,8 @@ bool Image::hasStencilComponent(vk::Format format)
 	return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
 }
 
-Image::Image(vk::raii::Image&& image, vk::raii::DeviceMemory&& imageMemory, vk::raii::ImageView&& imageView, uint32_t width, uint32_t height, uint32_t mipLevels) :
-	width(width), height(height), mipLevels(mipLevels),
+Image::Image(vk::raii::Image&& image, vk::raii::DeviceMemory&& imageMemory, vk::raii::ImageView&& imageView, uint32_t width, uint32_t height, uint32_t mipLevels, const vk::ImageViewType viewType) :
+	width(width), height(height), mipLevels(mipLevels), imageViewType(viewType),
 	image(std::move(image)), imageDeviceMemory(std::move(imageMemory)), imageView(std::move(imageView))
 {
 }

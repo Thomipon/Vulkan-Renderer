@@ -62,6 +62,8 @@ void Application::initScene()
 	directionalLight.direction = glm::vec3{-1.f, 1.f, 1.f};
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 
+	scene.lightEnvironment.second.second.cubemap = TextureImage{"../../VulkanRenderer/Textures/Texture.png", *this};
+
 	auto material{assetManager.createAsset<Material>("BRDF/pbr", "ConstantPBRMaterial")};
 	material->compile(compiler, *this);
 

@@ -2,6 +2,7 @@
 #include <glm/vec3.hpp>
 
 #include "LightEnvironment.hpp"
+#include "TextureImage.hpp"
 #include "Scene/Core/Transform.hpp"
 
 class PointLight : public LightEnvironment
@@ -37,6 +38,18 @@ public:
 	float intensity{.1f};
 
 	IMPLEMENT_LIGHT_TYPE("AmbientLight")
+
+	virtual void writeToCursor(const ShaderCursor& cursor) const override;
+	virtual void drawImGui() override;
+};
+
+class AmbientCubemapLight : public LightEnvironment
+{
+public:
+	std::optional<TextureImage> cubemap;
+	float intensity{.1f};
+
+	IMPLEMENT_LIGHT_TYPE("AmbientCubemapLight")
 
 	virtual void writeToCursor(const ShaderCursor& cursor) const override;
 	virtual void drawImGui() override;

@@ -40,10 +40,10 @@ ShaderCursor ShaderCursor::field(uint32_t index) const
 	if (field->getTypeLayout()->getKind() == slang::TypeReflection::Kind::Interface)
 	{
 		// TODO: All of this is bad architecture
-		size_t existentialObjectOffset{field->getOffset(SLANG_PARAMETER_CATEGORY_EXISTENTIAL_OBJECT_PARAM)};
+		const size_t existentialObjectOffset{field->getOffset(SLANG_PARAMETER_CATEGORY_EXISTENTIAL_OBJECT_PARAM)};
 		result.typeLayout = field->getTypeLayout()->getPendingDataTypeLayout();
 		result.offset.byteOffset = shaderObject->existentialToByteOffset(existentialObjectOffset);
-		result.offset.bindingIndex += typeLayout->getFieldBindingRangeOffset(index);
+		result.offset.bindingIndex = shaderObject->existentialToBindingOffset(existentialObjectOffset);
 	}
 	else
 	{

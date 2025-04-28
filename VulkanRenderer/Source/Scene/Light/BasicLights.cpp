@@ -57,3 +57,19 @@ void AmbientLight::drawImGui()
 	ImGui::Text("Intensity:");
 	ImGui::DragFloat("##intensity", &intensity, 0.1f);
 }
+
+void AmbientCubemapLight::writeToCursor(const ShaderCursor& cursor) const
+{
+	if (cubemap)
+	{
+		cursor.field("environmentMap").writeTexture(*cubemap);
+	}
+	cursor.field("intensity").write(intensity);
+}
+
+void AmbientCubemapLight::drawImGui()
+{
+	ImGui::SeparatorText("AmbientCubemapLight");
+	ImGui::Text("Intensity:");
+	ImGui::DragFloat("##intensity", &intensity, 0.1f);
+}

@@ -24,15 +24,16 @@ void VulkanShaderObject::writeTexture(const ShaderOffset& offset, const TextureI
 {
 	const uint32_t bindingIndex = offset.bindingIndex; //typeLayout->getBindingRangeIndexOffset(offset.bindingIndex);
 
-	vk::DescriptorImageInfo image{{}, texture.imageView};
+	vk::DescriptorImageInfo image{texture.sampler, texture.imageView, vk::ImageLayout::eShaderReadOnlyOptimal}; // TODO: Sampler is right now here and in the sampler. TODO: Is this always the correct layout?
 
 	std::vector<vk::WriteDescriptorSet> descriptorWrites{};
 	descriptorWrites.reserve(descriptorSets.size());
 	for (const auto& descriptorSet : descriptorSets)
 	{
-		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1, VulkanShaderObjectLayout::mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex)), &image);
+		descriptorWrites.emplace_back(descriptorSet, bindingIndex, offset.bindingArrayElement, 1,
+									  vk::DescriptorType::eCombinedImageSampler/* TODO: VulkanShaderObjectLayout::mapDescriptorType(typeLayout->getBindingRangeType(bindingIndex))*/, &image);
 	}
-	app.device.updateDescriptorSets(descriptorWrites, {});
+	app.device.updateDescriptorSets(descriptorWrites, nullptr);
 }
 
 void VulkanShaderObject::writeSampler(const ShaderOffset& offset, const TextureImage& texture)
@@ -55,6 +56,11 @@ size_t VulkanShaderObject::existentialToByteOffset(const size_t& existentialObje
 	return layout->getByteOffsetOfExistentialObject(existentialObjectOffset);
 }
 
+size_t VulkanShaderObject::existentialToBindingOffset(const size_t& existentialObjectOffset)
+{
+	return layout->getBindingOffsetOfExistentialObject(existentialObjectOffset);
+}
+
 const std::vector<vk::raii::DescriptorSet>& VulkanShaderObject::getDescriptorSets() const
 {
 	return descriptorSets;
@@ -68,7 +74,9 @@ VulkanShaderObject VulkanShaderObject::createShaderObject(const std::shared_ptr<
 	if (hasOrdinaryData)
 	{
 		// TODO: Give the option to have this host visible instead
-		buffer = Buffer{layoutObject->app, vk::DeviceSize{layoutObject->getOrdinaryDataSize()}, vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlags{}};
+		buffer = Buffer{
+			layoutObject->app, vk::DeviceSize{layoutObject->getOrdinaryDataSize()}, vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlags{}
+		};
 	}
 
 	std::vector<vk::DescriptorSetLayout> layouts(layoutObject->app.maxFramesInFlight, layoutObject->descriptorSetLayout);

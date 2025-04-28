@@ -17,6 +17,7 @@ public:
 	virtual void writeSampler(const ShaderOffset& offset, const TextureImage& texture) = 0;
 
 	virtual size_t existentialToByteOffset(const size_t& existentialObjectOffset) = 0;
+	virtual size_t existentialToBindingOffset(const size_t& existentialObjectOffset) = 0;
 
 	template <typename T>
 	void write(const ShaderOffset& offset, const std::span<T>& data);

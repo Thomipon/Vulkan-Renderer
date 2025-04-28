@@ -20,6 +20,7 @@ public:
 	virtual void writeSampler(const ShaderOffset& offset, const TextureImage& texture) override;
 
 	virtual size_t existentialToByteOffset(const size_t& existentialObjectOffset) override;
+	virtual size_t existentialToBindingOffset(const size_t& existentialObjectOffset) override;
 
 	const std::vector<vk::raii::DescriptorSet>& getDescriptorSets() const;
 

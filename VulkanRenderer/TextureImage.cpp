@@ -85,31 +85,77 @@ Image TextureImage::createImageFromPath(const std::filesystem::path& path, const
 		throw std::runtime_error("Failed to load texture image!");
 	}
 
-	vk::DeviceSize imageSize{static_cast<uint64_t>(texWidth) * texHeight * 4};
-	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+	const bool isCube{viewType == vk::ImageViewType::eCube || viewType == vk::ImageViewType::eCubeArray};
 
-	Buffer stagingBuffer{app, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
+	if (!isCube)
+	{
+		vk::DeviceSize imageSize{static_cast<uint64_t>(texWidth) * texHeight * 4};
+		uint32_t mipLevels{static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1};
 
-	void* data{stagingBuffer.memory.mapMemory(0, imageSize, {})};
-	std::memcpy(data, pixels, imageSize);
-	stagingBuffer.memory.unmapMemory();
-	stbi_image_free(pixels);
+		Buffer stagingBuffer{app, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
 
-	Image image{
-		app.device, app.physicalDevice, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), vk::Format::eR8G8B8A8Srgb,
-		vk::ImageTiling::eOptimal,
-		vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc,
-		// TODO: Can't we create the mips in the staging one and safe this eTransferSrc?
-		vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eColor, mipLevels, viewType
-	};
+		void* data{stagingBuffer.memory.mapMemory(0, imageSize, {})};
+		std::memcpy(data, pixels, imageSize);
+		stagingBuffer.memory.unmapMemory();
+		stbi_image_free(pixels);
 
+		Image image{
+			app.device, app.physicalDevice, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), vk::Format::eR8G8B8A8Srgb,
+			vk::ImageTiling::eOptimal,
+			vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc,
+			// TODO: Can't we create the mips in the staging one and safe this eTransferSrc?
+			vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eColor, mipLevels, viewType
+		};
 
-	image.transitionImageLayout(app, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
-	copyBufferToImage(app, stagingBuffer.vkBuffer, image.image, texWidth, texHeight);
+		image.transitionImageLayout(app, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
+		copyBufferToImage(app, stagingBuffer.vkBuffer, image.image, texWidth, texHeight);
 
-	// We do not need to transition the image layout. This is handled by generateMipMaps()
-	//transitionImageLayout(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, textureMipLevels);
-	return image;
+		// We do not need to transition the image layout. This is handled by generateMipMaps()
+		//transitionImageLayout(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, textureMipLevels);
+		return image;
+	}
+	else
+	{
+		assert(texWidth % 4 == 0);
+		assert(texHeight % 3 == 0);
+		assert(texWidth / 4 == texHeight / 3);
+
+		const int sideWith{texWidth / 4};
+		const int sideHeight{texHeight / 3};
+
+		vk::DeviceSize imageSideSize{static_cast<uint64_t>(sideWith) * sideHeight * 4};
+		vk::DeviceSize imageSize{imageSideSize * 6};
+		uint32_t mipLevels{static_cast<uint32_t>(std::floor(std::log2(std::max(sideWith, sideHeight)))) + 1};
+
+		Buffer stagingBuffer{app, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
+
+		void* data{stagingBuffer.memory.mapMemory(0, imageSize, {})};
+
+		copyCubemapSide(data, pixels, CubemapSide::Front, imageSideSize, sideWith, 1, 1);
+		copyCubemapSide(data, pixels, CubemapSide::Back, imageSideSize, sideWith, 3, 1);
+		copyCubemapSide(data, pixels, CubemapSide::Top, imageSideSize, sideWith, 1, 0);
+		copyCubemapSide(data, pixels, CubemapSide::Bottom, imageSideSize, sideWith, 1, 2);
+		copyCubemapSide(data, pixels, CubemapSide::Left, imageSideSize, sideWith, 2, 1);
+		copyCubemapSide(data, pixels, CubemapSide::Right, imageSideSize, sideWith, 0, 1);
+
+		stagingBuffer.memory.unmapMemory();
+		stbi_image_free(pixels);
+
+		Image image{
+			app.device, app.physicalDevice, static_cast<uint32_t>(sideWith), static_cast<uint32_t>(sideHeight), vk::Format::eR8G8B8A8Srgb,
+			vk::ImageTiling::eOptimal,
+			vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc,
+			// TODO: Can't we create the mips in the staging one and safe this eTransferSrc?
+			vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageAspectFlagBits::eColor, mipLevels, viewType
+		};
+
+		image.transitionImageLayout(app, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
+		copyBufferToImage(app, stagingBuffer.vkBuffer, image.image, sideWith, sideHeight, 6);
+
+		// We do not need to transition the image layout. This is handled by generateMipMaps()
+		//transitionImageLayout(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, textureMipLevels);
+		return image;
+	}
 }
 
 vk::raii::Sampler TextureImage::createTextureSampler(const vk::raii::Device& device, const vk::raii::PhysicalDevice& physicalDevice)

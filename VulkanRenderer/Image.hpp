@@ -2,6 +2,16 @@
 
 #include "VulkanBackend.hpp"
 
+enum class CubemapSide : uint8_t
+{
+	Front,
+	Back,
+	Top,
+	Bottom,
+	Right,
+	Left
+};
+
 class Renderer;
 
 class Image
@@ -25,9 +35,11 @@ public:
 	static std::vector<vk::raii::ImageView> createImageViews(const vk::raii::Device &device, const std::vector<vk::Image> &images, vk::Format format,
 	                                                         vk::ImageAspectFlags aspectFlags, uint32_t mipLevels = 1);
 
-	static void copyBufferToImage(const Renderer &app, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);
+	static void copyBufferToImage(const Renderer &app, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, uint32_t layerCount = 1);
 
 	static bool hasStencilComponent(vk::Format format);
+
+	static void copyCubemapSide(void* dstData, const void* srcData, CubemapSide side, vk::DeviceSize imageSideSize, int sideWidth, int coordinateX, int coordinateY);
 
 private:
 	Image(vk::raii::Image &&image, vk::raii::DeviceMemory &&imageMemory, vk::raii::ImageView &&imageView, uint32_t width, uint32_t height, uint32_t mipLevels, vk::ImageViewType viewType);

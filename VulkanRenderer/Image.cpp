@@ -36,7 +36,8 @@ Image Image::createImage(const vk::raii::Device& device, const vk::PhysicalDevic
 	return Image{(std::move(image)), (std::move(imageMemory)), std::move(imageView), width, height, mipLevels, viewType};
 }
 
-vk::raii::ImageView Image::createImageView(const vk::raii::Device& device, const vk::Image& image, const vk::Format format, const vk::ImageAspectFlags aspectFlags, const uint32_t mipLevels, const vk::ImageViewType viewType)
+vk::raii::ImageView Image::createImageView(const vk::raii::Device& device, const vk::Image& image, const vk::Format format, const vk::ImageAspectFlags aspectFlags, const uint32_t mipLevels,
+                                           const vk::ImageViewType viewType)
 {
 	vk::ImageViewCreateInfo imageViewCreateInfo{
 		{}, image, viewType, format, vk::ComponentMapping{}, vk::ImageSubresourceRange{aspectFlags, 0, mipLevels, 0, vk::RemainingArrayLayers} // TODO: Research what remaining array layers is
@@ -122,11 +123,11 @@ void Image::transitionImageLayout(const Renderer& app, vk::Format format, vk::Im
 	app.endSingleTimeCommands(std::move(commandBuffer));
 }
 
-void Image::copyBufferToImage(const Renderer& app, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height)
+void Image::copyBufferToImage(const Renderer& app, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, uint32_t layerCount)
 {
 	vk::raii::CommandBuffer commandBuffer{app.beginSingleTimeCommands()};
 
-	vk::BufferImageCopy copyRegion{0, 0, 0, vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, 1}, vk::Offset3D{0, 0, 0}, vk::Extent3D{width, height, 1}};
+	vk::BufferImageCopy copyRegion{0, 0, 0, vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, layerCount}, vk::Offset3D{0, 0, 0}, vk::Extent3D{width, height, 1}};
 
 	commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, copyRegion);
 
@@ -136,6 +137,23 @@ void Image::copyBufferToImage(const Renderer& app, vk::Buffer buffer, vk::Image 
 bool Image::hasStencilComponent(vk::Format format)
 {
 	return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
+}
+
+void Image::copyCubemapSide(void* dstData, const void* srcData, CubemapSide side, const vk::DeviceSize imageSideSize, const int sideWidth, const int coordinateX, const int coordinateY)
+{
+	const uint32_t rowSize{4u * sideWidth * 4};
+	const uint64_t srcOffset{(coordinateY * rowSize + coordinateX * 4) * sideWidth};
+	const uint64_t dstOffset{imageSideSize * static_cast<uint8_t>(side)};
+
+	std::byte* dstPtr{static_cast<std::byte*>(dstData)};
+	const std::byte* srcPtr{static_cast<const std::byte*>(srcData)};
+
+	for (uint32_t row = 0; row < sideWidth; ++row)
+	{
+		const uint32_t currentRowSrcOffset{row * rowSize};
+		const uint32_t currentRowDstOffset{row * sideWidth * 4};
+		std::memcpy(dstPtr + dstOffset + currentRowDstOffset, srcPtr + srcOffset + currentRowSrcOffset, sideWidth * 4);
+	}
 }
 
 Image::Image(vk::raii::Image&& image, vk::raii::DeviceMemory&& imageMemory, vk::raii::ImageView&& imageView, uint32_t width, uint32_t height, uint32_t mipLevels, const vk::ImageViewType viewType) :

@@ -23,7 +23,7 @@ struct PhongBRDF : IBRDF
 
     float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
     {
-        return environment.sampleEnvironment(normal) * kd;
+        return environment.sampleEnvironment(normal, 1.f) * kd;
     }
 }
 

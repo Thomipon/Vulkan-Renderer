@@ -65,9 +65,9 @@ struct PBRBRDF : IBRDF
     {
         float fresnel = schlickFresnel(viewDirection, normal);
         float3 f = lerp(f0, f90, fresnel);
-        float3 diffuse = lambertDiffuse() * environment.sampleEnvironment(normal);
-        float3 r = reflect(viewDirection, normal);
-        float3 specular = geometryGGX(viewDirection, r, roughness * roughness) * environment.sampleEnvironment(r);
+        float3 diffuse = lambertDiffuse() * environment.sampleEnvironment(normal, 1.f);
+        float3 r = -reflect(viewDirection, normal);
+        float3 specular = geometryGGX(viewDirection, r, roughness * roughness) * environment.sampleEnvironment(r, roughness);
         return lerp(diffuse, specular, f) * ambientOcclusion;
     }
 }

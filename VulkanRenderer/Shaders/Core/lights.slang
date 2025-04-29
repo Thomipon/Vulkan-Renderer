@@ -84,7 +84,7 @@ struct AmbientLight : ILightEnvironment, IIndirectLightEnvironment
         return brdf.evaluateIndirect(viewDirection, this);
     }
 
-    float3 sampleEnvironment(float3 direction)
+    float3 sampleEnvironment(float3 direction, float roughness)
     {
         return color * intensity;
     }
@@ -101,9 +101,12 @@ struct AmbientCubemapLight : ILightEnvironment, IIndirectLightEnvironment
         return brdf.evaluateIndirect(viewDirection, this);
     }
 
-    float3 sampleEnvironment(float3 direction)
+    float3 sampleEnvironment(float3 direction, float roughness)
     {
-        float3 color = environmentMap.Sample(direction).rgb;
+        float width, height, levels;
+        environmentMap.GetDimensions(0, width, height, levels);
+        float level = max(levels - 2, 0.f) * sqrt(roughness);
+        float3 color = environmentMap.SampleLevel(direction, level).rgb;
         return color * intensity;
     }
 }

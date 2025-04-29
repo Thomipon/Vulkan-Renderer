@@ -60,7 +60,7 @@ float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
 {
     SurfaceGeometry geometry;
     geometry.worldPosition = vertex.worldPosition;
-    geometry.worldNormal = vertex.worldNormal;
+    geometry.worldNormal = normalize(vertex.worldNormal);
     geometry.textureCoordinate = vertex.textureCoordinate;
 
     float3 viewDirection = normalize(gViewData.viewPosition - geometry.worldPosition);

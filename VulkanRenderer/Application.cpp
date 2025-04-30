@@ -54,12 +54,17 @@ void Application::initScene()
 	scene.camera.transform.translation = glm::vec3{0.f, .05f, .2f};
 	scene.camera.transform.rotation = glm::quat{radians(glm::vec3{-15.f, 0.f, 0.f})};
 
+	PointLight pointLight{};
+	pointLight.transform.translation = glm::vec3{0.28f, -.19f, .05f};
+	pointLight.color = glm::vec3{.64f, 1.f, .67f};
+	scene.lightEnvironment.first.lights.emplace_back(pointLight);
 	DirectionalLight directionalLight{};
-	directionalLight.direction = glm::vec3{1.f, 1.f, 1.f};
-	directionalLight.color = glm::vec3{1.f, .8f, .6f};
+	directionalLight.direction = glm::vec3{1.f, 2.f, 1.f};
+	directionalLight.color = glm::vec3{.6f, .95f, 1.f};
 	directionalLight.intensity = 3.f;
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
-	directionalLight.direction = glm::vec3{-1.f, 1.f, 1.f};
+	directionalLight.direction = glm::vec3{-2.f, -.7f, 1.f};
+	directionalLight.color = glm::vec3{.99f, .85f, .7f};
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 
 	scene.lightEnvironment.second.second.cubemap = TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this};
@@ -76,6 +81,7 @@ void Application::initScene()
 	materialCursor.field("f0").write(f0);
 	materialCursor.field("f90").write(f90);
 	materialCursor.field("roughness").write(glm::vec1{roughness});
+	materialCursor.field("emissiveColor").write(emissiveColor);
 }
 
 void Application::updateMaterials()
@@ -85,19 +91,19 @@ void Application::updateMaterials()
 	ShaderCursor materialCursor{materialHandle->getShaderCursor().field("gMaterial")};
 
 	ImGui::Text("Albedo:");
-	if (ImGui::ColorEdit3("##albedo", reinterpret_cast<float*>(&albedo), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel))
+	if (ImGui::ColorEdit3("##albedo", reinterpret_cast<float*>(&albedo)))
 	{
 		materialCursor.field("albedo").write(albedo);
 	}
 
 	ImGui::Text("F0:");
-	if (ImGui::ColorEdit3("##f0", reinterpret_cast<float*>(&f0)), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel)
+	if (ImGui::ColorEdit3("##f0", reinterpret_cast<float*>(&f0)))
 	{
 		materialCursor.field("f0").write(f0);
 	}
 
 	ImGui::Text("F90:");
-	if (ImGui::ColorEdit3("##f90", reinterpret_cast<float*>(&f90)), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel)
+	if (ImGui::ColorEdit3("##f90", reinterpret_cast<float*>(&f90)))
 	{
 		materialCursor.field("f90").write(f90);
 	}
@@ -106,6 +112,12 @@ void Application::updateMaterials()
 	if (ImGui::SliderFloat("##roughness", &roughness, 0.f, 1.f))
 	{
 		materialCursor.field("roughness").write(glm::vec1{roughness});
+	}
+
+	ImGui::Text("Emissive:");
+	if (ImGui::ColorEdit3("##emissive", reinterpret_cast<float*>(&emissiveColor), ImGuiColorEditFlags_HDR))
+	{
+		materialCursor.field("emissiveColor").write(emissiveColor);
 	}
 }
 

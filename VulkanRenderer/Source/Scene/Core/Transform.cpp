@@ -13,7 +13,7 @@ void Transform::drawImGui(bool drawScale, bool drawRotation, bool drawLocation)
 	if (drawLocation)
 	{
 		ImGui::Text("Position:");
-		ImGui::DragFloat3("##0", reinterpret_cast<float*>(&translation), .1f);
+		ImGui::DragFloat3("##0", reinterpret_cast<float*>(&translation), .01f);
 	}
 
 	if (drawRotation)
@@ -29,6 +29,6 @@ void Transform::drawImGui(bool drawScale, bool drawRotation, bool drawLocation)
 	if (drawScale)
 	{
 		ImGui::Text("Scale:");
-		ImGui::DragFloat3("##2", reinterpret_cast<float*>(&scale), .5);
+		ImGui::DragFloat3("##2", reinterpret_cast<float*>(&scale), .1f);
 	}
 }

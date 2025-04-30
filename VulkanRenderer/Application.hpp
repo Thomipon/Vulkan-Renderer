@@ -33,6 +33,7 @@ private:
     glm::vec3 f0{.04f};
     glm::vec3 f90{1.f};
     float roughness{.5};
+    glm::vec3 emissiveColor{0.f};
 public:
     Application() : materialHandle(assetManager) {}
 

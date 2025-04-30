@@ -35,7 +35,7 @@ class AmbientLight : public LightEnvironment
 {
 public:
 	glm::vec3 color{1.f};
-	float intensity{.1f};
+	float intensity{1.f};
 
 	IMPLEMENT_LIGHT_TYPE("AmbientLight")
 
@@ -47,7 +47,7 @@ class AmbientCubemapLight : public LightEnvironment
 {
 public:
 	std::optional<TextureImage> cubemap;
-	float intensity{.1f};
+	float intensity{1.f};
 
 	IMPLEMENT_LIGHT_TYPE("AmbientCubemapLight")
 

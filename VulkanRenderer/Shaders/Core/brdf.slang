@@ -6,4 +6,5 @@ public interface IBRDF
 {
     float3 evaluate(float3 viewDirection, float3 lightDirection, float3 lightColor);
     float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment);
+    float3 evaluateEmissive(float3 viewDirection);
 }

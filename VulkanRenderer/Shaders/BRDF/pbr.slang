@@ -14,6 +14,7 @@ struct PBRBRDF : IBRDF
     float3 f90;
     float roughness;
     float3 normal;
+    float3 emissive;
     float ambientOcclusion;
 
     float occlusionGGX(float3 direction, float alpha)
@@ -58,7 +59,7 @@ struct PBRBRDF : IBRDF
         float3 f = lerp(f0, f90, fresnel);
         float3 diffuse = saturate(dot(normal, lightDirection)) * lambertDiffuse();
         float3 specular = cookTorranceGGX(viewDirection, lightDirection);
-        return lerp(diffuse, specular, f) * lightColor;
+        return max(lerp(diffuse, specular, f) * lightColor, 0.f);
     }
 
     float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
@@ -68,7 +69,12 @@ struct PBRBRDF : IBRDF
         float3 diffuse = lambertDiffuse() * environment.sampleEnvironment(normal, 1.f);
         float3 r = -reflect(viewDirection, normal);
         float3 specular = geometryGGX(viewDirection, r, roughness * roughness) * environment.sampleEnvironment(r, roughness);
-        return lerp(diffuse, specular, f) * ambientOcclusion;
+        return max(lerp(diffuse, specular, f) * ambientOcclusion, 0.f);
+    }
+
+    float3 evaluateEmissive(float3 viewDirection)
+    {
+        return max(emissive, 0.f);
     }
 }
 
@@ -79,6 +85,7 @@ struct ConstantPBRMaterial : IMaterial
     float3 albedo;
     float3 f0;
     float3 f90;
+    float3 emissiveColor;
     float roughness;
 
     MaterialResult<PBRBRDF> evaluate(SurfaceGeometry geometry)
@@ -89,6 +96,7 @@ struct ConstantPBRMaterial : IMaterial
         brdf.f0 = f0;
         brdf.f90 = f90;
         brdf.roughness = roughness;
+        brdf.emissive = emissiveColor;
         brdf.ambientOcclusion = 1.f;
         return {brdf, geometry};
     }

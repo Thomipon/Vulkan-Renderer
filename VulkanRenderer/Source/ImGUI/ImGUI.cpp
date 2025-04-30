@@ -24,6 +24,7 @@ ImGUI::ImGUI(const Window& window, ImGui_ImplVulkan_InitInfo& initInfo)
     ImGui_ImplGlfw_InitForVulkan(window.getGLFWWindow(), true);
     ImGui_ImplVulkan_Init(&initInfo);
 
+    ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueWheel);
 }
 
 ImGUI::~ImGUI()

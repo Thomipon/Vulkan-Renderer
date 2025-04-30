@@ -11,6 +11,7 @@ struct PhongBRDF : IBRDF
     float3 ks;
     float specularity;
     float3 normal;
+    float3 emissive;
 
     float3 evaluate(float3 viewDirection, float3 lightDirection, float3 lightColor)
     {
@@ -25,6 +26,11 @@ struct PhongBRDF : IBRDF
     {
         return environment.sampleEnvironment(normal, 1.f) * kd;
     }
+
+    float3 evaluateEmissive(float3 viewDirection)
+    {
+        return emissive;
+    }
 }
 
 struct ConstantPhongMaterial : IMaterial
@@ -32,6 +38,7 @@ struct ConstantPhongMaterial : IMaterial
     float3 diffuseColor;
     float3 specularColor;
     float specularity;
+    float3 emissiveColor;
 
     // To satisfy the requirements of the `IMaterial` interface, our
     // material type needs to provide a suitable `BRDF` type. We
@@ -51,6 +58,7 @@ struct ConstantPhongMaterial : IMaterial
         brdf.ks = specularColor;
         brdf.specularity = specularity;
         brdf.normal = geometry.worldNormal;
+        brdf.emissive = emissiveColor;
         return {brdf, geometry};
     }
 }

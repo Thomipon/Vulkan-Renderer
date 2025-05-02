@@ -4,17 +4,12 @@
 
 #include "AssetArray.hpp"
 
-void AssetArray::reserve(const size_t newCapacity)
-{
-	assetData.reserve(newCapacity * assetSize);
-}
-
 size_t AssetArray::size() const
 {
-	return assetData.size() / assetSize;
+	return count;
 }
 
 AssetArray::AssetArray(const std::type_index& assetType, const size_t& assetSize)
-	: assetSize(assetSize), assetType(assetType)
+	: assetData(nullptr), assetSize(assetSize), assetType(assetType), count(0), capacity(0)
 {
 }

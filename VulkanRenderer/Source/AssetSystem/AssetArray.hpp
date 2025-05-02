@@ -1,21 +1,20 @@
 #pragma once
 #include <cassert>
-#include <cstring>
 #include <span>
 #include <typeindex>
-#include <vector>
 
 #include "AssetSystemStructs.h"
 
 class AssetArray
 {
 public:
-	template<Asset T>
+	template <Asset T>
 	static AssetArray create();
 
 	// TODO: Destructor
 
-	void reserve(size_t newCapacity);
+	template <Asset T>
+	void reserve(size_t newCapacity, bool allowOvergrowth = true);
 
 	template <Asset T>
 	T& push(const T& newElement);
@@ -37,15 +36,29 @@ public:
 	template <Asset T>
 	UUID destruct(size_t index);
 
-	template<Asset T>
+	template <Asset T>
 	std::span<T> getSpan() const;
 
 private:
-	std::vector<std::byte> assetData;
+	std::byte* assetData;
 	size_t assetSize;
 	std::type_index assetType;
 
+	size_t count;
+	size_t capacity;
+
 	AssetArray(const std::type_index& assetType, const size_t& assetSize);
+
+	template <Asset T>
+	void shrinkIfNecessary();
+
+	template <Asset T>
+	void moveObjects(std::byte* src, std::byte* dst);
+
+	template <Asset T>
+	void reallocate();
+
+	static constexpr size_t growthRate{2};
 };
 
 template <Asset T>
@@ -55,23 +68,31 @@ AssetArray AssetArray::create()
 }
 
 template <Asset T>
+void AssetArray::reserve(const size_t newCapacity, const bool allowOvergrowth)
+{
+	if (newCapacity > capacity)
+	{
+		capacity = allowOvergrowth ? (capacity + 1) * growthRate : newCapacity;
+		reallocate<T>();
+	}
+}
+
+template <Asset T>
 T& AssetArray::push(const T& newElement)
 {
-	assert(isExactType<T>());
-	auto* data = static_cast<std::byte*>(&newElement);
-	std::span<std::byte> dataSpan{data, assetSize};
-	assetData.insert(assetData.end(), dataSpan.begin(), dataSpan.end());
-	return this->at<T>(size() - 1);
+	return emplace<T>(newElement);
 }
 
 template <Asset T, typename... Args>
 T& AssetArray::emplace(Args&&... args)
 {
 	assert(isExactType<T>());
-	const auto index{assetData.size()};
-	assetData.resize(assetData.size() + assetSize); // TODO: Ideally this would not init the bytes
-	auto* data = &assetData[index];
-	T* object{new (data) T(std::forward<Args>(args)...)};
+	const auto index{size()};
+	reserve<T>(index + 1);
+	const auto offset{index * assetSize};
+	auto* data = &assetData[offset];
+	T* object{new(data) T(std::forward<Args>(args)...)};
+	++count;
 	return *object;
 }
 
@@ -103,21 +124,60 @@ template <Asset T>
 UUID AssetArray::destruct(const size_t index)
 {
 	assert(isExactType<T>());
-	T& object = at<T>(index);
-	object.~T();
-	const size_t lastIndex{(size() - 1) * assetSize};
-	std::memcpy(assetData.data() + index * assetSize, assetData.data() + lastIndex, assetSize);
-	assetData.erase(assetData.begin() + static_cast<uint32_t>(lastIndex), assetData.end());
-	if (size() > index)
+	T* object = &at<T>(index);
+	object->~T();
+	const size_t lastIndex{(size() - 1)};
+
+	UUID movedElement{};
+	if (lastIndex > index)
 	{
-		return at<T>(index).getUUID();
+		T* lastObject{new(object) T(std::move(at<T>(lastIndex)))};
+		movedElement = lastObject->getUUID();
 	}
-	return UUID{};
+	count = lastIndex;
+	shrinkIfNecessary<T>();
+	return movedElement;
 }
 
-template<Asset T>
+template <Asset T>
 std::span<T> AssetArray::getSpan() const
 {
 	assert(isExactType<T>());
-	return {reinterpret_cast<T*>(assetData.data()), size()};
+	return {reinterpret_cast<T*>(assetData), size()};
+}
+
+template <Asset T>
+void AssetArray::shrinkIfNecessary()
+{
+	if (count < capacity / (growthRate * growthRate))
+	{
+		capacity = capacity / growthRate;
+		reallocate<T>();
+	}
+}
+
+template <Asset T>
+void AssetArray::moveObjects(std::byte* src, std::byte* dst)
+{
+	for (size_t i = 0; i < size(); ++i)
+	{
+		const auto offset{i * assetSize};
+		T* object{reinterpret_cast<T*>(src + offset)};
+		new (dst + offset) T(std::move(*object));
+	}
+}
+
+template <Asset T>
+void AssetArray::reallocate()
+{
+	if (capacity == 0)
+	{
+		std::free(assetData);
+		assetData = nullptr;
+		return;
+	}
+	std::byte* newData{static_cast<std::byte*>(std::malloc(assetSize * capacity))};
+	moveObjects<T>(assetData, newData);
+	std::free(assetData);
+	assetData = newData;
 }

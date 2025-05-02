@@ -79,6 +79,7 @@ template <Asset T>
 T& AssetArray::at(const size_t index)
 {
 	assert(isExactType<T>());
+	assert(index < size());
 	std::byte* object{&assetData[index * assetSize]};
 	return *reinterpret_cast<T*>(object);
 }
@@ -87,6 +88,7 @@ template <Asset T>
 const T& AssetArray::at(const size_t index) const
 {
 	assert(isExactType<T>());
+	assert(index < size());
 	const std::byte* object{&assetData[index * assetSize]};
 	return *reinterpret_cast<const T*>(object);
 }
@@ -106,7 +108,11 @@ UUID AssetArray::destruct(const size_t index)
 	const size_t lastIndex{(size() - 1) * assetSize};
 	std::memcpy(assetData.data() + index * assetSize, assetData.data() + lastIndex, assetSize);
 	assetData.erase(assetData.begin() + static_cast<uint32_t>(lastIndex), assetData.end());
-	return at<T>(index).getUUID();
+	if (size() > index)
+	{
+		return at<T>(index).getUUID();
+	}
+	return UUID{};
 }
 
 template<Asset T>

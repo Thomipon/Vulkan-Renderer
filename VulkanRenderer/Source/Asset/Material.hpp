@@ -16,7 +16,7 @@ class SlangCompiler;
 class Material : public AssetBase
 {
 public:
-	Material(const std::string_view& materialModuleName, const std::string_view& materialTypeName);
+	Material(const std::string& materialModuleName, const std::string& materialTypeName);
 
 	void compile(const SlangCompiler& compiler, const Renderer& app);
 

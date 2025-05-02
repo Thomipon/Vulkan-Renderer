@@ -4,7 +4,7 @@
 
 #include "AssetBase.hpp"
 
-AssetBase::AssetBase(const std::string_view& name)
+AssetBase::AssetBase(const std::string& name)
 	: name(name)
 {
 }

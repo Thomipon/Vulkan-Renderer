@@ -8,7 +8,7 @@ class AssetBase
 {
 public:
 	AssetBase() = default;
-	explicit AssetBase(const std::string_view& name);
+	explicit AssetBase(const std::string& name);
 	explicit AssetBase(std::string&& name);
 	virtual ~AssetBase() = 0;
 

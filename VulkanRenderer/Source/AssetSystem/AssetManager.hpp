@@ -109,8 +109,11 @@ void AssetManager::decreaseRefCount(const size_t assetUUID)
 		if (assetInfo.refCount == 0)
 		{
 			const UUID lastAssetUUID{assets.find(assetInfo.type)->second.destruct<T>(assetInfo.index)};
-			auto& lastAssetInfo{assetInfosByUUID.find(lastAssetUUID.value)->second};
-			lastAssetInfo.index = assetInfo.index;
+			if (lastAssetUUID.value > 0)
+			{
+				auto& lastAssetInfo{assetInfosByUUID.find(lastAssetUUID.value)->second};
+				lastAssetInfo.index = assetInfo.index;
+			}
 		}
 	}
 }

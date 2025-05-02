@@ -29,12 +29,13 @@ private:
 
     // TODO: All of this is bad!
     AssetHandle<MaterialInstance> materialHandle;
+    AssetHandle<MaterialInstance> skyMaterialHandle;
     glm::vec3 albedo{.5f};
     glm::vec3 f0{.04f};
     glm::vec3 f90{1.f};
     float roughness{.5};
     glm::vec3 emissiveColor{0.f};
 public:
-    Application() : materialHandle(assetManager) {}
+    Application() : materialHandle(assetManager), skyMaterialHandle(assetManager) {}
 
 };

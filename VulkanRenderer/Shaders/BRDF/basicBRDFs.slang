@@ -5,6 +5,8 @@ import Core.material;
 import Core.geometry;
 import Core.indirectLighting;
 
+import Core.largeBlock;
+
 public struct UnlitBRDF : IBRDF
 {
     public float3 emissive;
@@ -31,15 +33,11 @@ struct ConstantUnlitMaterial : IMaterial
 
     float3 emissive;
 
-        float3 albedo;
-        float3 f0;
-        float3 f90;
-        float3 emissiveColor;
-        float roughness;
+    LargeBlock _;
 
     MaterialResult<UnlitBRDF> evaluate(SurfaceGeometry geometry)
     {
-        UnlitBRDF brdf;
+        UnlitBRDF brdf = {};
         brdf.emissive = emissive;
         return {brdf, geometry};
     }

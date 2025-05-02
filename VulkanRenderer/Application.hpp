@@ -35,6 +35,7 @@ private:
     glm::vec3 f90{1.f};
     float roughness{.5};
     glm::vec3 emissiveColor{0.f};
+    std::optional<TextureImage> skyTexture;
 public:
     Application() : materialHandle(assetManager), skyMaterialHandle(assetManager) {}
 

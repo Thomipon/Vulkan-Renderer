@@ -5,17 +5,22 @@ import Core.geometry;
 
 import BRDF.basicBRDFS;
 
+import Core.largeBlock;
+
 struct SkySphereMaterial : IMaterial
 {
+    typedef UnlitBRDF BRDF;
+
     SamplerCube cubemap;
     float emissiveIntensity;
 
-    typedef UnlitBRDF BRDF;
+    LargeBlock _;
 
     MaterialResult<UnlitBRDF> evaluate(SurfaceGeometry geometry)
     {
-        UnlitBRDF brdf;
-        brdf.emissive = cubemap.Sample(geometry.worldNormal).rgb * emissiveIntensity;
+        UnlitBRDF brdf = {};
+        float3 environmentColor = cubemap.Sample(-geometry.worldNormal).rgb;
+        brdf.emissive = environmentColor.rgb * emissiveIntensity;
         return {brdf, geometry};
     }
 }

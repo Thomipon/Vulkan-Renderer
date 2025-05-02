@@ -83,17 +83,15 @@ void Application::initScene()
 	materialCursor.field("roughness").write(glm::vec1{roughness});
 	materialCursor.field("emissiveColor").write(emissiveColor);
 
-	auto skyMaterial{assetManager.createAsset<Material>("BRDF/basicBRDFs", "ConstantUnlitMaterial")};
-	//auto skyMaterial{assetManager.createAsset<Material>("Materials/basicMaterials", "SkySphereMaterial")};
+	auto skyMaterial{assetManager.createAsset<Material>("Materials/basicMaterials", "SkySphereMaterial")};
 	skyMaterial->compile(compiler, *this);
 
 	skyMaterialHandle = assetManager.createAsset<MaterialInstance>(skyMaterial, "sky material");
 	scene.models.emplace_back(meshes[3], skyMaterialHandle);
-	skyMaterialHandle->getShaderCursor().printLayout();
 	ShaderCursor skyMaterialCursor{skyMaterialHandle->getShaderCursor().field("gMaterial")};
-	//skyMaterialCursor.field("cubemap").write(TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this}); // TODO: This should be shared with the above
-	//skyMaterialCursor.field("emissiveIntensity").write(glm::vec1{1.f});
-	skyMaterialCursor.field("emissive").write(glm::vec3{10.f});
+	skyTexture = TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this}; // TODO: This should be shared with the above
+	skyMaterialCursor.field("cubemap").writeTexture(*skyTexture);
+	skyMaterialCursor.field("emissiveIntensity").write(glm::vec1{10.f});
 }
 
 void Application::updateMaterials()

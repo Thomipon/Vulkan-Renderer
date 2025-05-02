@@ -97,7 +97,6 @@ struct AmbientCubemapLight : ILightEnvironment, IIndirectLightEnvironment
 
     float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
     {
-        float3 color = environmentMap.Sample(geometry.worldNormal).rgb;
         return brdf.evaluateIndirect(viewDirection, this);
     }
 

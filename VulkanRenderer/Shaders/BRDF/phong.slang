@@ -40,15 +40,6 @@ struct ConstantPhongMaterial : IMaterial
     float specularity;
     float3 emissiveColor;
 
-    // To satisfy the requirements of the `IMaterial` interface, our
-    // material type needs to provide a suitable `BRDF` type. We
-    // do this by using a simple `typedef`, although a nested
-    // `struct` type can also satisfy an associated type requirement.
-    //
-    // A future version of the Slang compiler may allow the "right"
-    // associated type definition to be inferred from the signature
-    // of the `prepare()` method below.
-    //
     typedef PhongBRDF BRDF;
 
     MaterialResult<PhongBRDF> evaluate(SurfaceGeometry geometry)

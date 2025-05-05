@@ -1,13 +1,36 @@
 ﻿module fresnel;
 
-public float3 halfVector(float3 v1, float3 v2)
+import Library.common;
+
+public interface IFresnelApproximation
 {
-    return normalize(v1 + v2);
+    static float approximateFresnel(float3 view, float3 half);
 }
 
-public float schlickFresnel(float3 view, float3 h)
+public struct SchlickFresnel : IFresnelApproximation
 {
-    float base = 1.f - saturate(dot(view, h));
-    float baseSq = base * base;
-    return baseSq * baseSq * base;
+    public static float approximateFresnel(float3 view, float3 half)
+    {
+        float base = 1.f - saturate(dot(view, half));
+        float baseSq = base * base;
+        return baseSq * baseSq * base;
+    }
+}
+
+public interface IFresnel
+{
+    float3 getFresnelTerm(float3 view, float3 light);
+}
+
+public struct F0F90Fresnel<FresnelApproximation : IFresnelApproximation> : IFresnel
+{
+    public float3 f0;
+    public float3 f90;
+
+    public float3 getFresnelTerm(float3 view, float3 light)
+    {
+        float3 half = halfVector(view, light);
+        float fresnel = FresnelApproximation.approximateFresnel(view, half);
+        return lerp(f0, f90, fresnel);
+    }
 }

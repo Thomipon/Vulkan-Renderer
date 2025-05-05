@@ -5,71 +5,40 @@ import Core.material;
 import Core.geometry;
 import Core.indirectLighting;
 
+import Library.common;
 import Library.fresnel;
+import Library.diffuse;
+import Library.specular;
 
 struct PBRBRDF : IBRDF
 {
-    float3 albedo;
-    float3 f0;
-    float3 f90;
+    LambertDiffuse diffuse;
+    F0F90Fresnel<SchlickFresnel> fresnel;
+    CookTorranceSpecularTerm<GGXIsotropicDistributionTerm, GGXGeometryTerm> specular;
     float roughness;
     float3 normal;
     float3 emissive;
     float ambientOcclusion;
 
-    float occlusionGGX(float3 direction, float alpha)
-    {
-        float dotNV = saturate(dot(normal, direction));
-        float alphaSq = alpha * alpha;
-        float rootTerm = sqrt(alphaSq + (1.f - alphaSq) * dotNV * dotNV);
-        return 2.f * dotNV / (dotNV + rootTerm);
-    }
-
-    float geometryGGX(float3 view, float3 light, float alpha)
-    {
-        return occlusionGGX(view, alpha) * occlusionGGX(light, alpha);
-    }
-
-    float distributionGGX(float3 view, float3 light, float alpha)
-    {
-        float3 h = halfVector(view, light);
-        float alphaSq = alpha * alpha;
-        float dotNH = saturate(dot(normal, h));
-        float denominator = dotNH * dotNH * (alphaSq - 1.f) + 1.f;
-        return alphaSq / (denominator * denominator * float.getPi());
-    }
-
-    float3 cookTorranceGGX(float3 view, float3 light)
-    {
-        float alpha = roughness * roughness;
-        float g = saturate(geometryGGX(view, light, alpha));
-        float d = max(distributionGGX(view, light, alpha), 0.f);
-        return g * d / (saturate(dot(normal, view)) * 4.f); // / dot(normal, light) <- not needed because we multiply by it anyways later
-    }
-
-    float3 lambertDiffuse()
-    {
-        return albedo / float.getPi();
-    }
-
     float3 evaluate(float3 viewDirection, float3 lightDirection, float3 lightColor)
     {
-        float3 h = halfVector(viewDirection, lightDirection);
-        float fresnel = schlickFresnel(viewDirection, h);
-        float3 f = lerp(f0, f90, fresnel);
-        float3 diffuse = saturate(dot(normal, lightDirection)) * lambertDiffuse();
-        float3 specular = cookTorranceGGX(viewDirection, lightDirection);
-        return max(lerp(diffuse, specular, f) * lightColor, 0.f);
+        float3 f = fresnel.getFresnelTerm(viewDirection, lightDirection);
+        float alpha = roughness * roughness;
+        float3 d = diffuse.evaluateDiffuseTerm(normal, viewDirection, lightDirection, f, alpha);
+        float3 s = specular.evaluateSpecularTerm(normal, viewDirection, lightDirection, f, alpha);
+        return (s + d) * lightColor;
     }
 
     float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
     {
-        float fresnel = schlickFresnel(viewDirection, normal);
-        float3 f = lerp(f0, f90, fresnel);
-        float3 diffuse = lambertDiffuse() * environment.sampleEnvironment(normal, 1.f);
+        float3 f = fresnel.getFresnelTerm(viewDirection, normal);
+        float alpha = roughness * roughness;
+        // TODO: treat indirect differently
+        float3 diffuse = diffuse.evaluateDiffuseTerm(normal, viewDirection, normal, f, alpha) * environment.sampleEnvironment(normal, 1.f);
         float3 r = -reflect(viewDirection, normal);
-        float3 specular = geometryGGX(viewDirection, r, roughness * roughness) * environment.sampleEnvironment(r, roughness);
-        return max(lerp(diffuse, specular, f) * ambientOcclusion, 0.f);
+        // TODO: Only do the geometry here
+        float3 s = specular.evaluateSpecularTerm(normal, viewDirection, r, f, alpha) * environment.sampleEnvironment(r, roughness);
+        return (s + diffuse * (1.f - f)) * ambientOcclusion;
     }
 
     float3 evaluateEmissive(float3 viewDirection)
@@ -91,10 +60,10 @@ struct ConstantPBRMaterial : IMaterial
     MaterialResult<PBRBRDF> evaluate(SurfaceGeometry geometry)
     {
         PBRBRDF brdf = {};
-        brdf.albedo = albedo;
+        brdf.diffuse.albedo = albedo;
         brdf.normal = geometry.worldNormal;
-        brdf.f0 = f0;
-        brdf.f90 = f90;
+        brdf.fresnel.f0 = f0;
+        brdf.fresnel.f90 = f90;
         brdf.roughness = roughness;
         brdf.emissive = emissiveColor;
         brdf.ambientOcclusion = 1.f;

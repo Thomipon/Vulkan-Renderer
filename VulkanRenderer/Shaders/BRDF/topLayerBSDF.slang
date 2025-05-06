@@ -2,30 +2,43 @@
 
 import Library.fresnel;
 
-interface ITopLayerBSDF
+public interface ITopLayerBSDF
 {
-    float3 transmitForward(float3 light, float3 view, out float3 reflected);
-    float3 transmitBackwards(float3 light, float3 view, out float3 reflected);
+    float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection);
+    float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor);
 }
 
-public struct BeerLambertTopLayerBSDF : ITopLayerBSDF
+public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel> : ITopLayerBSDF
 {
     public float3 normal;
     public float coverage;
     public float thickness;
     public float roughness;
     public float3 transmittance;
+    public float ior;
+    public Fresnel fresnel;
 
-    public float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected)
+    public float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection)
     {
-        float cosl = saturate(dot(normal, light));
+        transmittedDirection = refract(light, normal, ior);
+        float cosl = saturate(dot(normal, transmittedDirection));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = lightColor * exp(-effectiveThickness * transmittance);
         float3 transmittedLight = lerp(lightColor, fullCoverageTransmittedLight, coverage);
+        // TODO: Second Fresnel?
+        float3 f = fresnel.getFresnelTerm(view, light);
+        reflected = f * lightColor;
+        return (1.f - f) * transmittedLight;
     }
 
-    public float3 transmitBackwards(float3 light, float3 view, out float3 reflected)
+    public float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor)
     {
-
+        refractedView = refract(view, normal, ior);
+        float cosl = saturate(dot(normal, refractedView));
+        float effectiveThickness = thickness / cosl;
+        float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);
+        // TODO: Fresnel?
+        internalReflectionColor = 0.f;
+        return lerp(1.f, fullCoverageTransmittedLight, coverage);
     }
 }

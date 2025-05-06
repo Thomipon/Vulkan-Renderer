@@ -12,9 +12,9 @@ import Library.specular;
 
 struct PBRBRDF : IBRDF
 {
-    LambertDiffuse diffuse;
+    DefaultDiffuseTerm diffuse;
     F0F90Fresnel<SchlickFresnel> fresnel;
-    CookTorranceSpecularTerm<GGXIsotropicDistributionTerm, GGXGeometryTerm> specular;
+    DefaultSpecularTerm specular;
     float roughness;
     float3 normal;
     float3 emissive;

@@ -19,6 +19,8 @@ public struct GGXIsotropicDistributionTerm : ISpecularDistributionTerm
     }
 }
 
+public typedef GGXIsotropicDistributionTerm DefaultSpecularDistributionTerm;
+
 interface ISpecularGeometryTerm
 {
     float evaluateGeometryTerm(float3 normal, float3 view, float3 light, float alpha);
@@ -40,6 +42,8 @@ public struct GGXGeometryTerm : ISpecularGeometryTerm
     }
 }
 
+public typedef GGXGeometryTerm DefaultSpecularGeometryTerm;
+
 interface ISpecularTerm
 {
     float3 evaluateSpecularTerm(float3 normal, float3 view, float3 light, float3 fresnel, float alpha);
@@ -57,3 +61,5 @@ public struct CookTorranceSpecularTerm<Distribution : ISpecularDistributionTerm,
         return fresnel * g * d / (saturate(dot(normal, view)) * 4.f); // / dot(normal, light) <- not needed because we multiply by it anyways later
     }
 }
+
+public typedef CookTorranceSpecularTerm<DefaultSpecularDistributionTerm, DefaultSpecularGeometryTerm> DefaultSpecularTerm;

@@ -10,17 +10,17 @@ import Library.fresnel;
 import Library.diffuse;
 import Library.specular;
 
-struct PBRBRDF : IBRDF
+public struct PBRBRDF : IBRDF
 {
-    DefaultDiffuseTerm diffuse;
-    F0F90Fresnel<SchlickFresnel> fresnel;
-    DefaultSpecularTerm specular;
-    float roughness;
-    float3 normal;
-    float3 emissive;
-    float ambientOcclusion;
+    public DefaultDiffuseTerm diffuse;
+    public F0F90Fresnel<SchlickFresnel> fresnel;
+    public DefaultSpecularTerm specular;
+    public float roughness;
+    public float3 normal;
+    public float3 emissive;
+    public float ambientOcclusion;
 
-    float3 evaluate(float3 viewDirection, float3 lightDirection, float3 lightColor)
+    public float3 evaluate(float3 viewDirection, float3 lightDirection, float3 lightColor)
     {
         float3 f = fresnel.getFresnelTerm(viewDirection, lightDirection);
         float alpha = roughness * roughness;
@@ -29,7 +29,7 @@ struct PBRBRDF : IBRDF
         return (s + d) * lightColor;
     }
 
-    float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
+    public float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
     {
         float3 f = fresnel.getFresnelTerm(viewDirection, normal);
         float alpha = roughness * roughness;
@@ -41,7 +41,7 @@ struct PBRBRDF : IBRDF
         return (s + diffuse * (1.f - f)) * ambientOcclusion;
     }
 
-    float3 evaluateEmissive(float3 viewDirection)
+    public float3 evaluateEmissive(float3 viewDirection)
     {
         return max(emissive, 0.f);
     }

@@ -69,7 +69,7 @@ void Application::initScene()
 
 	scene.lightEnvironment.second.second.cubemap = TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this};
 
-	auto material{assetManager.createAsset<Material>("BRDF/pbr", "ConstantPBRMaterial")};
+	/*auto material{assetManager.createAsset<Material>("BRDF/pbr", "ConstantPBRMaterial")};
 	material->compile(compiler, *this);
 
 	materialHandle = assetManager.createAsset<MaterialInstance>(material, "constant pbr");
@@ -81,7 +81,24 @@ void Application::initScene()
 	materialCursor.field("f0").write(f0);
 	materialCursor.field("f90").write(f90);
 	materialCursor.field("roughness").write(glm::vec1{roughness});
-	materialCursor.field("emissiveColor").write(emissiveColor);
+	materialCursor.field("emissiveColor").write(emissiveColor);*/
+
+	auto material{assetManager.createAsset<Material>("Materials/demoMaterials", "HorizontalBlendDemo")};
+	material->compile(compiler, *this);
+
+	materialHandle = assetManager.createAsset<MaterialInstance>(material, "horizontal blend");
+
+	scene.models.emplace_back(meshes[0], materialHandle);
+
+	ShaderCursor materialCursor{materialHandle->getShaderCursor().field("gMaterial")};
+	materialCursor.field("albedo1").write(albedo1);
+	materialCursor.field("metallic1").write(metallic1);
+	materialCursor.field("roughness1").write(roughness1);
+	materialCursor.field("albedo2").write(albedo2);
+	materialCursor.field("metallic2").write(metallic2);
+	materialCursor.field("roughness2").write(roughness2);
+	materialCursor.field("blendScale").write(glm::vec1{blendScale});
+
 
 	auto skyMaterial{assetManager.createAsset<Material>("Materials/basicMaterials", "SkySphereMaterial")};
 	skyMaterial->compile(compiler, *this);
@@ -100,7 +117,7 @@ void Application::updateMaterials()
 
 	ShaderCursor materialCursor{materialHandle->getShaderCursor().field("gMaterial")};
 
-	ImGui::Text("Albedo:");
+	/*ImGui::Text("Albedo:");
 	if (ImGui::ColorEdit3("##albedo", reinterpret_cast<float*>(&albedo)))
 	{
 		materialCursor.field("albedo").write(albedo);
@@ -128,6 +145,48 @@ void Application::updateMaterials()
 	if (ImGui::ColorEdit3("##emissive", reinterpret_cast<float*>(&emissiveColor), ImGuiColorEditFlags_HDR))
 	{
 		materialCursor.field("emissiveColor").write(emissiveColor);
+	}*/
+
+	ImGui::Text("Albedo1:");
+	if (ImGui::ColorEdit3("##albedo1", reinterpret_cast<float*>(&albedo1)))
+	{
+		materialCursor.field("albedo1").write(albedo1);
+	}
+
+	ImGui::Text("Metallic1:");
+	if (ImGui::SliderFloat("##metallic1", &metallic1, 0.f, 1.f))
+	{
+		materialCursor.field("metallic1").write(glm::vec1{metallic1});
+	}
+
+	ImGui::Text("Roughness1:");
+	if (ImGui::SliderFloat("##roughness1", &roughness1, 0.f, 1.f))
+	{
+		materialCursor.field("roughness1").write(glm::vec1{roughness1});
+	}
+
+	ImGui::Text("Albedo2:");
+	if (ImGui::ColorEdit3("##albedo2", reinterpret_cast<float*>(&albedo2)))
+	{
+		materialCursor.field("albedo2").write(albedo2);
+	}
+
+	ImGui::Text("Metallic2:");
+	if (ImGui::SliderFloat("##metallic2", &metallic2, 0.f, 1.f))
+	{
+		materialCursor.field("metallic2").write(glm::vec1{metallic2});
+	}
+
+	ImGui::Text("Roughness2:");
+	if (ImGui::SliderFloat("##roughness2", &roughness2, 0.f, 1.f))
+	{
+		materialCursor.field("roughness2").write(glm::vec1{roughness2});
+	}
+
+	ImGui::Text("BlendScale:");
+	if (ImGui::SliderFloat("##blendScale", &blendScale, 0.f, 1000.f))
+	{
+		materialCursor.field("blendScale").write(glm::vec1{blendScale});
 	}
 }
 

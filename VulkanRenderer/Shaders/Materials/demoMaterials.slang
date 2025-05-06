@@ -5,6 +5,8 @@ import Core.geometry;
 import BRDF.pbr;
 import BRDF.combinedBRDFs;
 
+import Library.common;
+
 struct HorizontalBlendDemo : IMaterial
 {
     typedef HorizontalBlendBRDF<PBRBRDF, PBRBRDF> BRDF
@@ -24,7 +26,7 @@ struct HorizontalBlendDemo : IMaterial
         BRDF combined = {};
         combined.brdf1 = getBRDF(albedo1, geometry.worldNormal, metallic1, roughness1);
         combined.brdf2 = getBRDF(albedo2, geometry.worldNormal, metallic2, roughness2);
-        combined.lerpFactor = (geometry.worldPosition.x * blendScale + .5f);
+        combined.lerpFactor = cubicInterpolationFactor(geometry.getLocalPosition().x * blendScale + .5f);
         return {combined, geometry};
     }
 

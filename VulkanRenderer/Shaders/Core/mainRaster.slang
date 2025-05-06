@@ -3,21 +3,9 @@
 import lights;
 import material;
 import geometry;
-
-struct ViewData
-{
-    float4x4 viewProjection;
-    float3 viewPosition;
-}
+import globalData;
 
 uniform ViewData gViewData;
-
-struct ModelData
-{
-    float4x4 modelTransform;
-    float4x4 inverseTransposeModelTransform;
-}
-
 uniform ModelData gModelData;
 
 uniform ILightEnvironment gLightEnvironment;
@@ -62,6 +50,7 @@ float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
     geometry.worldPosition = vertex.worldPosition;
     geometry.worldNormal = normalize(vertex.worldNormal);
     geometry.textureCoordinate = vertex.textureCoordinate;
+    geometry.modelData = gModelData;
 
     float3 viewDirection = normalize(gViewData.viewPosition - geometry.worldPosition);
 

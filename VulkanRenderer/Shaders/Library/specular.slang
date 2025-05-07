@@ -2,7 +2,7 @@ module specular;
 
 import Library.common;
 
-interface ISpecularDistributionTerm
+public interface ISpecularDistributionTerm
 {
     float evaluateDistributionTerm(float3 normal, float3 view, float3 light, float alpha);
 }
@@ -21,7 +21,7 @@ public struct GGXIsotropicDistributionTerm : ISpecularDistributionTerm
 
 public typedef GGXIsotropicDistributionTerm DefaultSpecularDistributionTerm;
 
-interface ISpecularGeometryTerm
+public interface ISpecularGeometryTerm
 {
     float evaluateGeometryTerm(float3 normal, float3 view, float3 light, float alpha);
 }
@@ -44,7 +44,7 @@ public struct GGXGeometryTerm : ISpecularGeometryTerm
 
 public typedef GGXGeometryTerm DefaultSpecularGeometryTerm;
 
-interface ISpecularTerm
+public interface ISpecularTerm
 {
     float3 evaluateSpecularTerm(float3 normal, float3 view, float3 light, float3 fresnel, float alpha);
 }

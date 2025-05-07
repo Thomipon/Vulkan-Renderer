@@ -34,3 +34,5 @@ public struct F0F90Fresnel<FresnelApproximation : IFresnelApproximation> : IFres
         return lerp(f0, f90, fresnel);
     }
 }
+
+public typedef F0F90Fresnel<SchlickFresnel> DefaultFresnel;

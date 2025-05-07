@@ -3,7 +3,7 @@ module diffuse;
 import Library.common;
 import Library.fresnel;
 
-interface IDiffuseTerm
+public interface IDiffuseTerm
 {
     float3 evaluateDiffuseTerm(float3 normal, float3 view, float3 light, float3 fresnel, float alpha);
 }

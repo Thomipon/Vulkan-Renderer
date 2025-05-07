@@ -5,6 +5,7 @@
 #include "LayeredMaterialsDemo.hpp"
 
 #include <imgui.h>
+#include <glm/common.hpp>
 #include <glm/gtc/vec1.hpp>
 
 #include "ShaderCompilation/ShaderCursor.hpp"
@@ -162,7 +163,8 @@ void SimpleVerticalBlendDemo::DrawImGui()
 		ImGui::Text("topTransmittance:");
 		if (ImGui::ColorEdit3("##topTransmittance", reinterpret_cast<float*>(&topTransmittance), ImGuiColorEditFlags_HDR))
 		{
-			materialCursor.field("topTransmittance").write(topTransmittance);
+			topTransmittance = max(topTransmittance, 0.f);
+			materialCursor.field("topTransmittance").write(topTransmittance * .1f);
 		}
 
 		ImGui::Text("Top Coverage:");
@@ -172,7 +174,7 @@ void SimpleVerticalBlendDemo::DrawImGui()
 		}
 
 		ImGui::Text("Top Thickness:");
-		if (ImGui::SliderFloat("##topThickness", &topThickness, 0.f, 1.f))
+		if (ImGui::SliderFloat("##topThickness", &topThickness, 0.f, 100.f))
 		{
 			materialCursor.field("topThickness").write(glm::vec1{topThickness});
 		}
@@ -184,7 +186,7 @@ void SimpleVerticalBlendDemo::DrawImGui()
 		}
 
 		ImGui::Text("Top IOR:");
-		if (ImGui::SliderFloat("##topIor", &topIor, 0.f, 1.f))
+		if (ImGui::SliderFloat("##topIor", &topIor, 1.f, 10.f))
 		{
 			materialCursor.field("topIor").write(glm::vec1{topIor});
 		}

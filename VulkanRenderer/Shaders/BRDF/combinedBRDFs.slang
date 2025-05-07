@@ -53,7 +53,7 @@ public struct VerticalBlendBRDF<BottomBRDF : IBRDF, TopBSDF : ITopLayerBSDF> : I
     public float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
     {
         // TODO
-        return 0.f;
+        return topBsdf.evaluateIndirect(viewDirection, environment);
     }
 
     public float3 evaluateEmissive(float3 viewDirection)

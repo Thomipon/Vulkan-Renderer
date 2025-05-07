@@ -81,6 +81,7 @@ struct VerticalLayerDemo : IMaterial
         layered.topBsdf.ior = topIor;
         layered.topBsdf.fresnel.f0 = topF0;
         layered.topBsdf.fresnel.f90 = float3(1.f);
+        layered.topBsdf.ambientOcclusion = float3(1.f);
 
         return {layered, geometry};
     }

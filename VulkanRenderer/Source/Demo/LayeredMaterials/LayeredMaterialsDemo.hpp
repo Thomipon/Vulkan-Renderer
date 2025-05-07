@@ -57,9 +57,9 @@ private:
 	glm::vec3 bottomEmissive{0.f};
 
 	float topCoverage{1.f};
-	float topThickness{.1f};
+	float topThickness{5.f};
 	float topRoughness{.1f};
 	glm::vec3 topTransmittance{.1f};
-	float topIor{1.33f};
+	float topIor{1.06f};
 	glm::vec3 topF0{0.04f};
 };

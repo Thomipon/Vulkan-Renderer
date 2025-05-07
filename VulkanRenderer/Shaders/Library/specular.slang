@@ -58,8 +58,8 @@ public struct CookTorranceSpecularTerm<Distribution : ISpecularDistributionTerm,
     public float3 evaluateSpecularTerm(float3 normal, float3 view, float3 light, float3 fresnel, float alpha)
     {
         float g = saturate(geometry.evaluateGeometryTerm(normal, view, light, alpha));
-        float d = max(distribution.evaluateDistributionTerm(normal, view, light, alpha), 0.f);
-        return fresnel * g * d / (saturate(dot(normal, view)) * 4.f); // / dot(normal, light) <- not needed because we multiply by it anyways later
+        float d = distribution.evaluateDistributionTerm(normal, view, light, alpha);
+        return max(fresnel * g * d / saturate(dot(normal, view)) * 4.f, 0); // / dot(normal, light) <- not needed because we multiply by it anyways later
     }
 
     public float3 evaluateOcclusion(float3 normal, float3 view, float3 light, float alpha)

@@ -52,8 +52,17 @@ public struct VerticalBlendBRDF<BottomBRDF : IBRDF, TopBSDF : ITopLayerBSDF> : I
 
     public float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment)
     {
-        // TODO
-        return topBsdf.evaluateIndirect(viewDirection, environment);
+        float3 indirectTop = topBsdf.evaluateIndirect(viewDirection, environment);
+
+        float3 refractedView;
+        float3 internalReflectionFactor;
+        float3 backTransmittanceFactor = topBsdf.transmitBackwards(viewDirection, refractedView, internalReflectionFactor);
+        float3 internalReflectionGeometricSeries = 1.f / (1.f - internalReflectionFactor);
+
+        let modifiedEnvironment = topBsdf.modifyIndirectLightEnvironment(environment);
+        float3 indirectBottom = bottomBrdf.evaluateIndirect(refractedView, modifiedEnvironment) * backTransmittanceFactor * internalReflectionGeometricSeries;
+
+        return indirectTop + indirectBottom;
     }
 
     public float3 evaluateEmissive(float3 viewDirection)

@@ -4,6 +4,7 @@ import Core.material;
 import Core.geometry;
 import BRDF.pbr;
 import BRDF.combinedBRDFs;
+import BRDF.topLayerBSDF;
 
 import Library.common;
 
@@ -41,5 +42,45 @@ struct HorizontalBlendDemo : IMaterial
         brdf.emissive = float3(0.f);
         brdf.ambientOcclusion = 1.f;
         return brdf;
+    }
+}
+
+struct VerticalLayerDemo : IMaterial
+{
+    typedef VerticalBlendBRDF<PBRBRDF, DefaultTopLayerBSDF> BRDF;
+
+    float3 bottomAlbedo;
+    float bottomMetallic;
+    float bottomRoughness;
+    float3 bottomEmissive;
+
+    float topCoverage;
+    float topThickness;
+    float topRoughness;
+    float3 topTransmittance;
+    float topIor;
+    float3 topF0;
+
+    MaterialResult<BRDF> evaluate(SurfaceGeometry geometry)
+    {
+        BRDF layered = {};
+
+        layered.bottomBrdf.diffuse.albedo = lerp(bottomAlbedo, 0.f, bottomMetallic);
+        layered.bottomBrdf.normal = geometry.worldNormal;
+        layered.bottomBrdf.fresnel.f0 = lerp(0.04f, bottomAlbedo, bottomMetallic);
+        layered.bottomBrdf.fresnel.f90 = float3(1.f);
+        layered.bottomBrdf.roughness = bottomRoughness;
+        layered.bottomBrdf.emissive = bottomEmissive;
+        layered.bottomBrdf.ambientOcclusion = 1.f;
+
+        layered.topBsdf.coverage = topCoverage;
+        layered.topBsdf.thickness = topThickness;
+        layered.topBsdf.roughness = topRoughness;
+        layered.topBsdf.transmittance = topTransmittance;
+        layered.topBsdf.ior = topIor;
+        layered.topBsdf.fresnel.f0 = topF0;
+        layered.topBsdf.fresnel.f90 = float3(1.f);
+
+        return {layered, geometry};
     }
 }

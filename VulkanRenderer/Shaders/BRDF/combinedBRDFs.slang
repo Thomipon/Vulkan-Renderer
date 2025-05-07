@@ -28,8 +28,8 @@ public struct HorizontalBlendBRDF<BRDF1 : IBRDF, BRDF2 : IBRDF> : IBRDF
 
 public struct VerticalBlendBRDF<BottomBRDF : IBRDF, TopBSDF : ITopLayerBSDF> : IBRDF
 {
-    BottomBRDF bottomBrdf;
-    TopBSDF topBsdf;
+    public BottomBRDF bottomBrdf;
+    public TopBSDF topBsdf;
 
     public float3 evaluate(float3 viewDirection, float3 lightDirection, float3 lightColor)
     {

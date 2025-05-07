@@ -73,6 +73,7 @@ struct VerticalLayerDemo : IMaterial
         layered.bottomBrdf.emissive = bottomEmissive;
         layered.bottomBrdf.ambientOcclusion = 1.f;
 
+        layered.topBsdf.normal = geometry.worldNormal;
         layered.topBsdf.coverage = topCoverage;
         layered.topBsdf.thickness = topThickness;
         layered.topBsdf.roughness = topRoughness;

@@ -24,7 +24,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
 
     public float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection)
     {
-        transmittedDirection = refract(light, normal, ior);
+        transmittedDirection = -refract(-light, normal, ior);
         float cosl = saturate(dot(normal, transmittedDirection));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = lightColor * exp(-effectiveThickness * transmittance);
@@ -37,7 +37,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
 
     public float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor)
     {
-        refractedView = refract(view, normal, ior);
+        refractedView = -refract(-view, normal, ior);
         float cosl = saturate(dot(normal, refractedView));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);

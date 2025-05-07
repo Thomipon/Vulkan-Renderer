@@ -43,3 +43,23 @@ private:
 	float roughness2{.8f};
 	float blendScale{100.f};
 };
+
+class SimpleVerticalBlendDemo : public DemoMaterialBase
+{
+public:
+	virtual void DrawImGui() override;
+	virtual void Initialize(AssetHandle<MaterialInstance>&& material) override;
+
+private:
+	glm::vec3 bottomAlbedo{.5, .8, .9};
+	float bottomMetallic{0.f};
+	float bottomRoughness{.7f};
+	glm::vec3 bottomEmissive{0.f};
+
+	float topCoverage{1.f};
+	float topThickness{.1f};
+	float topRoughness{.1f};
+	glm::vec3 topTransmittance{.1f};
+	float topIor{1.33f};
+	glm::vec3 topF0{0.04f};
+};

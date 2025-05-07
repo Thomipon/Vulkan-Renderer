@@ -85,8 +85,17 @@ void Application::initScene()
 
 		auto materialHandle = assetManager.createAsset<MaterialInstance>(material, "horizontal blend");
 
-		scene.models.emplace_back(meshes[0], materialHandle);
 		materials.emplace_back(std::make_unique<SimpleHorizontalBlendDemo>())->Initialize(std::move(materialHandle));
+	}
+
+	{
+		auto material{assetManager.createAsset<Material>("Materials/demoMaterials", "VerticalLayerDemo")};
+		material->compile(compiler, *this);
+
+		auto materialHandle = assetManager.createAsset<MaterialInstance>(material, "vertical layer");
+
+		scene.models.emplace_back(meshes[0], materialHandle);
+		materials.emplace_back(std::make_unique<SimpleVerticalBlendDemo>())->Initialize(std::move(materialHandle));
 	}
 
 	{

@@ -44,7 +44,7 @@ public struct VerticalBlendBRDF<BottomBRDF : IBRDF, TopBSDF : ITopLayerBSDF> : I
         float3 firstBounceExitLight = bottomLight * backTransmittanceFactor;
         float3 firstInternalBounceLight = bottomLight * internalReflectionFactor;
 
-        float3 relativeInternalReflection = firstInternalBounceLight / transmittedLight;
+        float3 relativeInternalReflection = saturate(firstInternalBounceLight / transmittedLight);
         float3 internalReflectionGeometricSeries = 1.f / (1.f - relativeInternalReflection);
 
         return reflected + firstBounceExitLight * internalReflectionGeometricSeries;
@@ -63,6 +63,6 @@ public struct VerticalBlendBRDF<BottomBRDF : IBRDF, TopBSDF : ITopLayerBSDF> : I
         float3 backTransmittanceFactor = topBsdf.transmitBackwards(viewDirection, refractedView, internalReflectionFactor);
 
         float3 internalReflectionGeometricSeries = 1.f / (1.f - internalReflectionFactor);
-        return topBsdf.evaluateEmissive(viewDirection) + bottomBrdf.evaluateEmissive(refractedView) * internalReflectionGeometricSeries * internalReflectionFactor;
+        return topBsdf.evaluateEmissive(viewDirection) + bottomBrdf.evaluateEmissive(refractedView) * backTransmittanceFactor * internalReflectionGeometricSeries;
     }
 }

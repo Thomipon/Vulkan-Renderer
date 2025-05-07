@@ -126,3 +126,90 @@ void SimpleHorizontalBlendDemo::Initialize(AssetHandle<MaterialInstance>&& mater
 	materialCursor.field("roughness2").write(roughness2);
 	materialCursor.field("blendScale").write(glm::vec1{blendScale});
 }
+
+void SimpleVerticalBlendDemo::DrawImGui()
+{
+	if (materialHandle)
+	{
+		ImGui::SeparatorText("Simple Vertical Layer Material");
+
+		const ShaderCursor materialCursor{(*materialHandle)->getShaderCursor().field("gMaterial")};
+
+		ImGui::Text("Bottom Albedo:");
+		if (ImGui::ColorEdit3("##bottomAlbedo", reinterpret_cast<float*>(&bottomAlbedo)))
+		{
+			materialCursor.field("bottomAlbedo").write(bottomAlbedo);
+		}
+
+		ImGui::Text("Bottom Metallic:");
+		if (ImGui::SliderFloat("##bottomMetallic", &bottomMetallic, 0.f, 1.f))
+		{
+			materialCursor.field("bottomMetallic").write(glm::vec1{bottomMetallic});
+		}
+
+		ImGui::Text("Bottom Roughness:");
+		if (ImGui::SliderFloat("##bottomRoughness", &bottomRoughness, 0.f, 1.f))
+		{
+			materialCursor.field("bottomRoughness").write(glm::vec1{bottomRoughness});
+		}
+
+		ImGui::Text("Bottom Emissive:");
+		if (ImGui::ColorEdit3("##bottomEmissive", reinterpret_cast<float*>(&bottomEmissive), ImGuiColorEditFlags_HDR))
+		{
+			materialCursor.field("bottomEmissive").write(bottomEmissive);
+		}
+
+		ImGui::Text("topTransmittance:");
+		if (ImGui::ColorEdit3("##topTransmittance", reinterpret_cast<float*>(&topTransmittance), ImGuiColorEditFlags_HDR))
+		{
+			materialCursor.field("topTransmittance").write(topTransmittance);
+		}
+
+		ImGui::Text("Top Coverage:");
+		if (ImGui::SliderFloat("##topCoverage", &topCoverage, 0.f, 1.f))
+		{
+			materialCursor.field("topCoverage").write(glm::vec1{topCoverage});
+		}
+
+		ImGui::Text("Top Thickness:");
+		if (ImGui::SliderFloat("##topThickness", &topThickness, 0.f, 1.f))
+		{
+			materialCursor.field("topThickness").write(glm::vec1{topThickness});
+		}
+
+		ImGui::Text("Top Roughness:");
+		if (ImGui::SliderFloat("##topRoughness", &topRoughness, 0.f, 1.f))
+		{
+			materialCursor.field("topRoughness").write(glm::vec1{topRoughness});
+		}
+
+		ImGui::Text("Top IOR:");
+		if (ImGui::SliderFloat("##topIor", &topIor, 0.f, 1.f))
+		{
+			materialCursor.field("topIor").write(glm::vec1{topIor});
+		}
+
+		ImGui::Text("Top F0:");
+		if (ImGui::ColorEdit3("##topF0", reinterpret_cast<float*>(&topF0)))
+		{
+			materialCursor.field("topF0").write(topF0);
+		}
+	}
+}
+
+void SimpleVerticalBlendDemo::Initialize(AssetHandle<MaterialInstance>&& material)
+{
+	materialHandle = std::move(material);
+
+	const ShaderCursor materialCursor{(*materialHandle)->getShaderCursor().field("gMaterial")};
+	materialCursor.field("bottomAlbedo").write(bottomAlbedo);
+	materialCursor.field("bottomMetallic").write(bottomMetallic);
+	materialCursor.field("bottomRoughness").write(bottomRoughness);
+	materialCursor.field("bottomEmissive").write(bottomEmissive);
+	materialCursor.field("topCoverage").write(topCoverage);
+	materialCursor.field("topThickness").write(topThickness);
+	materialCursor.field("topRoughness").write(topRoughness);
+	materialCursor.field("topTransmittance").write(topTransmittance);
+	materialCursor.field("topIor").write(topIor);
+	materialCursor.field("topF0").write(topF0);
+}

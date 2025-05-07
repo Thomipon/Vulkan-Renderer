@@ -77,6 +77,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Source/Scene/Light/UniversalLightEnvironment.hpp
         Source/ImGUI/ImGUI.cpp
         Source/ImGUI/ImGUI.hpp
+        Source/Demo/LayeredMaterials/LayeredMaterialsDemo.cpp
+        Source/Demo/LayeredMaterials/LayeredMaterialsDemo.hpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

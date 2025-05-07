@@ -2,6 +2,7 @@
 
 #include "Renderer.hpp"
 #include "AssetSystem/AssetManager.hpp"
+#include "Demo/LayeredMaterials/LayeredMaterialsDemo.hpp"
 #include "Scene/Scene.hpp"
 
 class Application : public Renderer
@@ -28,22 +29,10 @@ private:
     Scene scene;
 
     // TODO: All of this is bad!
-    AssetHandle<MaterialInstance> materialHandle;
     AssetHandle<MaterialInstance> skyMaterialHandle;
-    /*glm::vec3 albedo{.5f};
-    glm::vec3 f0{.04f};
-    glm::vec3 f90{1.f};
-    float roughness{.5};
-    glm::vec3 emissiveColor{0.f};*/
-    glm::vec3 albedo1{.5f};
-    float metallic1{1.f};
-    float roughness1{.4f};
-    glm::vec3 albedo2{.8f};
-    float metallic2{0.f};
-    float roughness2{.8f};
-    float blendScale{100.f};
     std::optional<TextureImage> skyTexture;
+    std::vector<std::unique_ptr<DemoMaterialBase>> materials;
 public:
-    Application() : materialHandle(assetManager), skyMaterialHandle(assetManager) {}
+    Application() : skyMaterialHandle(assetManager) {}
 
 };

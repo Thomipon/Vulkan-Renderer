@@ -41,7 +41,7 @@ private:
     glm::vec3 albedo2{.8f};
     float metallic2{0.f};
     float roughness2{.8f};
-    float blendScale{1.f};
+    float blendScale{100.f};
     std::optional<TextureImage> skyTexture;
 public:
     Application() : materialHandle(assetManager), skyMaterialHandle(assetManager) {}

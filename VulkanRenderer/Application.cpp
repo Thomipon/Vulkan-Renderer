@@ -68,6 +68,7 @@ void Application::initScene()
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 
 	scene.lightEnvironment.second.second.cubemap = TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this};
+	scene.lightEnvironment.second.second.intensity = 5.f;
 
 	/*auto material{assetManager.createAsset<Material>("BRDF/pbr", "ConstantPBRMaterial")};
 	material->compile(compiler, *this);
@@ -108,7 +109,7 @@ void Application::initScene()
 	ShaderCursor skyMaterialCursor{skyMaterialHandle->getShaderCursor().field("gMaterial")};
 	skyTexture = TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this}; // TODO: This should be shared with the above
 	skyMaterialCursor.field("cubemap").writeTexture(*skyTexture);
-	skyMaterialCursor.field("emissiveIntensity").write(glm::vec1{10.f});
+	skyMaterialCursor.field("emissiveIntensity").write(glm::vec1{5.f});
 }
 
 void Application::updateMaterials()

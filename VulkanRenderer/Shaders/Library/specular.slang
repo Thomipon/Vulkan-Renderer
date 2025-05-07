@@ -47,6 +47,7 @@ public typedef GGXGeometryTerm DefaultSpecularGeometryTerm;
 public interface ISpecularTerm
 {
     float3 evaluateSpecularTerm(float3 normal, float3 view, float3 light, float3 fresnel, float alpha);
+    float3 evaluateOcclusion(float3 normal, float3 view, float3 light, float alpha);
 }
 
 public struct CookTorranceSpecularTerm<Distribution : ISpecularDistributionTerm, Geometry : ISpecularGeometryTerm> : ISpecularTerm
@@ -59,6 +60,11 @@ public struct CookTorranceSpecularTerm<Distribution : ISpecularDistributionTerm,
         float g = saturate(geometry.evaluateGeometryTerm(normal, view, light, alpha));
         float d = max(distribution.evaluateDistributionTerm(normal, view, light, alpha), 0.f);
         return fresnel * g * d / (saturate(dot(normal, view)) * 4.f); // / dot(normal, light) <- not needed because we multiply by it anyways later
+    }
+
+    public float3 evaluateOcclusion(float3 normal, float3 view, float3 light, float alpha)
+    {
+        return saturate(geometry.evaluateGeometryTerm(normal, view, light, alpha));
     }
 }
 

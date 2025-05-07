@@ -33,12 +33,10 @@ public struct PBRBRDF : IBRDF
     {
         float3 f = fresnel.getFresnelTerm(viewDirection, normal);
         float alpha = roughness * roughness;
-        // TODO: treat indirect differently
-        float3 diffuse = diffuse.evaluateDiffuseTerm(normal, viewDirection, normal, f, alpha) * environment.sampleEnvironment(normal, 1.f);
+        float3 diffuse = diffuse.evaluateUnattenuatedDiffuseTerm(normal, viewDirection, f, alpha) * environment.sampleEnvironment(normal, 1.f);
         float3 r = -reflect(viewDirection, normal);
-        // TODO: Only do the geometry here
-        float3 s = specular.evaluateSpecularTerm(normal, viewDirection, r, f, alpha) * environment.sampleEnvironment(r, roughness);
-        return (s + diffuse * (1.f - f)) * ambientOcclusion;
+        float3 s = specular.evaluateOcclusion(normal, viewDirection, r, alpha) * environment.sampleEnvironment(r, roughness) * f;
+        return (s + diffuse) * ambientOcclusion;
     }
 
     public float3 evaluateEmissive(float3 viewDirection)

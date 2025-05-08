@@ -55,6 +55,6 @@ float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
     float3 viewDirection = normalize(gViewData.viewPosition - geometry.worldPosition);
 
     let materialResult = gMaterial.evaluate(geometry);
-    float3 color = saturate(gLightEnvironment.illuminate(materialResult.geometry, materialResult.brdf, viewDirection) + materialResult.brdf.evaluateEmissive(viewDirection));
-    return float4(color, 1.);
+    float3 color = max(gLightEnvironment.illuminate(materialResult.geometry, materialResult.brdf, viewDirection) + materialResult.brdf.evaluateEmissive(viewDirection), 0.f);
+    return float4(1.f - exp(-color * gViewData.exposureValue), 1.);
 }

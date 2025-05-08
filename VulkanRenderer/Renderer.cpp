@@ -361,6 +361,7 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 		ShaderCursor viewCursor{globalCursor.field("gViewData")};
 		viewCursor.field("viewPosition").write(scene.camera.transform.translation);
 		viewCursor.field("viewProjection").write(scene.camera.getViewProjection(glm::vec2{swapchain.extent.width, swapchain.extent.height}));
+        viewCursor.field("exposureValue").write(scene.camera.exposureValue);
 
 		ShaderCursor lightCursor{globalCursor.field("gLightEnvironment")};
 		scene.lightEnvironment.writeToCursor(lightCursor);

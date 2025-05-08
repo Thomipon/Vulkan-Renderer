@@ -20,6 +20,8 @@ void Camera::drawImGui()
 	ImGui::SeparatorText("Camera");
 	transform.drawImGui(false);
 	ImGui::Text("FOV:");
-	ImGui::DragFloat("##4", &fieldOfView);
+	ImGui::DragFloat("##fov", &fieldOfView);
+    ImGui::Text("Exposure:");
+	ImGui::DragFloat("##exposure", &exposureValue, .01f, 0.f, 300.f);
 	ImGui::PopID();
 }

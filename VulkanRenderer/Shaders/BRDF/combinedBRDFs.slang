@@ -71,7 +71,7 @@ public struct VerticalBlendBRDF<BottomBRDF : IBRDF, TopBSDF : ITopLayerBSDF> : I
         float3 internalReflectionFactor;
         float3 backTransmittanceFactor = topBsdf.transmitBackwards(viewDirection, refractedView, internalReflectionFactor);
 
-        float3 internalReflectionGeometricSeries = 1.f / (1.f - internalReflectionFactor);
-        return topBsdf.evaluateEmissive(viewDirection) + bottomBrdf.evaluateEmissive(refractedView) * backTransmittanceFactor * internalReflectionGeometricSeries;
+        // Internal reflection is ignored here. It would require evaluating the bottom BRDF
+        return topBsdf.evaluateEmissive(viewDirection) + bottomBrdf.evaluateEmissive(refractedView) * backTransmittanceFactor;
     }
 }

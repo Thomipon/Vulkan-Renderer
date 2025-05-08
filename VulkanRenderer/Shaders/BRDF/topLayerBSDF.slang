@@ -7,8 +7,8 @@ import Library.specular;
 
 public interface ITopLayerBSDF
 {
-    float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection);
-    float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor);
+    float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection, out float3 surfacePenetratingLight);
+    float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor, out float3 absorptionFactor);
     float3 transmitInternal(float3 direction, float roughness, out float3 refractedDirection, out float combinedRoughness);
     float3 evaluateIndirect<Environment : IIndirectLightEnvironment>(float3 viewDirection, Environment environment);
     float3 evaluateEmissive(float3 view);
@@ -44,28 +44,30 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
     public float3 emissive;
     public float3 ambientOcclusion;
 
-    public float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection)
+    public float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection, out float3 surfacePenetratingLight)
     {
         transmittedDirection = -refract(-light, normal, rcp(ior));
         float cosl = saturate(dot(normal, transmittedDirection));
         float effectiveThickness = thickness / cosl;
-        float3 fullCoverageTransmittedLight = lightColor * exp(-effectiveThickness * transmittance);
-        float3 transmittedLight = lerp(lightColor, fullCoverageTransmittedLight, coverage);
         float3 fl = fresnel.getFresnelTermDirectly(normal, light);
+        surfacePenetratingLight = lightColor * (1.f - fl);
+        float3 fullCoverageTransmittedLight = surfacePenetratingLight * exp(-effectiveThickness * transmittance);
+        float3 transmittedLight = lerp(surfacePenetratingLight, fullCoverageTransmittedLight, coverage);
         float3 f = fresnel.getFresnelTerm(view, light);
         reflected = specular.evaluateSpecularTerm(normal, view, light, f, roughness * roughness) * lightColor * coverage * fl;
-        return (1.f - f) * (1.f - fl) * transmittedLight * saturate(dot(light, normal));
+        return (1.f - f) * transmittedLight * saturate(dot(light, normal));
     }
 
-    public float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor)
+    public float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor, out float3 absorptionFactor)
     {
         refractedView = -refract(-view, normal, rcp(ior));
         float cosl = saturate(dot(normal, refractedView));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);
         float3 fl = fresnel.getFresnelTermDirectly(normal, view);
-        internalReflectionColor = fl;
-        return lerp(1.f, fullCoverageTransmittedLight, coverage) * (1.f - fl);
+        absorptionFactor = lerp(1.f, fullCoverageTransmittedLight, coverage);
+        internalReflectionColor = absorptionFactor * fl;
+        return absorptionFactor - internalReflectionColor;
     }
 
     public float3 transmitInternal(float3 direction, float roughness, out float3 refractedDirection, out float combinedRoughness)

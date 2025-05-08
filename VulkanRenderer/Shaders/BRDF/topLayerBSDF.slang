@@ -51,10 +51,10 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = lightColor * exp(-effectiveThickness * transmittance);
         float3 transmittedLight = lerp(lightColor, fullCoverageTransmittedLight, coverage);
-        // TODO: Second Fresnel?
+        float3 fl = fresnel.getFresnelTermDirectly(normal, light);
         float3 f = fresnel.getFresnelTerm(view, light);
-        reflected = specular.evaluateSpecularTerm(normal, view, light, f, roughness * roughness) * lightColor * coverage;
-        return (1.f - f) * transmittedLight * saturate(dot(light, normal));
+        reflected = specular.evaluateSpecularTerm(normal, view, light, f, roughness * roughness) * lightColor * coverage * fl;
+        return (1.f - f) * (1.f - fl) * transmittedLight * saturate(dot(light, normal));
     }
 
     public float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor)
@@ -63,9 +63,9 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
         float cosl = saturate(dot(normal, refractedView));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);
-        // TODO: Fresnel?
-        internalReflectionColor = 0.f;
-        return lerp(1.f, fullCoverageTransmittedLight, coverage);
+        float3 fl = fresnel.getFresnelTermDirectly(normal, view);
+        internalReflectionColor = fl;
+        return lerp(1.f, fullCoverageTransmittedLight, coverage) * (1.f - fl);
     }
 
     public float3 transmitInternal(float3 direction, float roughness, out float3 refractedDirection, out float combinedRoughness)

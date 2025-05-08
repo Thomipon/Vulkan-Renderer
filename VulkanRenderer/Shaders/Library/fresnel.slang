@@ -20,6 +20,7 @@ public struct SchlickFresnel : IFresnelApproximation
 public interface IFresnel
 {
     float3 getFresnelTerm(float3 view, float3 light);
+    float3 getFresnelTermDirectly(float3 normal, float3 direction);
 }
 
 public struct F0F90Fresnel<FresnelApproximation : IFresnelApproximation> : IFresnel
@@ -30,7 +31,12 @@ public struct F0F90Fresnel<FresnelApproximation : IFresnelApproximation> : IFres
     public float3 getFresnelTerm(float3 view, float3 light)
     {
         float3 half = halfVector(view, light);
-        float fresnel = FresnelApproximation.approximateFresnel(view, half);
+        return getFresnelTermDirectly(half, light);
+    }
+
+    public float3 getFresnelTermDirectly(float3 normal, float3 direction)
+    {
+        float fresnel = FresnelApproximation.approximateFresnel(normal, direction);
         return lerp(f0, f90, fresnel);
     }
 }

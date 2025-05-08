@@ -46,7 +46,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
 
     public float3 transmitForward(float3 light, float3 view, float3 lightColor, out float3 reflected, out float3 transmittedDirection)
     {
-        transmittedDirection = -refract(-light, normal, ior);
+        transmittedDirection = -refract(-light, normal, rcp(ior));
         float cosl = saturate(dot(normal, transmittedDirection));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = lightColor * exp(-effectiveThickness * transmittance);
@@ -59,7 +59,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
 
     public float3 transmitBackwards(float3 view, out float3 refractedView, out float3 internalReflectionColor)
     {
-        refractedView = -refract(-view, normal, ior);
+        refractedView = -refract(-view, normal, rcp(ior));
         float cosl = saturate(dot(normal, refractedView));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);
@@ -75,7 +75,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
         float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);
         float3 transmittedLight = lerp(1.f, fullCoverageTransmittedLight, coverage);
         // TODO: Fresnel?
-        refractedDirection = refract(direction, normal, rcp(ior));
+        refractedDirection = refract(direction, normal, ior);
         combinedRoughness = 1.f - ((1.f - this.roughness) * (1.f - roughness));
         return transmittedLight;
     }

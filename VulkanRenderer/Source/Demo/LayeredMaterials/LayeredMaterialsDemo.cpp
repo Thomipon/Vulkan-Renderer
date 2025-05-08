@@ -186,7 +186,7 @@ void SimpleVerticalBlendDemo::DrawImGui()
 		}
 
 		ImGui::Text("Top IOR:");
-		if (ImGui::SliderFloat("##topIor", &topIor, 1.f, 10.f))
+		if (ImGui::SliderFloat("##topIor", &topIor, .1f, 5.f))
 		{
 			materialCursor.field("topIor").write(glm::vec1{topIor});
 		}

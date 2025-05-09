@@ -284,6 +284,18 @@ void OpalDemo::DrawImGui()
 			materialCursor.field("roughnessCenter").write(glm::vec1{roughnessCenter});
 		}
 
+		ImGui::Text("Height Scale:");
+		if (ImGui::SliderFloat("##heightScale", &heightScale, -2.f, 2.f))
+		{
+			materialCursor.field("heightScale").write(glm::vec1{heightScale});
+		}
+
+		ImGui::Text("Height Bias:");
+		if (ImGui::SliderFloat("##heightBias", &heightBias, -10.f, 10.f))
+		{
+			materialCursor.field("heightBias").write(glm::vec1{heightBias});
+		}
+
 		ImGui::Text("Coat IOR:");
 		if (ImGui::SliderFloat("##coatIOR", &coatIOR, .1f, 5.f))
 		{
@@ -333,6 +345,7 @@ void OpalDemo::Initialize(AssetHandle<MaterialInstance>&& material)
 	materialCursor.field("textureTiling").write(textureTiling);
 	materialCursor.field("normalMap").writeTexture(normalMap);
 	materialCursor.field("armMap").writeTexture(armMap);
+	materialCursor.field("heightMap").writeTexture(heightMap);
 	materialCursor.field("hueShift").write(hueShift);
 	materialCursor.field("hueScale").write(hueScale);
 	materialCursor.field("saturation").write(saturation);
@@ -341,6 +354,8 @@ void OpalDemo::Initialize(AssetHandle<MaterialInstance>&& material)
 	materialCursor.field("bottomAlbedo").write(bottomAlbedo);
 	materialCursor.field("roughnessThreshold").write(roughnessThreshold);
 	materialCursor.field("roughnessCenter").write(roughnessCenter);
+	materialCursor.field("heightScale").write(heightScale);
+	materialCursor.field("heightBias").write(heightBias);
 	materialCursor.field("coatIOR").write(coatIOR);
 	materialCursor.field("coatInnerThickness").write(coatInnerThickness);
 	materialCursor.field("coatOuterThickness").write(coatOuterThickness);

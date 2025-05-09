@@ -71,12 +71,14 @@ public:
 	virtual void DrawImGui() override;
 	virtual void Initialize(AssetHandle<MaterialInstance>&& material) override;
 
-	OpalDemo(TextureImage&& normalMap, TextureImage&& armMap) : normalMap(std::move(normalMap)), armMap(std::move(armMap)) {}
+	OpalDemo(TextureImage&& normalMap, TextureImage&& armMap, TextureImage&& heightMap)
+	: normalMap(std::move(normalMap)), armMap(std::move(armMap)), heightMap(std::move(heightMap)) {}
 
 private:
 	float textureTiling{2.9f};
 	TextureImage normalMap;
 	TextureImage armMap;
+	TextureImage heightMap;
 	float hueShift{1.f};
 	float hueScale{3.2f};
 	float saturation{.894f};
@@ -85,6 +87,8 @@ private:
 	glm::vec3 bottomAlbedo{.362f};
 	float roughnessThreshold{.344f};
 	float roughnessCenter{.12f};
+	float heightScale{1.f};
+	float heightBias{1.f};
 	float coatIOR{1.31f};
 	float coatInnerThickness{24.541f};
 	float coatOuterThickness{49.788f};

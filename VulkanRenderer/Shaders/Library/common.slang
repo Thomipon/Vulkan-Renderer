@@ -52,3 +52,8 @@ public float remapDistribution(float inValue, float outValueCenter, float inValu
     float highRange = remapValueRange(inValue, outValueCenter, outValueMax, inValueThreshold, inValueMax, clampResult);
     return inValue < inValueThreshold ? lowRange : highRange;
 }
+
+public float2 bumpOffset(float height, float3 viewDirectionTS)
+{
+    return height * float2(viewDirectionTS.x, -viewDirectionTS.y) / viewDirectionTS.z;
+}

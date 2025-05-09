@@ -106,7 +106,8 @@ void Application::initScene()
 		scene.models.emplace_back(meshes[0], materialHandle);
 		materials.emplace_back(std::make_unique<OpalDemo>(
 			         TextureImage{"../../VulkanRenderer/Textures/gray_rocks_nor_dx_1k.png", vk::ImageViewType::e2D, *this},
-			         TextureImage{"../../VulkanRenderer/Textures/gray_rocks_arm_1k.png", vk::ImageViewType::e2D, *this}))
+			         TextureImage{"../../VulkanRenderer/Textures/gray_rocks_arm_1k.png", vk::ImageViewType::e2D, *this},
+			         TextureImage{"../../VulkanRenderer/Textures/gray_rocks_disp_1k.png", vk::ImageViewType::e2D, *this}))
 		         ->Initialize(std::move(materialHandle));
 	}
 
@@ -115,7 +116,7 @@ void Application::initScene()
 		skyMaterial->compile(compiler, *this);
 
 		skyMaterialHandle = assetManager.createAsset<MaterialInstance>(skyMaterial, "sky material");
-		scene.models.emplace_back(meshes[3], skyMaterialHandle);
+		scene.models.emplace_back(meshes[3], skyMaterialHandle).transform.scale = glm::vec3{1000.f};
 		ShaderCursor skyMaterialCursor{skyMaterialHandle->getShaderCursor().field("gMaterial")};
 		skyTexture = TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this}; // TODO: This should be shared with the above
 		skyMaterialCursor.field("cubemap").writeTexture(*skyTexture);

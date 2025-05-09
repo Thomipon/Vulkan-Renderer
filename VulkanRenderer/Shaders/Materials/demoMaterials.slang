@@ -94,6 +94,7 @@ struct Opal : IMaterial
     float textureTiling;
     Sampler2D normalMap;
     Sampler2D armMap;
+    Sampler2D heightMap;
     float hueShift;
     float hueScale;
     float saturation;
@@ -102,6 +103,8 @@ struct Opal : IMaterial
     float3 bottomAlbedo;
     float roughnessThreshold;
     float roughnessCenter;
+    float heightScale;
+    float heightBias;
     float coatIOR;
     float coatInnerThickness;
     float coatOuterThickness;
@@ -112,9 +115,11 @@ struct Opal : IMaterial
     MaterialResult<BRDF> evaluate(SurfaceGeometry geometry)
     {
         PBRBRDF bottom = {};
-        float2 uv = geometry.textureCoordinate * textureTiling;
-        bottom.normal = normalize(mul(geometry.tangentToWorld, normalMap.Sample(uv).rgb));
         float3 viewDirection = normalize(geometry.viewData.viewPosition - geometry.worldPosition);
+        float2 uvPreBump = geometry.textureCoordinate * textureTiling;
+        float height = heightScale * (heightMap.Sample(uvPreBump).r - .5f + heightBias);
+        float2 uv = uvPreBump - bumpOffset(height, mul(transpose(geometry.tangentToWorld), viewDirection));
+        bottom.normal = normalize(mul(geometry.tangentToWorld, normalMap.Sample(uv).rgb - .5f));
         float cosv = abs(dot(bottom.normal, viewDirection));
         float hue = abs(frac(cosv * hueScale + hueShift));
         float3 color = hsvToRgb(float3(hue, saturation, 1.f));
@@ -129,7 +134,7 @@ struct Opal : IMaterial
         DefaultTopLayerBSDF top = {};
         top.normal = geometry.worldNormal;
         top.coverage = 1.f;
-        top.thickness = lerp(coatInnerThickness, coatOuterThickness, pow(1.f - abs(dot(viewDirection, geometry.worldNormal)), coatThicknessExponent));
+        top.thickness = max(lerp(coatInnerThickness, coatOuterThickness, pow(1.f - abs(dot(viewDirection, geometry.worldNormal)), coatThicknessExponent)) - height, 0.f);
         top.roughness = coatRoughness;
         top.transmittance = coatTransmittance;
         top.ior = coatIOR;

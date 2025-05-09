@@ -5,7 +5,7 @@
 
 glm::mat4 Transform::getMatrix() const
 {
-	return translate(glm::scale(glm::mat4{1.0f}, scale), translation) * mat4_cast(rotation);
+	return glm::scale(translate(glm::mat4{1.0f}, translation) * mat4_cast(rotation), scale);
 }
 
 void Transform::drawImGui(bool drawScale, bool drawRotation, bool drawLocation)

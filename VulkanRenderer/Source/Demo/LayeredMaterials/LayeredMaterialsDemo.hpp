@@ -83,6 +83,8 @@ private:
 	float brightness{.04f};
 	float specularIntensity{.735f};
 	glm::vec3 bottomAlbedo{.362f};
+	float roughnessThreshold{.344f};
+	float roughnessCenter{.12f};
 	float coatIOR{1.31f};
 	float coatInnerThickness{24.541f};
 	float coatOuterThickness{49.788f};

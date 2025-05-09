@@ -272,6 +272,18 @@ void OpalDemo::DrawImGui()
 			materialCursor.field("bottomAlbedo").write(bottomAlbedo);
 		}
 
+		ImGui::Text("Roughness Threshold:");
+		if (ImGui::SliderFloat("##roughnessThreshold", &roughnessThreshold, 0.f, 1.f))
+		{
+			materialCursor.field("roughnessThreshold").write(glm::vec1{roughnessThreshold});
+		}
+
+		ImGui::Text("Roughness Center:");
+		if (ImGui::SliderFloat("##roughnessCenter", &roughnessCenter, 0.f, 1.f))
+		{
+			materialCursor.field("roughnessCenter").write(glm::vec1{roughnessCenter});
+		}
+
 		ImGui::Text("Coat IOR:");
 		if (ImGui::SliderFloat("##coatIOR", &coatIOR, .1f, 5.f))
 		{
@@ -327,6 +339,8 @@ void OpalDemo::Initialize(AssetHandle<MaterialInstance>&& material)
 	materialCursor.field("brightness").write(brightness);
 	materialCursor.field("specularIntensity").write(specularIntensity);
 	materialCursor.field("bottomAlbedo").write(bottomAlbedo);
+	materialCursor.field("roughnessThreshold").write(roughnessThreshold);
+	materialCursor.field("roughnessCenter").write(roughnessCenter);
 	materialCursor.field("coatIOR").write(coatIOR);
 	materialCursor.field("coatInnerThickness").write(coatInnerThickness);
 	materialCursor.field("coatOuterThickness").write(coatOuterThickness);

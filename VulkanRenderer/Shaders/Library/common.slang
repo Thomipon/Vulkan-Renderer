@@ -34,3 +34,21 @@ public float f0FromIOR(float ior)
     float f0sqrt = (ior - 1.f) / (ior + 1.f);
     return f0sqrt * f0sqrt;
 }
+
+public float remapValueRange(float inValue, float outValueMin, float outValueMax, float inValueMin, float inValueMax, bool clampResult = true)
+{
+    float alpha = (inValue - inValueMin) / (inValueMax - inValueMin);
+    float result = lerp(outValueMin, outValueMax, alpha);
+    if (clampResult)
+    {
+        return clamp(result, outValueMin, outValueMax);
+    }
+    return result;
+}
+
+public float remapDistribution(float inValue, float outValueCenter, float inValueThreshold = .5, bool clampResult = true, float outValueMin = 0., float outValueMax = 1., float inValueMin = 0., float inValueMax = 1.)
+{
+    float lowRange = remapValueRange(inValue, outValueMin, outValueCenter, inValueMin, inValueThreshold, clampResult);
+    float highRange = remapValueRange(inValue, outValueCenter, outValueMax, inValueThreshold, inValueMax, clampResult);
+    return inValue < inValueThreshold ? lowRange : highRange;
+}

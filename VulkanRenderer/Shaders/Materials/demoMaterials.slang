@@ -100,6 +100,8 @@ struct Opal : IMaterial
     float brightness;
     float specularIntensity;
     float3 bottomAlbedo;
+    float roughnessThreshold;
+    float roughnessCenter;
     float coatIOR;
     float coatInnerThickness;
     float coatOuterThickness;
@@ -119,7 +121,7 @@ struct Opal : IMaterial
         bottom.diffuse.albedo = bottomAlbedo;
         float2 ar = armMap.Sample(uv).xy;
         bottom.ambientOcclusion = ar.x;
-        bottom.roughness = ar.y;
+        bottom.roughness = remapDistribution(ar.y, roughnessCenter, roughnessThreshold);
         bottom.fresnel.f90 = float3(1.f);
         bottom.fresnel.f0 = color * specularIntensity;
         bottom.emissive = color * brightness;

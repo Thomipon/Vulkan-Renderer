@@ -51,6 +51,10 @@ float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
     geometry.worldNormal = normalize(vertex.worldNormal);
     geometry.textureCoordinate = vertex.textureCoordinate;
     geometry.modelData = gModelData;
+    geometry.viewData = gViewData;
+    geometry.worldTangent = normalize(ddx(geometry.textureCoordinate.x) * ddx(geometry.worldPosition) + ddy(geometry.textureCoordinate.x) * ddy(geometry.worldPosition));
+    float3 bitangent = normalize(cross(geometry.worldTangent, geometry.worldNormal));
+    geometry.tangentToWorld = float3x3(geometry.worldTangent, bitangent, geometry.worldNormal);
 
     float3 viewDirection = normalize(gViewData.viewPosition - geometry.worldPosition);
 

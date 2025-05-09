@@ -94,8 +94,20 @@ void Application::initScene()
 
 		auto materialHandle = assetManager.createAsset<MaterialInstance>(material, "vertical layer");
 
-		scene.models.emplace_back(meshes[0], materialHandle);
 		materials.emplace_back(std::make_unique<SimpleVerticalBlendDemo>())->Initialize(std::move(materialHandle));
+	}
+
+	{
+		auto material{assetManager.createAsset<Material>("Materials/demoMaterials", "Opal")};
+		material->compile(compiler, *this);
+
+		auto materialHandle = assetManager.createAsset<MaterialInstance>(material, "opal");
+
+		scene.models.emplace_back(meshes[0], materialHandle);
+		materials.emplace_back(std::make_unique<OpalDemo>(
+			         TextureImage{"../../VulkanRenderer/Textures/gray_rocks_nor_dx_1k.png", vk::ImageViewType::e2D, *this},
+			         TextureImage{"../../VulkanRenderer/Textures/gray_rocks_arm_1k.png", vk::ImageViewType::e2D, *this}))
+		         ->Initialize(std::move(materialHandle));
 	}
 
 	{

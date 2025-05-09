@@ -86,3 +86,55 @@ struct VerticalLayerDemo : IMaterial
         return {layered, geometry};
     }
 }
+
+struct Opal : IMaterial
+{
+    typedef VerticalBlendBRDF<PBRBRDF, DefaultTopLayerBSDF> BRDF;
+
+    float textureTiling;
+    Sampler2D normalMap;
+    Sampler2D armMap;
+    float hueShift;
+    float hueScale;
+    float saturation;
+    float brightness;
+    float specularIntensity;
+    float3 bottomAlbedo;
+    float coatIOR;
+    float coatInnerThickness;
+    float coatOuterThickness;
+    float coatRoughness;
+    float3 coatTransmittance;
+    float coatThicknessExponent;
+
+    MaterialResult<BRDF> evaluate(SurfaceGeometry geometry)
+    {
+        PBRBRDF bottom = {};
+        float2 uv = geometry.textureCoordinate * textureTiling;
+        bottom.normal = normalize(mul(geometry.tangentToWorld, normalMap.Sample(uv).rgb));
+        float3 viewDirection = normalize(geometry.viewData.viewPosition - geometry.worldPosition);
+        float cosv = abs(dot(bottom.normal, viewDirection));
+        float hue = abs(frac(cosv * hueScale + hueShift));
+        float3 color = hsvToRgb(float3(hue, saturation, 1.f));
+        bottom.diffuse.albedo = bottomAlbedo;
+        float2 ar = armMap.Sample(uv).xy;
+        bottom.ambientOcclusion = ar.x;
+        bottom.roughness = ar.y;
+        bottom.fresnel.f90 = float3(1.f);
+        bottom.fresnel.f0 = color * specularIntensity;
+        bottom.emissive = color * brightness;
+
+        DefaultTopLayerBSDF top = {};
+        top.normal = geometry.worldNormal;
+        top.coverage = 1.f;
+        top.thickness = lerp(coatInnerThickness, coatOuterThickness, pow(1.f - abs(dot(viewDirection, geometry.worldNormal)), coatThicknessExponent));
+        top.roughness = coatRoughness;
+        top.transmittance = coatTransmittance;
+        top.ior = coatIOR;
+        top.fresnel.f0 = f0FromIOR(coatIOR);
+        top.fresnel.f90 = float3(1.f);
+        top.ambientOcclusion = float3(1.f);
+
+        return {{bottom, top}, geometry};
+    }
+}

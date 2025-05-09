@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <glm/vec3.hpp>
 
+#include "TextureImage.hpp"
 #include "Asset/MaterialInstance.hpp"
 #include "AssetSystem/AssetHandle.hpp"
 
@@ -62,4 +63,30 @@ private:
 	glm::vec3 topTransmittance{.1f};
 	float topIor{1.06f};
 	glm::vec3 topF0{0.04f};
+};
+
+class OpalDemo : public DemoMaterialBase
+{
+public:
+	virtual void DrawImGui() override;
+	virtual void Initialize(AssetHandle<MaterialInstance>&& material) override;
+
+	OpalDemo(TextureImage&& normalMap, TextureImage&& armMap) : normalMap(std::move(normalMap)), armMap(std::move(armMap)) {}
+
+private:
+	float textureTiling{2.9f};
+	TextureImage normalMap;
+	TextureImage armMap;
+	float hueShift{1.f};
+	float hueScale{3.2f};
+	float saturation{.894f};
+	float brightness{.04f};
+	float specularIntensity{.735f};
+	glm::vec3 bottomAlbedo{.362f};
+	float coatIOR{1.31f};
+	float coatInnerThickness{24.541f};
+	float coatOuterThickness{49.788f};
+	float coatThicknessExponent{2.181f};
+	float coatRoughness{.09f};
+	glm::vec3 coatTransmittance{.409f, .399f, .369f};
 };

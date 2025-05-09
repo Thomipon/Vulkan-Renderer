@@ -132,6 +132,8 @@ void SimpleVerticalBlendDemo::DrawImGui()
 {
 	if (materialHandle)
 	{
+		ImGui::PushID("VerticalBlend");
+
 		ImGui::SeparatorText("Simple Vertical Layer Material");
 
 		const ShaderCursor materialCursor{(*materialHandle)->getShaderCursor().field("gMaterial")};
@@ -160,7 +162,7 @@ void SimpleVerticalBlendDemo::DrawImGui()
 			materialCursor.field("bottomEmissive").write(bottomEmissive);
 		}
 
-		ImGui::Text("topTransmittance:");
+		ImGui::Text("Top Transmittance:");
 		if (ImGui::ColorEdit3("##topTransmittance", reinterpret_cast<float*>(&topTransmittance), ImGuiColorEditFlags_HDR))
 		{
 			topTransmittance = max(topTransmittance, 0.f);
@@ -196,6 +198,8 @@ void SimpleVerticalBlendDemo::DrawImGui()
 		{
 			materialCursor.field("topF0").write(topF0);
 		}
+
+		ImGui::PopID();
 	}
 }
 
@@ -211,7 +215,122 @@ void SimpleVerticalBlendDemo::Initialize(AssetHandle<MaterialInstance>&& materia
 	materialCursor.field("topCoverage").write(topCoverage);
 	materialCursor.field("topThickness").write(topThickness);
 	materialCursor.field("topRoughness").write(topRoughness);
-	materialCursor.field("topTransmittance").write(topTransmittance);
+	materialCursor.field("topTransmittance").write(topTransmittance * .1f);
 	materialCursor.field("topIor").write(topIor);
 	materialCursor.field("topF0").write(topF0);
+}
+
+void OpalDemo::DrawImGui()
+{
+	if (materialHandle)
+	{
+		ImGui::PushID("Opal");
+
+		ImGui::SeparatorText("Simple Vertical Layer Material");
+
+		const ShaderCursor materialCursor{(*materialHandle)->getShaderCursor().field("gMaterial")};
+
+		ImGui::Text("Texture Tiling:");
+		if (ImGui::DragFloat("##textureTiling", &textureTiling, .1f, 0.f, 0.f))
+		{
+			materialCursor.field("textureTiling").write(glm::vec1{textureTiling});
+		}
+
+		ImGui::Text("Hue Shift:");
+		if (ImGui::DragFloat("##hueShift", &hueShift, .1f, 0.f, 0.f))
+		{
+			materialCursor.field("hueShift").write(glm::vec1{hueShift});
+		}
+
+		ImGui::Text("Hue Scale:");
+		if (ImGui::DragFloat("##hueScale", &hueScale, .1f, 0.f, 0.f))
+		{
+			materialCursor.field("hueScale").write(glm::vec1{hueScale});
+		}
+
+		ImGui::Text("Saturation:");
+		if (ImGui::SliderFloat("##saturation", &saturation, 0.f, 1.f))
+		{
+			materialCursor.field("saturation").write(glm::vec1{saturation});
+		}
+
+		ImGui::Text("Brightness:");
+		if (ImGui::SliderFloat("##brightness", &brightness, 0.f, 100.f))
+		{
+			materialCursor.field("brightness").write(glm::vec1{brightness});
+		}
+
+		ImGui::Text("Specular Intensity:");
+		if (ImGui::SliderFloat("##specularIntensity", &specularIntensity, 0.f, 1.f))
+		{
+			materialCursor.field("specularIntensity").write(glm::vec1{specularIntensity});
+		}
+
+		ImGui::Text("Bottom Albedo:");
+		if (ImGui::ColorEdit3("##bottomAlbedo", reinterpret_cast<float*>(&bottomAlbedo)))
+		{
+			materialCursor.field("bottomAlbedo").write(bottomAlbedo);
+		}
+
+		ImGui::Text("Coat IOR:");
+		if (ImGui::SliderFloat("##coatIOR", &coatIOR, .1f, 5.f))
+		{
+			materialCursor.field("coatIOR").write(glm::vec1{coatIOR});
+		}
+
+		ImGui::Text("Coat inner Thickness:");
+		if (ImGui::SliderFloat("##coatInnerThickness", &coatInnerThickness, 0.f, 100.f))
+		{
+			materialCursor.field("coatInnerThickness").write(glm::vec1{coatInnerThickness});
+		}
+
+		ImGui::Text("Coat outer Thickness:");
+		if (ImGui::SliderFloat("##coatOuterThickness", &coatOuterThickness, 0.f, 100.f))
+		{
+			materialCursor.field("coatOuterThickness").write(glm::vec1{coatOuterThickness});
+		}
+
+		ImGui::Text("Coat Thickness Exponent:");
+		if (ImGui::SliderFloat("##coatThicknessExponent", &coatThicknessExponent, 0.f, 10.f))
+		{
+			materialCursor.field("coatThicknessExponent").write(glm::vec1{coatThicknessExponent});
+		}
+
+		ImGui::Text("Coat Roughness:");
+		if (ImGui::SliderFloat("##coatRoughness", &coatRoughness, 0.f, 1.f))
+		{
+			materialCursor.field("coatRoughness").write(glm::vec1{coatRoughness});
+		}
+
+		ImGui::Text("Coat Transmittance:");
+		if (ImGui::ColorEdit3("##coatTransmittance", reinterpret_cast<float*>(&coatTransmittance), ImGuiColorEditFlags_HDR))
+		{
+			coatTransmittance = max(coatTransmittance, 0.f);
+			materialCursor.field("coatTransmittance").write(coatTransmittance * .1f);
+		}
+
+		ImGui::PopID();
+	}
+}
+
+void OpalDemo::Initialize(AssetHandle<MaterialInstance>&& material)
+{
+	materialHandle = std::move(material);
+
+	const ShaderCursor materialCursor{(*materialHandle)->getShaderCursor().field("gMaterial")};
+	materialCursor.field("textureTiling").write(textureTiling);
+	materialCursor.field("normalMap").writeTexture(normalMap);
+	materialCursor.field("armMap").writeTexture(armMap);
+	materialCursor.field("hueShift").write(hueShift);
+	materialCursor.field("hueScale").write(hueScale);
+	materialCursor.field("saturation").write(saturation);
+	materialCursor.field("brightness").write(brightness);
+	materialCursor.field("specularIntensity").write(specularIntensity);
+	materialCursor.field("bottomAlbedo").write(bottomAlbedo);
+	materialCursor.field("coatIOR").write(coatIOR);
+	materialCursor.field("coatInnerThickness").write(coatInnerThickness);
+	materialCursor.field("coatOuterThickness").write(coatOuterThickness);
+	materialCursor.field("coatThicknessExponent").write(coatThicknessExponent);
+	materialCursor.field("coatRoughness").write(coatRoughness);
+	materialCursor.field("coatTransmittance").write(coatTransmittance * .1f);
 }

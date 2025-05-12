@@ -1,7 +1,11 @@
 ﻿#include "Mesh.hpp"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include <assimp/Importer.hpp>
+
+//#define TINYOBJLOADER_IMPLEMENTATION
+//#include "tiny_obj_loader.h"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
 
 RawMesh::RawMesh(const std::filesystem::path& sourcePath)
 	: RawMesh(loadFromFile(sourcePath))
@@ -13,12 +17,45 @@ RawMesh::RawMesh(std::vector<Vertex>&& vertices, std::vector<Index>&& indices)
 {
 }
 
+glm::vec3 assimpVectorToGLM(const aiVector3D& vec)
+{
+	return glm::vec3{vec.x, vec.y, vec.z};
+}
+
 RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
 {
 	std::vector<Vertex> vertices{};
 	std::vector<Index> indices{};
 
-	tinyobj::attrib_t attrib;
+	//Assimp::Importer importer{};
+
+	const aiScene* scene{/*reinterpret_cast<aiScene*>(&vertices)};*/importer.ReadFile(sourcePath.string(), aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices)};
+	if (scene && scene->mNumMeshes > 0)
+	{
+		const aiMesh* mesh{scene->mMeshes[0]};
+		vertices.reserve(mesh->mNumVertices);
+		for (unsigned i = 0; i < mesh->mNumVertices; ++i)
+		{
+			Vertex& vertex{vertices.emplace_back()};
+			vertex.position = assimpVectorToGLM(mesh->mVertices[i]);
+			vertex.normal = assimpVectorToGLM(mesh->mNormals[i]);
+			vertex.tangent = assimpVectorToGLM(mesh->mTangents[i]);
+			vertex.texCoord = assimpVectorToGLM(mesh->mTextureCoords[0][i]);
+		}
+		indices.reserve(mesh->mNumFaces * 3);
+		for (unsigned i = 0; i < mesh->mNumFaces; ++i)
+		{
+			const aiFace& face{mesh->mFaces[i]};
+			if (face.mNumIndices == 3)
+			{
+				indices.emplace_back(face.mIndices[0]);
+				indices.emplace_back(face.mIndices[1]);
+				indices.emplace_back(face.mIndices[2]);
+			}
+		}
+	}
+
+	/*tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn;
@@ -64,7 +101,7 @@ RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
 
 			indices.push_back(uniqueVertices[vertex]);
 		}
-	}
+	}*/
 
 	vertices.shrink_to_fit();
 

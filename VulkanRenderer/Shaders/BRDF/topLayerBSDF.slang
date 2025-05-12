@@ -64,9 +64,9 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
         float cosl = saturate(dot(normal, refractedView));
         float effectiveThickness = thickness / cosl;
         float3 fullCoverageTransmittedLight = exp(-effectiveThickness * absorption);
-        float3 fl = fresnel.getFresnelTermDirectly(normal, view);
+        float3 fv = fresnel.getFresnelTermDirectly(normal, view);
         absorptionFactor = lerp(1.f, fullCoverageTransmittedLight, coverage);
-        internalReflectionColor = absorptionFactor * fl;
+        internalReflectionColor = absorptionFactor * fv;
         return absorptionFactor - internalReflectionColor;
     }
 

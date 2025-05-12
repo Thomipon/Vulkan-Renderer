@@ -85,13 +85,13 @@ private:
 	float brightness{.04f};
 	float specularIntensity{.735f};
 	glm::vec3 bottomAlbedo{.362f};
-	float roughnessThreshold{.344f};
+	float roughnessThreshold{.413f};
 	float roughnessCenter{.12f};
-	float heightScale{1.f};
-	float heightBias{1.f};
+	float heightScale{.115f};
+	float heightBias{-.507f};
 	float coatIOR{1.31f};
-	float coatInnerThickness{24.541f};
-	float coatOuterThickness{49.788f};
+	float coatInnerThickness{31.796f};
+	float coatOuterThickness{86.175f};
 	float coatThicknessExponent{2.181f};
 	float coatRoughness{.09f};
 	glm::vec3 coatAbsorption{.409f, .399f, .369f};

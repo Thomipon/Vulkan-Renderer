@@ -162,11 +162,11 @@ void SimpleVerticalBlendDemo::DrawImGui()
 			materialCursor.field("bottomEmissive").write(bottomEmissive);
 		}
 
-		ImGui::Text("Top Transmittance:");
-		if (ImGui::ColorEdit3("##topTransmittance", reinterpret_cast<float*>(&topTransmittance), ImGuiColorEditFlags_HDR))
+		ImGui::Text("Top Absorption:");
+		if (ImGui::ColorEdit3("##topAbsorption", reinterpret_cast<float*>(&topAbsorption), ImGuiColorEditFlags_HDR))
 		{
-			topTransmittance = max(topTransmittance, 0.f);
-			materialCursor.field("topTransmittance").write(topTransmittance * .1f);
+			topAbsorption = max(topAbsorption, 0.f);
+			materialCursor.field("topAbsorption").write(topAbsorption * .1f);
 		}
 
 		ImGui::Text("Top Coverage:");
@@ -215,7 +215,7 @@ void SimpleVerticalBlendDemo::Initialize(AssetHandle<MaterialInstance>&& materia
 	materialCursor.field("topCoverage").write(topCoverage);
 	materialCursor.field("topThickness").write(topThickness);
 	materialCursor.field("topRoughness").write(topRoughness);
-	materialCursor.field("topTransmittance").write(topTransmittance * .1f);
+	materialCursor.field("topAbsorption").write(topAbsorption * .1f);
 	materialCursor.field("topIor").write(topIor);
 	materialCursor.field("topF0").write(topF0);
 }
@@ -226,7 +226,7 @@ void OpalDemo::DrawImGui()
 	{
 		ImGui::PushID("Opal");
 
-		ImGui::SeparatorText("Simple Vertical Layer Material");
+		ImGui::SeparatorText("Opal Material");
 
 		const ShaderCursor materialCursor{(*materialHandle)->getShaderCursor().field("gMaterial")};
 
@@ -326,11 +326,11 @@ void OpalDemo::DrawImGui()
 			materialCursor.field("coatRoughness").write(glm::vec1{coatRoughness});
 		}
 
-		ImGui::Text("Coat Transmittance:");
-		if (ImGui::ColorEdit3("##coatTransmittance", reinterpret_cast<float*>(&coatTransmittance), ImGuiColorEditFlags_HDR))
+		ImGui::Text("Coat Absorption:");
+		if (ImGui::ColorEdit3("##coatAbsorption", reinterpret_cast<float*>(&coatAbsorption), ImGuiColorEditFlags_HDR))
 		{
-			coatTransmittance = max(coatTransmittance, 0.f);
-			materialCursor.field("coatTransmittance").write(coatTransmittance * .1f);
+			coatAbsorption = max(coatAbsorption, 0.f);
+			materialCursor.field("coatAbsorption").write(coatAbsorption * .1f);
 		}
 
 		ImGui::PopID();
@@ -361,5 +361,5 @@ void OpalDemo::Initialize(AssetHandle<MaterialInstance>&& material)
 	materialCursor.field("coatOuterThickness").write(coatOuterThickness);
 	materialCursor.field("coatThicknessExponent").write(coatThicknessExponent);
 	materialCursor.field("coatRoughness").write(coatRoughness);
-	materialCursor.field("coatTransmittance").write(coatTransmittance * .1f);
+	materialCursor.field("coatAbsorption").write(coatAbsorption * .1f);
 }

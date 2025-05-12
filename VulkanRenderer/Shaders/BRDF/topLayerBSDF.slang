@@ -37,7 +37,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
     public float coverage;
     public float thickness;
     public float roughness;
-    public float3 transmittance;
+    public float3 absorption;
     public float ior;
     public Fresnel fresnel;
     public SpecularTerm specular;
@@ -51,7 +51,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
         float effectiveThickness = thickness / cosl;
         float3 fl = fresnel.getFresnelTermDirectly(normal, light);
         surfacePenetratingLight = lightColor * (1.f - fl);
-        float3 fullCoverageTransmittedLight = surfacePenetratingLight * exp(-effectiveThickness * transmittance);
+        float3 fullCoverageTransmittedLight = surfacePenetratingLight * exp(-effectiveThickness * absorption);
         float3 transmittedLight = lerp(surfacePenetratingLight, fullCoverageTransmittedLight, coverage);
         float3 f = fresnel.getFresnelTerm(view, light);
         reflected = specular.evaluateSpecularTerm(normal, view, light, f, roughness * roughness) * lightColor * coverage * fl;
@@ -63,7 +63,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
         refractedView = -refract(-view, normal, rcp(ior));
         float cosl = saturate(dot(normal, refractedView));
         float effectiveThickness = thickness / cosl;
-        float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);
+        float3 fullCoverageTransmittedLight = exp(-effectiveThickness * absorption);
         float3 fl = fresnel.getFresnelTermDirectly(normal, view);
         absorptionFactor = lerp(1.f, fullCoverageTransmittedLight, coverage);
         internalReflectionColor = absorptionFactor * fl;
@@ -74,7 +74,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
     {
         float cosl = saturate(dot(normal, direction));
         float effectiveThickness = thickness / cosl;
-        float3 fullCoverageTransmittedLight = exp(-effectiveThickness * transmittance);
+        float3 fullCoverageTransmittedLight = exp(-effectiveThickness * absorption);
         float3 transmittedLight = lerp(1.f, fullCoverageTransmittedLight, coverage);
         // TODO: Fresnel?
         refractedDirection = -refract(-direction, normal, ior);

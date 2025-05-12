@@ -60,7 +60,7 @@ private:
 	float topCoverage{1.f};
 	float topThickness{5.f};
 	float topRoughness{.1f};
-	glm::vec3 topTransmittance{.1f};
+	glm::vec3 topAbsorption{.1f};
 	float topIor{1.06f};
 	glm::vec3 topF0{0.04f};
 };
@@ -94,5 +94,5 @@ private:
 	float coatOuterThickness{49.788f};
 	float coatThicknessExponent{2.181f};
 	float coatRoughness{.09f};
-	glm::vec3 coatTransmittance{.409f, .399f, .369f};
+	glm::vec3 coatAbsorption{.409f, .399f, .369f};
 };

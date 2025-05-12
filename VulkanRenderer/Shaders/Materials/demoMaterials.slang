@@ -57,7 +57,7 @@ struct VerticalLayerDemo : IMaterial
     float topCoverage;
     float topThickness;
     float topRoughness;
-    float3 topTransmittance;
+    float3 topAbsorption;
     float topIor;
     float3 topF0;
 
@@ -77,7 +77,7 @@ struct VerticalLayerDemo : IMaterial
         layered.topBsdf.coverage = topCoverage;
         layered.topBsdf.thickness = topThickness;
         layered.topBsdf.roughness = topRoughness;
-        layered.topBsdf.transmittance = topTransmittance;
+        layered.topBsdf.absorption = topAbsorption;
         layered.topBsdf.ior = topIor;
         layered.topBsdf.fresnel.f0 = topF0;
         layered.topBsdf.fresnel.f90 = float3(1.f);
@@ -109,7 +109,7 @@ struct Opal : IMaterial
     float coatInnerThickness;
     float coatOuterThickness;
     float coatRoughness;
-    float3 coatTransmittance;
+    float3 coatAbsorption;
     float coatThicknessExponent;
 
     MaterialResult<BRDF> evaluate(SurfaceGeometry geometry)
@@ -136,7 +136,7 @@ struct Opal : IMaterial
         top.coverage = 1.f;
         top.thickness = max(lerp(coatInnerThickness, coatOuterThickness, pow(1.f - abs(dot(viewDirection, geometry.worldNormal)), coatThicknessExponent)) - height, 0.f);
         top.roughness = coatRoughness;
-        top.transmittance = coatTransmittance;
+        top.absorption = coatAbsorption;
         top.ior = coatIOR;
         top.fresnel.f0 = f0FromIOR(coatIOR);
         top.fresnel.f90 = float3(1.f);

@@ -24,7 +24,7 @@ Renderer::Renderer()
 	: context(),
 	  instance(createInstance(context)),
 	  debugMessenger(createDebugMessenger(instance)),
-	  window(1600, 1200, std::bind(onFrameBufferResized, this, _1, _2)),
+	  window(1600, 1200, [this](const int width, const int height) { onFrameBufferResized(width, height); }),
 	  surface(window.createWindowSurface(instance)),
 	  physicalDevice(pickPhysicalDevice(instance, surface)),
 	  queueIndices(findQueueFamilies(physicalDevice, surface)),
@@ -361,7 +361,7 @@ void Renderer::recordCommandBufferForSceneDraw(const vk::raii::CommandBuffer& co
 		ShaderCursor viewCursor{globalCursor.field("gViewData")};
 		viewCursor.field("viewPosition").write(scene.camera.transform.translation);
 		viewCursor.field("viewProjection").write(scene.camera.getViewProjection(glm::vec2{swapchain.extent.width, swapchain.extent.height}));
-        viewCursor.field("exposureValue").write(scene.camera.exposureValue);
+		viewCursor.field("exposureValue").write(scene.camera.exposureValue);
 
 		ShaderCursor lightCursor{globalCursor.field("gLightEnvironment")};
 		scene.lightEnvironment.writeToCursor(lightCursor);

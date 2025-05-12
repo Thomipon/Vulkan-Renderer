@@ -49,6 +49,7 @@ RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
 					attrib.normals[3 * index.normal_index + 1],
 					attrib.normals.at(3 * index.normal_index + 2)
 				},
+				.tangent = {1.f, 0.f, 0.f},
 				.texCoord = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
 					1.f - attrib.texcoords[2 * index.texcoord_index + 1]
@@ -64,6 +65,7 @@ RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
 			indices.push_back(uniqueVertices[vertex]);
 		}
 	}
+
 	vertices.shrink_to_fit();
 
 	return {std::move(vertices), std::move(indices)};

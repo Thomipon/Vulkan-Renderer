@@ -1,6 +1,7 @@
 #pragma once
 #include "AssetManager.hpp"
 #include "AssetSystemStructs.h"
+#include "Asset/AssetBase.hpp"
 
 template <Asset T>
 struct AssetHandle

@@ -24,3 +24,6 @@ private:
 
 	friend class AssetManager;
 };
+
+template <typename T>
+concept Asset = std::is_base_of_v<AssetBase, T>;

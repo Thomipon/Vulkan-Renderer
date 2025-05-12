@@ -1,10 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <typeindex>
-#include <concepts>
-
-template <typename T>
-concept Asset = std::is_base_of_v<class AssetBase, T>;
 
 struct UUID
 {

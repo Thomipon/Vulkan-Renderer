@@ -4,6 +4,7 @@
 #include <typeindex>
 
 #include "AssetSystemStructs.h"
+#include "Asset/AssetBase.hpp"
 
 class AssetArray
 {

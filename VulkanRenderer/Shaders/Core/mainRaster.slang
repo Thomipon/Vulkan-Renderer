@@ -15,6 +15,7 @@ struct VertexInput
 {
     float3 position : POSITION;
     float3 normal : NORMAL;
+    float3 tangent : TANGENT;
     float2 textureCoordinate : UV;
 }
 
@@ -22,6 +23,7 @@ struct ProcessedVertex
 {
     float3 worldPosition;
     float3 worldNormal;
+    float3 worldTangent;
     float2 textureCoordinate;
 }
 
@@ -38,6 +40,7 @@ VertexOutput vertexMain(VertexInput input)
     VertexOutput output;
     output.vertex.worldPosition = mul(gModelData.modelTransform, float4(input.position, 1.)).xyz;
     output.vertex.worldNormal = mul(gModelData.inverseTransposeModelTransform, float4(input.normal, 0.)).xyz;
+    output.vertex.worldTangent = mul(gModelData.inverseTransposeModelTransform, float4(input.tangent, 0.)).xyz;
     output.vertex.textureCoordinate = input.textureCoordinate;
     output.sv_position = mul(gViewData.viewProjection, float4(output.vertex.worldPosition, 1.));
     return output;
@@ -52,8 +55,7 @@ float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
     geometry.textureCoordinate = vertex.textureCoordinate;
     geometry.modelData = gModelData;
     geometry.viewData = gViewData;
-    float3 tangent = ddx(geometry.textureCoordinate.x) * ddx(geometry.worldPosition) - ddy(geometry.textureCoordinate.x) * ddy(geometry.worldPosition);
-    float3 bitangent = normalize(cross(tangent, geometry.worldNormal));
+    float3 bitangent = normalize(cross(vertex.worldTangent, geometry.worldNormal));
     geometry.worldTangent = cross(geometry.worldNormal, bitangent);
     geometry.tangentToWorld = float3x3(geometry.worldTangent, bitangent, geometry.worldNormal);
 

@@ -13,6 +13,7 @@ struct Vertex
 {
     glm::vec3 position;
     glm::vec3 normal;
+    glm::vec3 tangent;
     glm::vec2 texCoord;
 
     static vk::VertexInputBindingDescription getBindingDescription()
@@ -20,18 +21,19 @@ struct Vertex
         return vk::VertexInputBindingDescription{0, sizeof(Vertex), vk::VertexInputRate::eVertex};
     }
 
-    static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions() // TODO: These smell constexpr
+    static std::array<vk::VertexInputAttributeDescription, 4> getAttributeDescriptions() // TODO: These smell constexpr
     {
         return {
             vk::VertexInputAttributeDescription{0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position)},
             vk::VertexInputAttributeDescription{1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal)},
-            vk::VertexInputAttributeDescription{2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord)}
+            vk::VertexInputAttributeDescription{2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, tangent)},
+            vk::VertexInputAttributeDescription{3, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord)}
         };
     }
 
     bool operator==(const Vertex& other) const
     {
-        return position == other.position && normal == other.normal && texCoord == other.texCoord;
+        return position == other.position && normal == other.normal && tangent == other.tangent && texCoord == other.texCoord;
     }
 };
 

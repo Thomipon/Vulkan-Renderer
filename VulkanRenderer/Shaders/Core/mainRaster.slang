@@ -57,7 +57,7 @@ float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
     geometry.viewData = gViewData;
     float3 bitangent = normalize(cross(vertex.worldTangent, geometry.worldNormal));
     geometry.worldTangent = cross(geometry.worldNormal, bitangent);
-    geometry.tangentToWorld = float3x3(geometry.worldTangent, bitangent, geometry.worldNormal);
+    geometry.tangentToWorld = transpose(float3x3(geometry.worldTangent, bitangent, geometry.worldNormal));
 
     float3 viewDirection = normalize(gViewData.viewPosition - geometry.worldPosition);
 

@@ -55,5 +55,5 @@ public float remapDistribution(float inValue, float outValueCenter, float inValu
 
 public float2 bumpOffset(float height, float3 viewDirectionTS)
 {
-    return height * float2(viewDirectionTS.x, -viewDirectionTS.y) / viewDirectionTS.z;
+    return height * float2(-viewDirectionTS.x, viewDirectionTS.y) / viewDirectionTS.z;
 }

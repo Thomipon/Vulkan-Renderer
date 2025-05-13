@@ -126,7 +126,7 @@ struct Opal : IMaterial
         float3 color = hsvToRgb(float3(hue, saturation, 1.f));
         bottom.diffuse.albedo = bottomAlbedo;
         float2 ar = armMap.Sample(uv).xy;
-        bottom.ambientOcclusion = 1.f;//ar.x;
+        bottom.ambientOcclusion = ar.x;
         bottom.roughness = remapDistribution(ar.y, roughnessCenter, roughnessThreshold);
         bottom.fresnel.f90 = float3(1.f);
         bottom.fresnel.f0 = color * specularIntensity;

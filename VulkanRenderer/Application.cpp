@@ -55,16 +55,18 @@ void Application::initScene()
 	scene.camera.transform.rotation = glm::quat{radians(glm::vec3{-15.f, 0.f, 0.f})};
 
 	PointLight pointLight{};
-	pointLight.transform.translation = glm::vec3{0.28f, -.19f, .05f};
-	pointLight.color = glm::vec3{.64f, 1.f, .67f};
+	pointLight.transform.translation = glm::vec3{0.440f, -.39f, -.05f};
+	pointLight.color = glm::vec3{.907f, 1.f, .915f};
+	pointLight.intensity = 0.2f;
 	scene.lightEnvironment.first.lights.emplace_back(pointLight);
 	DirectionalLight directionalLight{};
-	directionalLight.direction = glm::vec3{1.f, 2.f, 1.f};
-	directionalLight.color = glm::vec3{.6f, .95f, 1.f};
-	directionalLight.intensity = 3.f;
+	directionalLight.direction = glm::vec3{1.f, 1.4f, 1.f};
+	directionalLight.color = glm::vec3{.643f, .955f, 1.f};
+	directionalLight.intensity = .6f;
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 	directionalLight.direction = glm::vec3{-2.f, -.7f, 1.f};
-	directionalLight.color = glm::vec3{.99f, .85f, .7f};
+	directionalLight.color = glm::vec3{.99f, .899f, .801f};
+	directionalLight.intensity = .2f;
 	scene.lightEnvironment.second.first.lights.emplace_back(directionalLight);
 
 	scene.lightEnvironment.second.second.cubemap = TextureImage{"../../VulkanRenderer/Textures/Cubemap.png", vk::ImageViewType::eCube, *this};

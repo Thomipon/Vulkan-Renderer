@@ -119,13 +119,14 @@ struct Opal : IMaterial
         float2 uvPreBump = geometry.textureCoordinate * textureTiling;
         float height = heightScale * (heightMap.Sample(uvPreBump).r - .5f + heightBias);
         float2 uv = uvPreBump - bumpOffset(height, mul(transpose(geometry.tangentToWorld), viewDirection));
-        bottom.normal = normalize(mul(geometry.tangentToWorld, normalMap.Sample(uv).rgb - .5f));
+        float3 normalTS = normalMap.Sample(uv).rgb - .5f;
+        bottom.normal = normalize(mul(geometry.tangentToWorld, normalTS));
         float cosv = abs(dot(bottom.normal, viewDirection));
         float hue = abs(frac(cosv * hueScale + hueShift));
         float3 color = hsvToRgb(float3(hue, saturation, 1.f));
         bottom.diffuse.albedo = bottomAlbedo;
         float2 ar = armMap.Sample(uv).xy;
-        bottom.ambientOcclusion = ar.x;
+        bottom.ambientOcclusion = 1.f;//ar.x;
         bottom.roughness = remapDistribution(ar.y, roughnessCenter, roughnessThreshold);
         bottom.fresnel.f90 = float3(1.f);
         bottom.fresnel.f0 = color * specularIntensity;

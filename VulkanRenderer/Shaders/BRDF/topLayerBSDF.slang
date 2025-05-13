@@ -99,7 +99,7 @@ public struct BeerLambertTopLayerBSDF<Fresnel : IFresnel, SpecularTerm : ISpecul
 
     public IIndirectLightEnvironment modifyIndirectLightEnvironment<BaseEnvironment : IIndirectLightEnvironment>(BaseEnvironment baseEnvironment)
     {
-        IndirectLightEnvironmentThroughLayer<BaseEnvironment, This> modified = {};
+        IndirectLightEnvironmentThroughLayer<BaseEnvironment, This> modified;
         modified.baseEnvironment = baseEnvironment;
         modified.layer = this;
         return modified;

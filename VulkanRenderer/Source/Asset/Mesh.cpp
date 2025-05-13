@@ -27,9 +27,9 @@ RawMesh RawMesh::loadFromFile(const std::filesystem::path& sourcePath)
 	std::vector<Vertex> vertices{};
 	std::vector<Index> indices{};
 
-	//Assimp::Importer importer{};
+	Assimp::Importer importer{};
 
-	const aiScene* scene{/*reinterpret_cast<aiScene*>(&vertices)};*/importer.ReadFile(sourcePath.string(), aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices)};
+	const aiScene* scene{importer.ReadFile(sourcePath.string(), aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices)};
 	if (scene && scene->mNumMeshes > 0)
 	{
 		const aiMesh* mesh{scene->mMeshes[0]};

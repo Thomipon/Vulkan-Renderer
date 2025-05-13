@@ -18,7 +18,8 @@ find_library(Slang_LIBRARY NAMES slang HINTS ${Vulkan_LIBRARY}/../ NO_DEFAULT_PA
 
 include_directories(${CMAKE_SOURCE_DIR}/External/glfw/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/assimp/include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/External/assimp/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/assimp)
+#include_directories(${CMAKE_CURRENT_BINARY_DIR}/External/assimp/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/External/stb)
 include_directories(${CMAKE_SOURCE_DIR}/External/tinyobjloader)
@@ -28,4 +29,4 @@ add_subdirectory(External)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -Wl,-allow-multiple-definition -mbig-obj")
 
-target_link_libraries(${PROJECT_NAME} PUBLIC imgui Vulkan::Vulkan glfw ${GLFW_LIBRARIES} ${Slang_LIBRARY} assimp::assimp) # GLM::GLM)
+target_link_libraries(${PROJECT_NAME} PUBLIC imgui Vulkan::Vulkan glfw ${GLFW_LIBRARIES} ${Slang_LIBRARY} assimp) # GLM::GLM)

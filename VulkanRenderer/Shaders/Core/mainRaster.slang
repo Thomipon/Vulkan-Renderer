@@ -5,12 +5,16 @@ import material;
 import geometry;
 import globalData;
 
+// Main entry point shader
+// Holds global object and entry points
+
 uniform ViewData gViewData;
 uniform ModelData gModelData;
 
 uniform ILightEnvironment gLightEnvironment;
 uniform IMaterial gMaterial;
 
+// Input to the vertex shader/Type of the vertex buffer
 struct VertexInput
 {
     float3 position : POSITION;
@@ -19,6 +23,7 @@ struct VertexInput
     float2 textureCoordinate : UV;
 }
 
+// Vertex that was processed by the vertex shader
 struct ProcessedVertex
 {
     float3 worldPosition;
@@ -27,6 +32,7 @@ struct ProcessedVertex
     float2 textureCoordinate;
 }
 
+// Output of the vertex shader
 struct VertexOutput
 {
     ProcessedVertex vertex : Vertex;
@@ -34,6 +40,8 @@ struct VertexOutput
 }
 
 
+// Vertex shader
+// Does nothing special
 [shader("vertex")]
 VertexOutput vertexMain(VertexInput input)
 {
@@ -46,6 +54,8 @@ VertexOutput vertexMain(VertexInput input)
     return output;
 }
 
+// Fragment shader
+// Assembles surface geometry, evaluates the material and shades the resulting BRDF
 [shader("fragment")]
 float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
 {
@@ -56,12 +66,16 @@ float4 fragmentMain(ProcessedVertex vertex : Vertex) : SV_Target
     geometry.modelData = gModelData;
     geometry.viewData = gViewData;
     float3 bitangent = normalize(cross(vertex.worldTangent, geometry.worldNormal));
+    // We re-orthogonalize the tangent. This will be normalized because worldNormal and bitangent are orthogonal and normalized
     geometry.worldTangent = cross(geometry.worldNormal, bitangent);
     geometry.tangentToWorld = transpose(float3x3(geometry.worldTangent, bitangent, geometry.worldNormal));
 
+    // viewDirection is used by BRDFs
     float3 viewDirection = normalize(gViewData.viewPosition - geometry.worldPosition);
 
+    // Evaluates the material into a BRDF
     let materialResult = gMaterial.evaluate(geometry);
+    // Shades the BRDF using the light environment
     float3 color = max(gLightEnvironment.illuminate(materialResult.geometry, materialResult.brdf, viewDirection) + materialResult.brdf.evaluateEmissive(viewDirection), 0.f);
     return float4(1.f - exp(-color * gViewData.exposureValue), 1.);
 }

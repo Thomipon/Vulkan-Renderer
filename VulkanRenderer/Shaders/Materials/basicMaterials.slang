@@ -7,6 +7,9 @@ import BRDF.basicBRDFS;
 
 import Core.largeBlock;
 
+// Implementations for basic materials
+
+// Simple, unlit sky sphere material based on a cubemap and intensity
 struct SkySphereMaterial : IMaterial
 {
     typedef UnlitBRDF BRDF;

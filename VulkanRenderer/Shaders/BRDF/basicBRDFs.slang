@@ -7,6 +7,9 @@ import Core.indirectLighting;
 
 import Core.largeBlock;
 
+// Collection of simple BRDFs
+
+// BRDF that only has an emissive component (i.e., that radiates light uniformly in all directions while perfectly absorbing all incoming light)
 public struct UnlitBRDF : IBRDF
 {
     public float3 emissive;
@@ -27,6 +30,7 @@ public struct UnlitBRDF : IBRDF
     }
 }
 
+// Simple wrapper material for UnlitBRDF
 struct ConstantUnlitMaterial : IMaterial
 {
     typedef UnlitBRDF BRDF;

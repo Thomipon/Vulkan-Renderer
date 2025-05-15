@@ -2,11 +2,16 @@
 
 import Library.common;
 
+// Implementations for fresnel term and fresnel approximations
+
+// Interface for fresnel approximations
 public interface IFresnelApproximation
 {
+    // Returns the (single-channel) fresnel factor
     static float approximateFresnel(float3 view, float3 half);
 }
 
+// Schlick-Fresnel approximation
 public struct SchlickFresnel : IFresnelApproximation
 {
     public static float approximateFresnel(float3 view, float3 half)
@@ -17,12 +22,16 @@ public struct SchlickFresnel : IFresnelApproximation
     }
 }
 
+// Interface for (colored) fresnel terms
 public interface IFresnel
 {
+    // Evaluates the fresnel term based on the half vector between view and light vector
     float3 getFresnelTerm(float3 view, float3 light);
+    // Evaluates the fresnel term based on normal and direction without computing a half vector
     float3 getFresnelTermDirectly(float3 normal, float3 direction);
 }
 
+// Fresnel term that uses an approximation and interpolates between and F0 and F90 value
 public struct F0F90Fresnel<FresnelApproximation : IFresnelApproximation> : IFresnel
 {
     public float3 f0;

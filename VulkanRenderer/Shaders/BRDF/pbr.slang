@@ -10,8 +10,10 @@ import Library.fresnel;
 import Library.diffuse;
 import Library.specular;
 
+// Simple PBR material based on the Microfacet Model
 public struct PBRBRDF : IBRDF
 {
+    // Right now, the types for diffuse, fresnel and specular are hardcoded but they will be refactored into type parameters to make the BRDF more modular
     public DefaultDiffuseTerm diffuse;
     public F0F90Fresnel<SchlickFresnel> fresnel;
     public DefaultSpecularTerm specular;
@@ -45,6 +47,7 @@ public struct PBRBRDF : IBRDF
     }
 }
 
+// Simple material that wraps the PBR BRDF for easy testing
 struct ConstantPBRMaterial : IMaterial
 {
     typedef PBRBRDF BRDF;

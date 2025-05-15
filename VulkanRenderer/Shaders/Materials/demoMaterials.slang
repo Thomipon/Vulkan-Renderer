@@ -8,6 +8,9 @@ import BRDF.topLayerBSDF;
 
 import Library.common;
 
+// Demo materials to showcase the layered material system
+
+// Simple horizontal blend material that blends between two independent PBR materials
 struct HorizontalBlendDemo : IMaterial
 {
     typedef HorizontalBlendBRDF<PBRBRDF, PBRBRDF> BRDF
@@ -45,6 +48,7 @@ struct HorizontalBlendDemo : IMaterial
     }
 }
 
+// Simple vertical layer materials with separate control of the bottom and top layer
 struct VerticalLayerDemo : IMaterial
 {
     typedef VerticalBlendBRDF<PBRBRDF, DefaultTopLayerBSDF> BRDF;
@@ -87,6 +91,7 @@ struct VerticalLayerDemo : IMaterial
     }
 }
 
+// Opal material aimed to recreate the opal material of Unreal Engine's substrate system
 struct Opal : IMaterial
 {
     typedef VerticalBlendBRDF<PBRBRDF, DefaultTopLayerBSDF> BRDF;

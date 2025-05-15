@@ -4,11 +4,15 @@ import brdf;
 import geometry;
 import indirectLighting;
 
+// Interface for the scene's lighting environment
 public interface ILightEnvironment
 {
+    // Illuminate a given BRDF
     float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection);
 }
 
+// Array of lights of a single type
+// Use this together with LightPair to construct the scene's light environment
 struct LightArray<L : ILightEnvironment, let N : int> : ILightEnvironment
 {
     int count;
@@ -25,6 +29,8 @@ struct LightArray<L : ILightEnvironment, let N : int> : ILightEnvironment
     }
 }
 
+// Pair of lights with two different types
+// Use this together with LightArray to construct the scene's light environment
 struct LightPair<T : ILightEnvironment, U : ILightEnvironment> : ILightEnvironment
 {
     T first;
@@ -36,6 +42,7 @@ struct LightPair<T : ILightEnvironment, U : ILightEnvironment> : ILightEnvironme
     }
 };
 
+// Light environment corresponding to no lights
 struct EmptyLight : ILightEnvironment
 {
     float3 illuminate<B:IBRDF>(SurfaceGeometry geometry, B brdf, float3 viewDirection)
@@ -44,6 +51,7 @@ struct EmptyLight : ILightEnvironment
     }
 }
 
+// Simple directional light
 struct DirectionalLight : ILightEnvironment
 {
     float3 direction;
@@ -57,6 +65,7 @@ struct DirectionalLight : ILightEnvironment
     }
 }
 
+// Simple point light
 struct PointLight : ILightEnvironment
 {
     float3 position;
@@ -74,6 +83,8 @@ struct PointLight : ILightEnvironment
     }
 }
 
+// Simple, single color ambient light
+// Will use indirect lighting
 struct AmbientLight : ILightEnvironment, IIndirectLightEnvironment
 {
     float3 color;
@@ -84,12 +95,15 @@ struct AmbientLight : ILightEnvironment, IIndirectLightEnvironment
         return brdf.evaluateIndirect(viewDirection, this);
     }
 
+    // Just return the color of the light
     float3 sampleEnvironment(float3 direction, float roughness)
     {
         return color * intensity;
     }
 }
 
+// Ambient light based on a cubemap
+// Will use indirect lighting
 struct AmbientCubemapLight : ILightEnvironment, IIndirectLightEnvironment
 {
     SamplerCube environmentMap;
@@ -100,6 +114,8 @@ struct AmbientCubemapLight : ILightEnvironment, IIndirectLightEnvironment
         return brdf.evaluateIndirect(viewDirection, this);
     }
 
+    // Will sample the environmentMap in the give direction
+    // Will use higher mip levels to account for roughness
     float3 sampleEnvironment(float3 direction, float roughness)
     {
         float width, height, levels;

@@ -3,12 +3,18 @@ module diffuse;
 import Library.common;
 import Library.fresnel;
 
+// Implementations for diffuse terms
+
+// Interface for diffuse terms
 public interface IDiffuseTerm
 {
+    // Evaluate the diffuse term for direct lighting. Should include cosine and fresnel attenuation
     float3 evaluateDiffuseTerm(float3 normal, float3 view, float3 light, float3 fresnel, float alpha);
+    // Evaluate the diffuse term without attenuation. Used for indirect lighting
     float3 evaluateUnattenuatedDiffuseTerm(float3 normal, float3 view, float3 fresnel, float alpha);
 }
 
+// Lambertian diffuse term
 public struct LambertDiffuse : IDiffuseTerm
 {
     public float3 albedo;
@@ -24,6 +30,7 @@ public struct LambertDiffuse : IDiffuseTerm
     }
 }
 
+// Burley diffuse term
 public struct BurleyDiffuse<FresnelApproximation : IFresnelApproximation> : IDiffuseTerm
 {
     public float3 albedo;

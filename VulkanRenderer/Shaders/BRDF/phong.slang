@@ -5,6 +5,7 @@ import Core.material;
 import Core.geometry;
 import Core.indirectLighting;
 
+// Simple Phong BRDF to test all the backends for the simplest possible case
 struct PhongBRDF : IBRDF
 {
     float3 kd;
@@ -33,6 +34,7 @@ struct PhongBRDF : IBRDF
     }
 }
 
+// Simple material that wraps the Phong BRDF for quick testing
 struct ConstantPhongMaterial : IMaterial
 {
     float3 diffuseColor;

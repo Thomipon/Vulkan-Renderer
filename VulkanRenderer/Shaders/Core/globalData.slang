@@ -1,5 +1,6 @@
 ﻿module globalData;
 
+// Data describing the camera
 public struct ViewData
 {
     public float4x4 viewProjection;
@@ -7,6 +8,7 @@ public struct ViewData
     public float exposureValue;
 }
 
+// Data describing the model
 public struct ModelData
 {
     public float4x4 modelTransform;

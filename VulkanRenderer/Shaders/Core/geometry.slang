@@ -2,6 +2,7 @@
 
 import globalData;
 
+// Data describing the surface at a single point
 public struct SurfaceGeometry
 {
     public float3 worldPosition;
